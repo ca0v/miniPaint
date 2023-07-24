@@ -88,75 +88,168 @@ export function isLandscape() {
 }
 
 export function tweakMenuDefinition(menuDefinition) {
-    const fileMenuGroup = findMenuDefinition(menuDefinition, 'File');
-    removeMenuItem(fileMenuGroup.children, 'New');
+    {
+        const fileMenuGroup = findMenuDefinition(menuDefinition, 'File');
+        removeMenuItem(fileMenuGroup.children, 'New');
 
-    const fileOpenMenuItem = findMenuDefinition(fileMenuGroup.children, 'Open');
-    removeMenuItem(fileOpenMenuItem.children, 'Open URL');
-    removeMenuItem(fileOpenMenuItem.children, 'Open Data URL');
-    removeMenuItem(fileMenuGroup.children, 'Quick Save');
-    removeMenuItem(fileMenuGroup.children, 'Quick Load');
+        const fileOpenMenuItem = findMenuDefinition(
+            fileMenuGroup.children,
+            'Open'
+        );
+        removeMenuItem(fileOpenMenuItem.children, 'Open URL');
+        removeMenuItem(fileOpenMenuItem.children, 'Open Data URL');
+        removeMenuItem(fileMenuGroup.children, 'Quick Save');
+        removeMenuItem(fileMenuGroup.children, 'Quick Load');
 
-    const saveAndReturnMenuItem = appendMenuDefinition(
-        fileMenuGroup.children,
-        lastItem(fileMenuGroup.children),
-        {
-            name: 'Save and Return',
-            target: 'file/print.print', // TODO: popup_saveCopy
-        }
-    );
+        const saveAndReturnMenuItem = appendMenuDefinition(
+            fileMenuGroup.children,
+            lastItem(fileMenuGroup.children),
+            {
+                name: 'Save and Return',
+                target: 'file/print.print', // TODO: popup_saveCopy
+            }
+        );
 
-    appendMenuDefinition(fileMenuGroup.children, saveAndReturnMenuItem, {
-        name: 'Cancel Image Editing',
-        target: 'file/print.print', // TODO: goBack()
-    });
-
-    const editMenuGroup = findMenuDefinition(menuDefinition, 'Edit');
-    appendMenuDefinition(
-        editMenuGroup.children,
-        findMenuDefinition(editMenuGroup.children, 'Redo'),
-        {
-            name: 'Restore Original Image',
-            target: 'edit/restore.restore',
-        }
-    );
-
-    removeMenuItem(editMenuGroup.children, 'Select All');
-
-    const imageMenuGroup = findMenuDefinition(menuDefinition, 'Image');
-    removeMenuItem(imageMenuGroup.children, 'Color Palette');
-
-    const layerMenuGroup = findMenuDefinition(menuDefinition, 'Layer');
-    removeMenuItem(layerMenuGroup.children, 'Composition');
-
-    const effects = findMenuDefinition(menuDefinition, 'Effects');
-
-    'Black and White,Box Blur,Denoise,Dither,Dot Screen,Edge,Emboss,Enrich,Grains,Heatmap,Mosaic,Oil,Sharpen,Solarize,Tilt Shift,Vignette,Vibrance,Vintage,Zoom Blur'
-        .split(',')
-        .forEach((menuTitle) => {
-            removeMenuItem(effects.children, menuTitle);
+        appendMenuDefinition(fileMenuGroup.children, saveAndReturnMenuItem, {
+            name: 'Cancel Image Editing',
+            target: 'file/print.print', // TODO: goBack()
         });
+    }
 
-    // 'Gaussian Blur,Brightness,Contrast,Grayscale,Hue Rotate,Negative,Saturate,Sepia,Shadow'
-    removeMenuItem(effects.children, 'Common Filters');
-    removeMenuItem(effects.children, 'Instagram Filters');
+    {
+        const editMenuGroup = findMenuDefinition(menuDefinition, 'Edit');
+        appendMenuDefinition(
+            editMenuGroup.children,
+            findMenuDefinition(editMenuGroup.children, 'Redo'),
+            {
+                name: 'Restore Original Image',
+                target: 'edit/restore.restore',
+            }
+        );
 
-    removeMenuItem(menuDefinition, 'Tools');
-    const tools = appendMenuDefinition(menuDefinition, effects, {
-        name: 'Tools',
-        children: [],
-    });
+        removeMenuItem(editMenuGroup.children, 'Select All');
+    }
+    {
+        const imageMenuGroup = findMenuDefinition(menuDefinition, 'Image');
+        removeMenuItem(imageMenuGroup.children, 'Color Palette');
+    }
 
-    // the "shapes" handler calls app.GUI_tools.activate_tool
-    'Line,Rectangle,Circle,Text,Clone,Blur,Sharpen,Desaturate'
-        .split(',')
-        .reverse()
-        .forEach((menuTitle) => {
-            appendMenuDefinition(tools.children, null, {
+    {
+        const layerMenuGroup = findMenuDefinition(menuDefinition, 'Layer');
+        removeMenuItem(layerMenuGroup.children, 'Composition');
+    }
+
+    {
+        const effectsMenuGroup = findMenuDefinition(menuDefinition, 'Effects');
+
+        'Black and White,Box Blur,Denoise,Dither,Dot Screen,Edge,Emboss,Enrich,Grains,Heatmap,Mosaic,Oil,Sharpen,Solarize,Tilt Shift,Vignette,Vibrance,Vintage,Zoom Blur'
+            .split(',')
+            .forEach((menuTitle) => {
+                removeMenuItem(effectsMenuGroup.children, menuTitle);
+            });
+
+        // 'Gaussian Blur,Brightness,Contrast,Grayscale,Hue Rotate,Negative,Saturate,Sepia,Shadow'
+        removeMenuItem(effectsMenuGroup.children, 'Common Filters');
+        removeMenuItem(effectsMenuGroup.children, 'Instagram Filters');
+
+        // Completely obliterate the existing 'Tools' menu
+        removeMenuItem(menuDefinition, 'Tools');
+        const toolsMenuGroup = appendMenuDefinition(
+            menuDefinition,
+            effectsMenuGroup,
+            {
+                name: 'Tools',
+                children: [],
+            }
+        );
+
+        // the "shapes" handler calls app.GUI_tools.activate_tool
+        'Line,Rectangle,Circle,Text,Clone,Blur,Sharpen,Desaturate'
+            .split(',')
+            .reverse()
+            .forEach((menuTitle) => {
+                appendMenuDefinition(toolsMenuGroup.children, null, {
+                    name: menuTitle,
+                    target: `shapes.${menuTitle.toLocaleLowerCase()}`,
+                });
+            });
+    }
+
+    {
+        const toolsMenuGroup = findMenuDefinition(menuDefinition, 'Tools');
+        const addImageMenuItem = appendMenuDefinition(
+            menuDefinition,
+            toolsMenuGroup,
+            {
+                name: 'Add Image',
+                children: [],
+            }
+        );
+
+        const beardsMenuItem = appendMenuDefinition(
+            addImageMenuItem.children,
+            null,
+            {
+                name: 'Beards',
+                children: [],
+            }
+        );
+
+        'Blond,Brown,Black & White'.split(',').forEach((menuTitle) => {
+            appendMenuDefinition(beardsMenuItem.children, null, {
                 name: menuTitle,
-                target: `shapes.${menuTitle.toLocaleLowerCase()}`,
+                target: `beard.${menuTitle.toLocaleLowerCase()}`,
             });
         });
+
+        const moustachesMenuItem = appendMenuDefinition(
+            addImageMenuItem.children,
+            beardsMenuItem,
+            {
+                name: 'Moustaches',
+                children: [],
+            }
+        );
+
+        'Blond,Brown,Black & White'.split(',').forEach((menuTitle) => {
+            appendMenuDefinition(moustachesMenuItem.children, null, {
+                name: menuTitle,
+                target: `moustache.${menuTitle.toLocaleLowerCase()}`,
+            });
+        });
+
+        const hatsMenuItem = appendMenuDefinition(
+            addImageMenuItem.children,
+            moustachesMenuItem,
+            {
+                name: 'Hats',
+                children: [],
+            }
+        );
+
+        'Brown,Black & White'.split(',').forEach((menuTitle) => {
+            appendMenuDefinition(hatsMenuItem.children, null, {
+                name: menuTitle,
+                target: `hat.${menuTitle.toLocaleLowerCase()}`,
+            });
+        });
+
+        const eyewearMenuItem = appendMenuDefinition(
+            addImageMenuItem.children,
+            hatsMenuItem,
+            {
+                name: 'Eyewear',
+                children: [],
+            }
+        );
+
+        'Black,Gold,Green'.split(',').forEach((menuTitle) => {
+            appendMenuDefinition(eyewearMenuItem.children, null, {
+                name: menuTitle,
+                target: `eyewear.${menuTitle.toLocaleLowerCase()}`,
+            });
+        });
+    }
 }
 
 function removeMenuItem(menuItems, name) {
@@ -341,6 +434,59 @@ export function interceptMenuItem(app, target, object) {
     switch (area) {
         case 'shapes':
             app.GUI_tools.activate_tool(name);
+            return true;
+        case 'beard':
+            switch (name) {
+                case 'blond':
+                    blMustache();
+                    break;
+                case 'brown':
+                    brMustache();
+                    break;
+                case 'black & white':
+                default:
+                    bwMustache();
+                    break;
+            }
+            return true;
+        case 'eyewear':
+            switch (name) {
+                case 'black':
+                    eyes();
+                    break;
+                case 'gold':
+                    geyes();
+                    break;
+                case 'green':
+                default:
+                    beyes();
+                    break;
+            }
+            return true;
+        case 'hat':
+            switch (name) {
+                case 'brown':
+                    brHats();
+                    break;
+                case 'black & white':
+                default:
+                    bwHats();
+                    break;
+            }
+            return true;
+        case 'moustache':
+            switch (name) {
+                case 'blond':
+                    blMustache();
+                    break;
+                case 'brown':
+                    brMustache();
+                    break;
+                case 'black & white':
+                default:
+                    bwMustache();
+                    break;
+            }
             return true;
         default:
             return false;
