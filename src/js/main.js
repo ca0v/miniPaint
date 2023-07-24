@@ -1,4 +1,8 @@
-import { tweakLayout } from './dataworks-plus-extensions.js';
+import {
+    tweakConfig,
+    tweakMenuDefinition,
+    tweakLayout,
+} from './dataworks-plus-extensions.js';
 
 /**
  * miniPaint - https://github.com/viliusle/miniPaint
@@ -16,6 +20,8 @@ import './../../node_modules/alertifyjs/build/css/alertify.min.css';
 //js
 import app from './app.js';
 import config from './config.js';
+import menuDefinition from './config-menu.js';
+
 import './core/components/index.js';
 import Base_gui_class from './core/base-gui.js';
 import Base_layers_class from './core/base-layers.js';
@@ -25,6 +31,9 @@ import Base_search_class from './core/base-search.js';
 import File_open_class from './modules/file/open.js';
 import File_save_class from './modules/file/save.js';
 import * as Actions from './actions/index.js';
+
+tweakConfig(config);
+tweakMenuDefinition(menuDefinition);
 
 window.addEventListener(
     'load',

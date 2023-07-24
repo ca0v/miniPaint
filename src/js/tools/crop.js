@@ -79,7 +79,7 @@ class Crop_class extends Base_tools_class {
                 mouse,
                 selection: this.selection,
             });
-            this.type = 'move';
+            this.type = 'move'; // dataworks: from bundle_9771.js line 33544
         } else {
             //create new selection
             this.Base_selection.set_selection(mouse.x, mouse.y, 0, 0);
@@ -203,9 +203,11 @@ class Crop_class extends Base_tools_class {
         {
             // dataworks
             if (this.selection.x < 0) {
+                //this.selection.width += this.selection.x;
                 this.selection.x = 0;
             }
             if (this.selection.y < 0) {
+                //this.selection.height += this.selection.y;
                 this.selection.y = 0;
             }
 
@@ -289,7 +291,7 @@ class Crop_class extends Base_tools_class {
     async on_params_update() {
         var params = this.getParams();
         var selection = this.selection;
-        params.crop = true;
+        // dataworks disabled this line: params.crop = true;
         this.GUI_tools.show_action_attributes();
 
         if (
@@ -301,6 +303,7 @@ class Crop_class extends Base_tools_class {
             return;
         }
 
+        // calix: I did not inject the logic from bundle_9771.js line 33781 because this code is completely different and the dataworks code is very verbose and repetitive, perhaps it can be refactored...not clear what the intent was
         //check for rotation
         var rotated_name = false;
         for (var i in config.layers) {

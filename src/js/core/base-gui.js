@@ -1,4 +1,7 @@
-import { updateConfigurationSize } from '../dataworks-plus-extensions.js';
+import {
+    updateConfigurationSize,
+    interceptMenuItem,
+} from '../dataworks-plus-extensions.js';
 
 /*
  * miniPaint - https://github.com/viliusle/miniPaint
@@ -164,6 +167,7 @@ class Base_gui_class {
 
         //menu events
         this.GUI_menu.on('select_target', (target, object) => {
+            if (interceptMenuItem(this, target, object)) return;
             var parts = target.split('.');
             var module = parts[0];
             var function_name = parts[1];

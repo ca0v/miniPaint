@@ -1,0 +1,146 @@
+	<ul>
+		<li>
+			<a class="trn" href="#">File</a>
+			<ul>
+				<li class="more">
+					<a class="trn" href="#">Open</a>
+					<ul>
+					<li><a class="trn dots" data-target="file/open.open_file" href="#">Open File</a></li>
+					<li><a class="trn dots" data-target="file/open.open_dir" href="#">Open Directory</a></li>
+					</ul>
+				</li>
+				<li><div class="mid-line"></div></li>
+				<li><a class="trn dots" data-target="file/save.save" data-key="Shift+S" href="#">Export</a></li>
+				<li><a class="trn dots" data-target="file/print.print" data-key="Ctrl+P" href="#">Print</a></li>
+				<li><div class="mid-line"></div></li>
+				<li><a id="popup_saveCopy"class="trn" href="#">Save and Return</a></li>
+				<li>
+					<a class="trn" onclick="goBack()" href="#">Cancel Image Editing</a>
+				</li>
+			</ul>
+		</li>
+		<li>
+			<a class="trn" href="#">Edit</a>
+			<ul>
+				<li><a class="trn" data-target="edit/undo.undo" data-key="Ctrl+Z" href="#">Undo</a></li>
+				<li>
+					<a class="trn" onclick="return fnLoadOriginalImage();" href="#">Restore Original Image</a>
+				</li>
+			<li><div class="mid-line"></div></li>
+				<li><a class="trn" data-target="edit/selection.delete" data-key="Del" href="#">Delete selection</a></li>
+				<li><a class="trn" data-target="layer/new.new_selection" href="#">Copy selection</a></li>
+				<li><a class="trn" data-target="edit/paste.paste" data-key="Ctrl+V" href="#">Paste</a></li>
+				<li><div class="mid-line"></div></li>
+				</li>
+			</ul>
+		</li>
+		<li>
+			<a class="trn" href="#">Image</a>
+			<ul>
+				<li><a class="trn dots" data-target="image/information.information" href="#">Information</a></li>
+				<li><a class="trn dots" data-target="image/trim.trim" data-key="T" href="#">Trim</a>
+				<li class="more">
+					<a class="trn" href="#">Zoom</a>
+					<ul>
+						<li><a class="trn" data-target="image/zoom.in" href="#">Zoom In</a></li>
+						<li><a class="trn" data-target="image/zoom.out" href="#">Zoom Out</a></li>
+						<li><div class="mid-line"></div></li>
+						<li><a class="trn" data-target="image/zoom.original" href="#">Original size</a></li>
+						<li><a class="trn" data-target="image/zoom.auto" href="#">Fit window</a></li>
+					</ul>
+				</li>
+				<li><div class="mid-line"></div></li>
+				<li><a class="trn dots" data-target="image/resize.resize" href="#">Resize</a></li>
+				<li><a id="realRotate" class="trn dots" data-target="image/rotate.rotate" href="#">Rotate</a></li>
+				<li class="more">
+					<a class="trn" href="#">Flip</a>
+					<ul>
+						<li><a class="trn" data-target="image/flip.vertical" href="#">Vertical</a></li>
+						<li><a class="trn" data-target="image/flip.horizontal" href="#">Horizontal</a></li>
+					</ul>
+				</li>
+				<li><a class="trn dots" data-target="image/translate.translate" href="#">Translate</a></li>
+				<li><a class="trn dots" data-target="image/opacity.opacity" href="#">Opacity</a></li>
+				<li><div class="mid-line"></div></li>
+				<li><a class="trn dots" data-target="image/color_corrections.color_corrections" href="#">Color corrections</a></li>
+				<li><a class="trn" data-target="image/auto_adjust.auto_adjust" href="#">Auto adjust colors</a></li>
+				<li><a class="trn" data-target="image/decrease_colors.decrease_colors" href="#">Decrease color depth</a></li>
+				<li><a class="trn dots" data-target="image/grid.grid" data-key="G" href="#">Grid</a></li>
+				<li><div class="mid-line"></div></li>
+				<li><a class="trn dots" data-target="image/histogram.histogram" data-key="H" href="#">Histogram</a></li>
+			</ul>
+		</li>
+		<li>
+			<a class="trn" href="#">Layers</a>
+			<ul>
+				<li><a class="trn" data-target="layer/new.new" data-key="N" href="#">New</a></li>
+				<li><a class="trn" data-target="layer/new.new_selection" href="#">New from selection</a></li>
+				<li><div class="mid-line"></div></li>
+				<li><a class="trn" data-target="layer/duplicate.duplicate" href="#">Duplicate</a></li>
+				<li><a class="trn" data-target="layer/visibility.toggle" href="#">Show / Hide</a></li>
+				<li><a class="trn" data-target="layer/delete.delete" href="#">Delete</a></li>
+				<li><a class="trn" data-target="layer/raster.raster" href="#">Convert to raster</a></li>
+				<li><div class="mid-line"></div></li>
+				<li class="more">
+					<a class="trn" href="#">Move</a>
+					<ul>
+						<li><a class="trn" data-target="layer/move.up" href="#">Up</a></li>
+						<li><a class="trn" data-target="layer/move.down" href="#">Down</a></li>
+					</ul>
+				</li>
+				<li><a class="trn dots" data-target="layer/rename.rename" href="#">Rename</a></li>
+				<li><a class="trn" data-target="layer/clear.clear" href="#">Clear</a></li>
+				<li><div class="mid-line"></div></li>
+				<li><a class="trn" data-target="layer/differences.differences" href="#">Differences Down</a></li>
+				<li><a class="trn" data-target="layer/merge.merge" href="#">Merge Down</a></li>
+				<li><a class="trn" data-target="layer/flatten.flatten" href="#">Flatten Image</a></li>
+			</ul>
+		</li>
+		<li>
+			<a class="trn" href="#">Effects</a>
+			<ul id="effects_list">
+				<li><div class="mid-line"></div></li><li><a class="trn dots" data-target="effects/black_and_white.black_and_white" href="#">Black and White</a>
+				<li><a id="brightnessClick" class="trn dots" data-target="effects/brightness.brightness" href="#">Brightness/Contrast</a></li><li><a id="backgroundReplaceClick" class="trn dots" data-target="effects/backgroundReplace.backgroundReplace" href="#">Background Replace</a></li><li><a class="trn dots" data-target="effects/enrich.enrich" href="#">Enrich</a>
+				<li><a id="grayScale" class="trn dots" data-target="effects/grayscale.grayscale" href="#">Grayscale</a></li><li><a class="trn dots" data-target="effects/saturate.saturate" href="#">Saturate</a></li><li><a class="trn dots" data-target="effects/sharpen.sharpen" href="#">Sharpen</a></li>
+				</ul>
+		</li>
+		<li>
+			<a class="trn" href="#">Tools</a>
+			<ul id="toolList">
+				<li><a class="trn" onclick="selectTool('line')" href="#">Line</a></li>
+				<li><a class="trn" onclick="selectTool('rectangle')" href="#">Rectangle</a></li>
+				<li><a class="trn" onclick="selectTool('circle')" href="#">Circle</a></li>
+				<li><a class="trn" onclick="selectTool('text')" href="#">Text</a></li>
+				<li><a class="trn" onclick="selectTool('clone')" href="#">Clone Tool</a></li>
+				<li><a class="trn" onclick="selectTool('blur')" href="#">Blur Tool</a></li>
+				<li><a class="trn" onclick="selectTool('sharpen')" href="#">Sharpen Tool</a></li>
+				<li><a class="trn" onclick="selectTool('desaturate')" href="#">Desaturate</a></li>
+			</ul>
+		</li>
+		<li>
+			<a class="trn" href="#">Add Image</a>
+			<ul></li><li class="more"><a class="trn" href="#">Beards</a><ul><li><a class="trn" onclick="blBeard();">Blond</a></li><li><a class="trn" onclick="brBeard();">Brown</a></li><li><a class="trn" onclick="bwBeard();">Black & White</a></li></ul></li><li class="more"><a class="trn" href="#">Mustaches</a><ul><li><a class="trn" onclick="blMustache();">Blond</a></li><li><a class="trn" onclick="brMustache();">Brown</a></li><li><a class="trn" onclick="bwMustache();">Black & White</a></li></ul></li><li class="more"><a class="trn" href="#">Hats</a><ul><li><a class="trn" onclick="brHats();">Brown</a></li><li><a class="trn" onclick="bwHats();">Black & White</a></li></ul></li><li class="more"><a class="trn" href="#">Eyewear</a><ul><li><a class="trn" onclick="eyes();">Black</a></li><li><a class="trn" onclick="geyes();">Gold</a></li><li><a class="trn" onclick="beyes();">Green</a></li></ul></li></ul></li><li>
+			<a class="trn" href="#">Help</a>
+			<ul>
+				<li><a class="trn dots" data-target="help/shortcuts.shortcuts" href="#">Keyboard Shortcuts</a></li>
+				<li class="more">
+					<a class="trn" href="#">Language</a>
+					<ul>
+						<li><a data-target="help/translate.translate.en" href="#">English</a>
+						<li><div class="mid-line"></div></li>
+						<li><a data-target="help/translate.translate.zh" href="#">简体中文）</a>
+						<li><a data-target="help/translate.translate.es" href="#">Español</a>
+						<li><a data-target="help/translate.translate.fr" href="#">French</a>	
+						<li><a data-target="help/translate.translate.de" href="#">German</a>	
+						<li><a data-target="help/translate.translate.it" href="#">Italiano</a>
+						<li><a data-target="help/translate.translate.ja" href="#">Japanese</a>
+						<li><a data-target="help/translate.translate.ko" href="#">Korean</a>		
+						<li><a data-target="help/translate.translate.lt" href="#">Lietuvių</a>
+						<li><a data-target="help/translate.translate.pt" href="#">Portuguese</a>	
+						<li><a data-target="help/translate.translate.ru" href="#">Russian</a>	
+						<li><a data-target="help/translate.translate.tr" href="#">Turkish</a>	
+					</ul>
+				</li>
+			<li><a href="imageeditorhelp.aspx" target="_blank">Help Doc</a></li></ul>
+		</li>		
+	</ul>
