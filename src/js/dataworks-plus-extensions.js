@@ -22,13 +22,59 @@ export function updateDialogSize(dialog) {
 }
 
 export function updateConfigurationSize(config) {
-    const imageLoadedElement = document.getElementById('ImageLoaded');
-    if (!imageLoadedElement) {
-        console.warn(`ImageLoaded element not found`);
+    const sizer = document.getElementById('ImageLoaded');
+    if (!sizer) {
+        console.warn(`'ImageLoaded' element not found`);
         return;
     }
-    config.WIDTH = imageLoadedElement.naturalWidth;
-    config.HEIGHT = imageLoadedElement.naturalHeight;
+    config.WIDTH = sizer.naturalWidth;
+    config.HEIGHT = sizer.naturalHeight;
+}
+
+export function updateConfigurationVisibleSize(config) {
+    const sizer = document.getElementById('canvas_minipaint');
+    if (!sizer) {
+        console.warn(`'canvas_minipaint' element not found`);
+        return;
+    }
+    config.visible_width = sizer.width;
+    config.HEIGHT = sizer.height;
+}
+
+export function updatePreviewSize(preview) {
+    var sizer = document.getElementById('canvas_preview_wrapper_target');
+    if (!sizer) {
+        console.warn(`'canvas_preview_wrapper_target' element not found`);
+        return;
+    }
+    preview.PREVIEW_SIZE.w = sizer.offsetWidth;
+    preview.PREVIEW_SIZE.h = sizer.offsetHeight;
+}
+
+export async function injectPopupSaveCopyHandler(app) {
+    await sleep(2000);
+    const target = document.getElementById('popup_saveCopy');
+    if (!target) {
+        console.warn(`popup_saveCopy element not found`);
+        return;
+    }
+    target.onclick = function () {
+        if (config.REQUIRE_CROP?.value == '1') {
+            if (config.ASPECT == true) {
+                var img = _this.prepareCavasForServerSave();
+
+                $('#PMEditedPhoto').val(img);
+                goSaveAndBack();
+            } else {
+                reportError('Image requires cropping before being saved.');
+            }
+        } else {
+            var img = _this.prepareCavasForServerSave();
+
+            $('#PMEditedPhoto').val(img);
+            goSaveAndBack();
+        }
+    };
 }
 
 export function isLandscape() {
@@ -69,9 +115,21 @@ export function tweakMousePosition(settings, state) {
     }
 }
 
+export function callIfImageTooSmall(layer, cb) {
+    if (!config.REQUIRE_CROP?.value == '1') return;
+    setTimeout(function () {
+        if (
+            layer.width_original < _config2.default.MIN_WIDTH ||
+            layer.height_original < _config2.default.MIN_HEIGHT
+        ) {
+            $('#errorModalDimensions').modal('show');
+            cb();
+        }
+    }, 1000);
+}
+
 export function tweakLayout(app) {
     const tools_container = document.getElementById('tools_container');
-    tools_container.style.width = '16rem';
     const toolbarItems = Array.from(
         tools_container.querySelectorAll('span.item')
     );
@@ -80,16 +138,6 @@ export function tweakLayout(app) {
         if (title) {
             item.textContent = title;
         }
-        // remove any classname that is not one of "item", "trn", "active"
-        const classList = Array.from(item.classList);
-        classList.forEach((className) => {
-            if (!['item', 'trn', 'active'].includes(className)) {
-                item.classList.remove(className);
-            }
-        });
-
-        item.style.width = '100%';
-        item.style.textAlign = 'center';
     });
 
     aliasTool(app, 'rotate', 'image/rotate.rotate');
@@ -102,6 +150,10 @@ export function tweakLayout(app) {
     );
 }
 
+async function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function aliasTool(app, toolName, menuName) {
     const toolbarItem = document.querySelector(`span.item[id="${toolName}"]`);
     if (!toolbarItem) {
@@ -109,22 +161,10 @@ function aliasTool(app, toolName, menuName) {
         return;
     }
 
-    const [moduleName, functionName] = menuName.split('.');
-    const module = app.Tools.Base_gui.modules[moduleName];
-    if (!module) {
-        console.warn(`Module ${moduleName} not found`);
-        return;
-    }
-    const f = module && module[functionName];
-    if (!f) {
-        console.warn(
-            `Function ${functionName} not found in module ${moduleName}`
-        );
-        return;
-    }
-
     toolbarItem.addEventListener('click', () => {
-        f.apply(module);
+        // this should work since it is exactly what the menu is doing, but it does not
+        // it errors and breaks the tools
+        app.GUI.GUI_menu.emit('select_target', menuName, { parameters: null });
     });
 }
 

@@ -1,4 +1,7 @@
-import { enableDrawCenters } from '../dataworks-plus-extensions.js';
+import {
+    enableDrawCenters,
+    tweakMousePosition,
+} from '../dataworks-plus-extensions.js';
 /*
  * miniPaint - https://github.com/viliusle/miniPaint
  * author: Vilius L.
