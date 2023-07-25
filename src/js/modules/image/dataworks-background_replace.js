@@ -2,8 +2,6 @@ import { warn, reportError } from '../../dataworks-plus-extensions.js';
 import config from '../../config.js';
 import Dialog_class from '../../libs/popup.js';
 import Base_layers_class from '../../core/base-layers.js';
-import Helper_class from '../../libs/helpers.js';
-import ImageFilters_class from './../../libs/imagefilters.js';
 
 var instance = null;
 
@@ -17,8 +15,6 @@ class Effects_backgroundReplace_class {
 
         this.POP = new Dialog_class();
         this.Base_layers = new Base_layers_class();
-        this.Helper = new Helper_class();
-        this.ImageFilters = ImageFilters_class;
     }
 
     backgroundReplace() {
