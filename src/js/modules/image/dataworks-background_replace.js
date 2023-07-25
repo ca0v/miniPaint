@@ -1,4 +1,4 @@
-import { reportError } from '../../dataworks-plus-extensions.js';
+import { warn, reportError } from '../../dataworks-plus-extensions.js';
 import config from '../../config.js';
 import Dialog_class from '../../libs/popup.js';
 import Base_layers_class from '../../core/base-layers.js';
@@ -34,6 +34,14 @@ class Effects_backgroundReplace_class {
             title: 'Background Replace',
             preview: true,
             on_change: function on_change(params, canvas_preview, w, h) {
+                if (typeof Swal == 'undefined') {
+                    warn('Swal is not defined.');
+                    return;
+                }
+                if (typeof swal == 'undefined') {
+                    warn('swal is not defined.');
+                    return;
+                }
                 Swal.fire({
                     title: 'Processing...',
                     text: 'Please wait',
@@ -117,6 +125,14 @@ class Effects_backgroundReplace_class {
                 GetNewReplacement(_canvas, '#757575');
 
                 function GetNewReplacement(canvas, colorInput) {
+                    if (typeof Swal == 'undefined') {
+                        warn('Swal is not defined.');
+                        return;
+                    }
+                    if (typeof swal == 'undefined') {
+                        warn('swal is not defined.');
+                        return;
+                    }
                     Swal.fire({
                         title: 'Processing...',
                         text: 'Please wait',
@@ -180,14 +196,13 @@ class Effects_backgroundReplace_class {
             },
             params: [],
             on_finish: function on_finish(params) {
-                window.State.save();
-                _this.save(params);
+                _this.save_changes(params);
             },
         };
         this.POP.show(settings);
     }
 
-    save() {
+    save_changes(params) {
         //get canvas from layer
         this.Base_layers.convert_layer_to_canvas(null, true);
 
@@ -195,6 +210,10 @@ class Effects_backgroundReplace_class {
         const NewImage = document.getElementById(
             'backgroundReplaceImageHolder',
         );
+        if (!NewImage) {
+            warn("'#backgroundReplaceImageHolder' is not defined.");
+            return;
+        }
 
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
@@ -202,12 +221,18 @@ class Effects_backgroundReplace_class {
         canvas.height = NewImage.height;
 
         context.drawImage(NewImage, 0, 0);
-        var data = context.getImageData(0, 0, NewImage.width, NewImage.height);
+        const data = context.getImageData(
+            0,
+            0,
+            NewImage.width,
+            NewImage.height,
+        );
 
         ctx.putImageData(data, 0, 0);
 
         //save
-        this.Base_layers.update_layer_image(canvas);
+        //this.Base_layers.update_layer_image(canvas);
+        app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
     }
 }
 

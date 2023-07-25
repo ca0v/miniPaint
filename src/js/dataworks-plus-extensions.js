@@ -132,6 +132,11 @@ export function tweakMenuDefinition(menuDefinition) {
     {
         const imageMenuGroup = findMenuDefinition(menuDefinition, 'Image');
         removeMenuItem(imageMenuGroup.children, 'Color Palette');
+        appendMenuDefinition(imageMenuGroup.children, null, {
+            name: 'Background Replace',
+            ellipsis: true,
+            target: 'image/dataworks-background_replace.backgroundReplace',
+        });
     }
 
     {
