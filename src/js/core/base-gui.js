@@ -166,8 +166,11 @@ class Base_gui_class {
         var _this = this;
 
         //menu events
-        this.GUI_menu.on('select_target', async (target, object) => {
-            if (await interceptMenuItem(this, target, object)) return;
+        this.GUI_menu.on('select_target', (target, object) => {
+            if (interceptMenuItem(this, target, object)) {
+                log(`Intercepted menu item ${target}`);
+                return;
+            }
             var parts = target.split('.');
             var module = parts[0];
             var function_name = parts[1];
@@ -187,6 +190,7 @@ class Base_gui_class {
                 );
                 return;
             }
+
             this.modules[module][function_name](param);
         });
 

@@ -1,4 +1,4 @@
-import { activateTool } from '../dataworks-plus-extensions.js';
+import { activateTool, log } from '../dataworks-plus-extensions.js';
 import app from './../app.js';
 import config from './../config.js';
 import { Base_action } from './base.js';

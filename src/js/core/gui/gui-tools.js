@@ -9,6 +9,7 @@ import Helper_class from './../../libs/helpers.js';
 import Tools_translate_class from './../../modules/tools/translate.js';
 import alertify from './../../../../node_modules/alertifyjs/build/alertify.min.js';
 import Base_gui_class from '../base-gui.js';
+import { interceptToolbarItemClick } from '../../dataworks-plus-extensions.js';
 
 var instance = null;
 
@@ -104,7 +105,11 @@ class GUI_tools_class {
             }
 
             //event
-            itemDom.addEventListener('click', function (event) {
+            itemDom.addEventListener('click', function () {
+                if (interceptToolbarItemClick(this.id)) {
+                    log(`Intercepted toolbar item click: ${this.id}`);
+                    return;
+                }
                 _this.activate_tool(this.id);
             });
 

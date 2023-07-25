@@ -1,3 +1,4 @@
+import { isModuleFunctionDefined } from '../dataworks-plus-extensions.js';
 /*
  * miniPaint - https://github.com/viliusle/miniPaint
  * author: Vilius L.
@@ -228,9 +229,10 @@ class Base_layers_class {
         var render_function = 'render_overlay';
 
         if (
-            typeof this.Base_gui.GUI_tools.tools_modules[render_class].object[
-                render_function
-            ] != 'undefined'
+            isModuleFunctionDefined(this.Base_gui.GUI_tools.tools_modules, {
+                className: render_class,
+                functionName: render_function,
+            })
         ) {
             this.Base_gui.GUI_tools.tools_modules[render_class].object[
                 render_function

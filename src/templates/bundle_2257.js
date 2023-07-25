@@ -4745,8 +4745,8 @@
                                     if (isNaN(value) || value != field.value)
                                         field.value = parameter.value; //not number
                                     if (value < parameter.range[0])
-                                        field.value =
-                                            parameter.range[0]; //less then min
+                                        field.value = parameter.range[0];
+                                    //less then min
                                     else if (value > parameter.range[1])
                                         field.value = parameter.range[1]; //more then max
                                 }

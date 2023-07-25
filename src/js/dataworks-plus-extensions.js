@@ -141,6 +141,10 @@ export function tweakMenuDefinition(menuDefinition) {
 
     {
         const effectsMenuGroup = findMenuDefinition(menuDefinition, 'Effects');
+        const commonFiltersMenuGroup = findMenuDefinition(
+            effectsMenuGroup.children,
+            'Common Filters',
+        );
 
         'Black and White,Box Blur,Denoise,Dither,Dot Screen,Edge,Emboss,Enrich,Grains,Heatmap,Mosaic,Oil,Sharpen,Solarize,Tilt Shift,Vignette,Vibrance,Vintage,Zoom Blur'
             .split(',')
@@ -148,8 +152,18 @@ export function tweakMenuDefinition(menuDefinition) {
                 removeMenuItem(effectsMenuGroup.children, menuTitle);
             });
 
-        // 'Gaussian Blur,Brightness,Contrast,Grayscale,Hue Rotate,Negative,Saturate,Sepia,Shadow'
-        removeMenuItem(effectsMenuGroup.children, 'Common Filters');
+        const grayscaleMenuItem = findMenuDefinition(
+            commonFiltersMenuGroup.children,
+            'Grayscale',
+        );
+
+        'Gaussian Blur,Brightness,Contrast,Grayscale,Hue Rotate,Negative,Saturate,Sepia,Shadow'
+            .split(',')
+            .forEach((menuTitle) => {
+                removeMenuItem(commonFiltersMenuGroup.children, menuTitle);
+            });
+
+        // removeMenuItem(effectsMenuGroup.children, 'Common Filters');
         removeMenuItem(effectsMenuGroup.children, 'Instagram Filters');
 
         // Completely obliterate the existing 'Tools' menu
@@ -162,6 +176,11 @@ export function tweakMenuDefinition(menuDefinition) {
                 children: [],
             },
         );
+
+        appendMenuDefinition(toolsMenuGroup.children, null, grayscaleMenuItem);
+        appendMenuDefinition(toolsMenuGroup.children, null, {
+            divider: true,
+        });
 
         // the "shapes" handler calls app.GUI_tools.activate_tool
         'Line,Rectangle,Ellipse,Text,Clone,Blur,Sharpen,Desaturate'
@@ -433,12 +452,27 @@ function lastItem(items) {
     return items[items.length - 1];
 }
 
-export async function interceptMenuItem(app, target, object) {
+/**
+ * The toolbar registers a click event which invokes activate_tool which fails when
+ * the tool is not registered, this prevents that from happening.
+ */
+export function interceptToolbarItemClick(id) {
+    switch (id) {
+        case 'brightness':
+        case 'grayscale':
+        case 'rotate':
+            return true;
+        default:
+            return false;
+    }
+}
+
+export function interceptMenuItem(app, target, object) {
     const [area, name] = target.split('.');
     switch (area) {
         case 'shapes':
             log(`activate_tool: ${name}`);
-            await app.GUI_tools.activate_tool(name);
+            app.GUI_tools.activate_tool(name);
             return true;
         case 'beard':
             switch (name) {
@@ -513,4 +547,21 @@ export function activateTool(toolName) {
         return;
     }
     target.classList.add('active');
+}
+
+export function isModuleFunctionDefined(modules, options) {
+    const { className, functionName } = options;
+    if (!modules[className]) {
+        log(`Module ${className} not found`);
+        return false;
+    }
+    if (!modules[className].object) {
+        log(`Module ${className} object not found`);
+        return false;
+    }
+    if (!modules[className].object[functionName]) {
+        log(`Module ${className} function ${functionName} not found`);
+        return false;
+    }
+    return !!modules[className]?.object[functionName];
 }
