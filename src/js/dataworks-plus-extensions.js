@@ -269,6 +269,13 @@ export function tweakMenuDefinition(menuDefinition) {
             });
         });
     }
+
+    {
+        const helpMenuGroup = findMenuDefinition(menuDefinition, 'Help');
+        // Report Issues
+        removeMenuItem(helpMenuGroup.children, 'Report Issues');
+        removeMenuItem(helpMenuGroup.children, 'About');
+    }
 }
 
 function removeMenuItem(menuItems, name) {
