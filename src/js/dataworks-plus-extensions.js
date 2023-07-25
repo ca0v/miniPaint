@@ -475,6 +475,7 @@ export function interceptToolbarItemClick(id) {
         case 'rotate':
             return true;
         default:
+            log(`no intercept for ${id}`);
             return false;
     }
 }
@@ -539,7 +540,20 @@ export function interceptMenuItem(app, target, object) {
                     break;
             }
             return true;
+        case 'edit/restore':
+            switch (name) {
+                case 'restore':
+                    if (typeof fnLoadOriginalImage === 'function') {
+                        fnLoadOriginalImage();
+                    } else {
+                        warn(`fnLoadOriginalImage not found`);
+                    }
+                    return true;
+                default:
+                    return false;
+            }
         default:
+            log(`no intercept for ${target}`);
             return false;
     }
 }

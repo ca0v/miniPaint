@@ -1,6 +1,7 @@
 import {
     updateConfigurationSize,
     interceptMenuItem,
+    log,
 } from '../dataworks-plus-extensions.js';
 
 /*
