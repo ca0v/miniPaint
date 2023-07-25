@@ -92,14 +92,22 @@ export function tweakMenuDefinition(menuDefinition) {
         const fileMenuGroup = findMenuDefinition(menuDefinition, 'File');
         removeMenuItem(fileMenuGroup.children, 'New');
 
+        'Search Images,Save As,Save As Data URL,Quick Save,Quick Load'
+            .split(',')
+            .forEach((menuTitle) => {
+                removeMenuItem(fileMenuGroup.children, menuTitle);
+            });
+
         const fileOpenMenuItem = findMenuDefinition(
             fileMenuGroup.children,
             'Open',
         );
-        removeMenuItem(fileOpenMenuItem.children, 'Open URL');
-        removeMenuItem(fileOpenMenuItem.children, 'Open Data URL');
-        removeMenuItem(fileMenuGroup.children, 'Quick Save');
-        removeMenuItem(fileMenuGroup.children, 'Quick Load');
+
+        'Open URL,Open Data URL,Open Test Template,Open from Webcam'
+            .split(',')
+            .forEach((menuTitle) => {
+                removeMenuItem(fileOpenMenuItem.children, menuTitle);
+            });
 
         const saveAndReturnMenuItem = appendMenuDefinition(
             fileMenuGroup.children,
@@ -151,18 +159,13 @@ export function tweakMenuDefinition(menuDefinition) {
             'Common Filters',
         );
 
-        'Black and White,Box Blur,Denoise,Dither,Dot Screen,Edge,Emboss,Enrich,Grains,Heatmap,Mosaic,Oil,Sharpen,Solarize,Tilt Shift,Vignette,Vibrance,Vintage,Zoom Blur'
+        'Borders,Blueprint,Night Vision,Pencil,Box Blur,Denoise,Dither,Dot Screen,Edge,Emboss,Grains,Heatmap,Mosaic,Oil,Solarize,Tilt Shift,Vignette,Vibrance,Vintage,Zoom Blur'
             .split(',')
             .forEach((menuTitle) => {
                 removeMenuItem(effectsMenuGroup.children, menuTitle);
             });
 
-        const grayscaleMenuItem = findMenuDefinition(
-            commonFiltersMenuGroup.children,
-            'Grayscale',
-        );
-
-        'Gaussian Blur,Brightness,Contrast,Grayscale,Hue Rotate,Negative,Saturate,Sepia,Shadow'
+        'Gaussian Blur,Hue Rotate,Negative,Sepia,Shadow'
             .split(',')
             .forEach((menuTitle) => {
                 removeMenuItem(commonFiltersMenuGroup.children, menuTitle);
@@ -182,7 +185,6 @@ export function tweakMenuDefinition(menuDefinition) {
             },
         );
 
-        appendMenuDefinition(toolsMenuGroup.children, null, grayscaleMenuItem);
         appendMenuDefinition(toolsMenuGroup.children, null, {
             divider: true,
         });
@@ -285,7 +287,10 @@ export function tweakMenuDefinition(menuDefinition) {
 
 function removeMenuItem(menuItems, name) {
     const index = menuItems.findIndex((item) => item.name === name);
-    if (index < 0) throw `Menu item '${name}' not found`;
+    if (index < 0) {
+        warn(`Menu item '${name}' not found`);
+        return;
+    }
     menuItems.splice(index, 1);
 }
 
