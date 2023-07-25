@@ -398,9 +398,11 @@ function aliasTool(app, toolName, menuName) {
 
 function removeFromConfig(config, name) {
     const index = config.TOOLS.findIndex((tool) => tool.name === name);
-    if (index !== -1) {
-        config.TOOLS.splice(index, 1);
+    if (index === -1) {
+        warn(`Tool ${name} not found`);
+        return;
     }
+    config.TOOLS.splice(index, 1);
 }
 
 function modifyFromConfig(config, name) {
@@ -428,10 +430,18 @@ export function tweakConfig(config) {
 
     config.need_render = true;
 
-    removeFromConfig(config, 'selection');
+    'selection,shape,media,text,clone,blur,sharpen,desaturate,bulge_pinch,animation'
+        .split(',')
+        .forEach((name) => {
+            removeFromConfig(config, name);
+        });
 
-    modifyFromConfig(config, 'crop').crop = undefined;
-    modifyFromConfig(config, 'crop').apply_Crop = true;
+    const crop = modifyFromConfig(config, 'crop');
+    crop.crop = undefined;
+    crop.apply_Crop = true;
+
+    removeFromConfig(config, crop.name);
+    insertAfterConfig(config, 'select', crop);
 
     insertAfterConfig(config, 'crop', {
         name: 'rotate',
