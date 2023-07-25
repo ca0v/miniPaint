@@ -48,7 +48,7 @@ class File_save_class {
 
         this.default_extension = 'PNG';
 
-        injectPopupSaveCopyHandler(this);
+        injectPopupSaveCopyHandler(config);
     }
 
     set_events() {
@@ -622,7 +622,7 @@ class File_save_class {
             if ($.isServerSave) {
                 var canvas = document.getElementById('canvas_minipaint');
                 if (!canvas) {
-                    console.warn(`'canvas_minipaint' element not found`);
+                    warn(`'canvas_minipaint' element not found`);
                     return;
                 }
                 var img = canvas.toDataURL('image/jpeg');

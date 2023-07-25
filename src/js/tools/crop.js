@@ -1,3 +1,5 @@
+import { log } from '../dataworks-plus-extensions.js';
+
 import app from './../app.js';
 import config from './../config.js';
 import Base_tools_class from './../core/base-tools.js';
@@ -75,7 +77,7 @@ class Crop_class extends Base_tools_class {
             mouse.y < this.selection.height
         ) {
             //move
-            console.log('dataworks is forcing a move here', {
+            log('dataworks is forcing a move here', {
                 mouse,
                 selection: this.selection,
             });

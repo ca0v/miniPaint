@@ -632,7 +632,9 @@ class Base_selection_class {
                         }
                     }
                 }
-                tweakMousePosition(settings, {
+                tweakMousePosition({
+                    config,
+                    settings,
                     is_drag_type_left,
                     is_drag_type_right,
                     is_drag_type_top,

@@ -100,7 +100,7 @@ class Base_layers_class {
             'main'
         );
 
-        setAspect();
+        setAspect(config);
 
         this.render(true);
     }

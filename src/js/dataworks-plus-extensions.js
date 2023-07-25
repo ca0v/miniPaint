@@ -4,7 +4,7 @@ import alertify from '../../node_modules/alertifyjs/build/alertify.min.js';
 
 export const enableDrawCenters = false;
 
-export function setAspect() {
+export function setAspect(config) {
     config.ASPECT = (config.HEIGHT / config.WIDTH).toFixed(2) == config.RATIO;
 }
 
@@ -15,7 +15,7 @@ export function reportError(message) {
 export function updateDialogSize(dialog) {
     const imageLoadedElement = document.getElementById('ImageLoaded');
     if (!imageLoadedElement) {
-        console.warn(`ImageLoaded element not found`);
+        warn(`ImageLoaded element not found`);
         return;
     }
     dialog.width_mini = imageLoadedElement.naturalWidth;
@@ -25,7 +25,7 @@ export function updateDialogSize(dialog) {
 export function updateConfigurationSize(config) {
     const sizer = document.getElementById('ImageLoaded');
     if (!sizer) {
-        console.warn(`'ImageLoaded' element not found`);
+        warn(`'ImageLoaded' element not found`);
         return;
     }
     config.WIDTH = sizer.naturalWidth;
@@ -35,7 +35,7 @@ export function updateConfigurationSize(config) {
 export function updateConfigurationVisibleSize(config) {
     const sizer = document.getElementById('canvas_minipaint');
     if (!sizer) {
-        console.warn(`'canvas_minipaint' element not found`);
+        warn(`'canvas_minipaint' element not found`);
         return;
     }
     config.visible_width = sizer.width;
@@ -45,18 +45,18 @@ export function updateConfigurationVisibleSize(config) {
 export function updatePreviewSize(preview) {
     var sizer = document.getElementById('canvas_preview_wrapper_target');
     if (!sizer) {
-        console.warn(`'canvas_preview_wrapper_target' element not found`);
+        warn(`'canvas_preview_wrapper_target' element not found`);
         return;
     }
     preview.PREVIEW_SIZE.w = sizer.offsetWidth;
     preview.PREVIEW_SIZE.h = sizer.offsetHeight;
 }
 
-export async function injectPopupSaveCopyHandler(app) {
+export async function injectPopupSaveCopyHandler(config) {
     await sleep(2000);
     const target = document.getElementById('popup_saveCopy');
     if (!target) {
-        console.warn(`popup_saveCopy element not found`);
+        warn(`popup_saveCopy element not found`);
         return;
     }
     target.onclick = function () {
@@ -81,7 +81,7 @@ export async function injectPopupSaveCopyHandler(app) {
 export function isLandscape() {
     const canvasPreview = document.getElementById('canvas_preview');
     if (!canvasPreview) {
-        console.warn(`canvas_preview element not found`);
+        warn(`canvas_preview element not found`);
         return;
     }
     return canvasPreview.width > canvasPreview.height;
@@ -164,7 +164,7 @@ export function tweakMenuDefinition(menuDefinition) {
         );
 
         // the "shapes" handler calls app.GUI_tools.activate_tool
-        'Line,Rectangle,Circle,Text,Clone,Blur,Sharpen,Desaturate'
+        'Line,Rectangle,Ellipse,Text,Clone,Blur,Sharpen,Desaturate'
             .split(',')
             .reverse()
             .forEach((menuTitle) => {
@@ -277,18 +277,20 @@ function appendMenuDefinition(children, priorChildItem, childItem) {
     return childItem;
 }
 
-export function tweakMousePosition(settings, state) {
+export function tweakMousePosition(state) {
     const selectActive = $('#select').hasClass('active');
     if (!selectActive) return;
 
     const {
+        config,
+        settings,
         is_drag_type_left,
         is_drag_type_right,
         is_drag_type_top,
         is_drag_type_bottom,
+        dx,
     } = state;
 
-    const { dx } = state;
     const dy = dx * config.RATIO;
 
     const allowUpdateWidth =
@@ -320,6 +322,8 @@ export function callIfImageTooSmall(layer, cb) {
 }
 
 export function tweakLayout(app) {
+    // prevent prompting user when navigating away
+    app.GUI.Tools_settings.save_setting('exit_confirm', false);
     const tools_container = document.getElementById('tools_container');
     const toolbarItems = Array.from(
         tools_container.querySelectorAll('span.item')
@@ -348,7 +352,7 @@ async function sleep(ms) {
 function aliasTool(app, toolName, menuName) {
     const toolbarItem = document.querySelector(`span.item[id="${toolName}"]`);
     if (!toolbarItem) {
-        console.warn(`Toolbar item ${toolName} not found`);
+        warn(`Toolbar item ${toolName} not found`);
         return;
     }
 
@@ -429,11 +433,12 @@ function lastItem(items) {
     return items[items.length - 1];
 }
 
-export function interceptMenuItem(app, target, object) {
+export async function interceptMenuItem(app, target, object) {
     const [area, name] = target.split('.');
     switch (area) {
         case 'shapes':
-            app.GUI_tools.activate_tool(name);
+            log(`activate_tool: ${name}`);
+            await app.GUI_tools.activate_tool(name);
             return true;
         case 'beard':
             switch (name) {
@@ -491,4 +496,21 @@ export function interceptMenuItem(app, target, object) {
         default:
             return false;
     }
+}
+
+export function log(...messages) {
+    console.log(...messages);
+}
+
+export function warn(...messages) {
+    console.warn(...messages);
+}
+
+export function activateTool(toolName) {
+    const target = document.querySelector(`#tools_container .${toolName}`);
+    if (!target) {
+        warn(`Tool ${toolName} not found`);
+        return;
+    }
+    target.classList.add('active');
 }
