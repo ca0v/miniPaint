@@ -34,10 +34,6 @@ class Effects_backgroundReplace_class {
                     warn('Swal is not defined.');
                     return;
                 }
-                if (typeof swal == 'undefined') {
-                    warn('swal is not defined.');
-                    return;
-                }
                 Swal.fire({
                     title: 'Processing...',
                     text: 'Please wait',
@@ -125,10 +121,6 @@ class Effects_backgroundReplace_class {
                         warn('Swal is not defined.');
                         return;
                     }
-                    if (typeof swal == 'undefined') {
-                        warn('swal is not defined.');
-                        return;
-                    }
                     Swal.fire({
                         title: 'Processing...',
                         text: 'Please wait',
@@ -171,11 +163,11 @@ class Effects_backgroundReplace_class {
 
                                     canvas_preview.putImageData(myData, 0, 0);
 
-                                    swal.close();
+                                    Swal.close();
                                 };
                             },
                             error: function (e) {
-                                swal.close();
+                                Swal.close();
 
                                 reportError('Error Retrieving Image.');
                                 return;
@@ -183,7 +175,7 @@ class Effects_backgroundReplace_class {
                         });
                     } else {
                         // Error
-                        swal.close();
+                        Swal.close();
 
                         reportError('Error Sending Image.');
                         return;
