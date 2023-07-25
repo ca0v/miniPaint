@@ -572,3 +572,18 @@ export function isModuleFunctionDefined(modules, options) {
     }
     return !!modules[className]?.object[functionName];
 }
+
+export function onFinishRotate(it, options) {
+    const { config } = options;
+    const [w, h] = [config.WIDTH, config.HEIGHT];
+    it.PREVIEW_SIZE = { w, h };
+    const canvas_preview = document.getElementById('canvas_preview');
+    if (canvas_preview) {
+        canvas_preview.width = w;
+        canvas_preview.height = h;
+    } else {
+        warn(`canvas_preview is not defined`);
+    }
+    it.Base_gui.GUI_preview.PREVIEW_SIZE.w = w;
+    it.Base_gui.GUI_preview.PREVIEW_SIZE.h = h;
+}
