@@ -1,4 +1,4 @@
-import { onFinishRotate } from '../../dataworks-plus-extensions.js';
+import { warn, onFinishRotate } from '../../dataworks-plus-extensions.js';
 import config from './../../config.js';
 import Dialog_class from './../../libs/popup.js';
 import Base_layers_class from './../../core/base-layers.js';
@@ -154,6 +154,16 @@ class Image_rotate_class {
         new_x = Math.ceil(Math.round(new_x * 1000) / 1000);
         new_y = Math.ceil(Math.round(new_y * 1000) / 1000);
 
+        {
+            // dataworks
+            // bundle_9771.js line 51519 contains custom logic for when the rotate is 0 mod 90, but it's not clear why
+            // seems to do the identical logic except it bails when there is more than one layer.
+            if (0 === config.layer.rotate % 90 && config.layers.length === 1) {
+                warn(
+                    'custom dataworks logic not implemented, doing default behavior',
+                );
+            }
+        }
         if (new_x > config.WIDTH || new_y > config.HEIGHT) {
             var dx = 0;
             var dy = 0;
