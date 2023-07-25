@@ -70,5 +70,5 @@ window.addEventListener(
 
         tweakLayout(app);
     },
-    false
+    false,
 );

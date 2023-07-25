@@ -97,7 +97,7 @@ class Base_layers_class {
         this.Base_selection = new Base_selection_class(
             this.ctx,
             sel_config,
-            'main'
+            'main',
         );
 
         setAspect(config);
@@ -118,7 +118,7 @@ class Base_layers_class {
             0,
             0,
             config.WIDTH * config.ZOOM,
-            config.HEIGHT * config.ZOOM
+            config.HEIGHT * config.ZOOM,
         );
     }
 
@@ -162,7 +162,7 @@ class Base_layers_class {
                 zoomView.scaleAt(
                     this.Base_gui.GUI_preview.zoom_data.x,
                     this.Base_gui.GUI_preview.zoom_data.y,
-                    config.ZOOM / this.last_zoom
+                    config.ZOOM / this.last_zoom,
                 );
             } else if (this.Base_gui.GUI_preview.zoom_data.move_pos != null) {
                 //move visible window
@@ -183,7 +183,7 @@ class Base_layers_class {
             const newCanvas = this.create_new_canvas(
                 null,
                 config.WIDTH,
-                config.HEIGHT
+                config.HEIGHT,
             );
 
             this.render_objects(this.ctx, newCanvas, layers_sorted, () => {
@@ -341,7 +341,7 @@ class Base_layers_class {
                         0,
                         0,
                         tempCanvas.width,
-                        tempCanvas.height
+                        tempCanvas.height,
                     );
                 }
             } else {
@@ -390,7 +390,7 @@ class Base_layers_class {
 
             ctx.translate(
                 object.x + object.width / 2,
-                object.y + object.height / 2
+                object.y + object.height / 2,
             );
             ctx.rotate((object.rotate * Math.PI) / 180);
             // TODO - Not sure why the check should be with null,
@@ -400,7 +400,7 @@ class Base_layers_class {
                 -object.width / 2,
                 -object.height / 2,
                 object.width,
-                object.height
+                object.height,
             );
 
             ctx.restore();
@@ -503,7 +503,7 @@ class Base_layers_class {
      */
     async insert(settings, can_automate = true) {
         return app.State.do_action(
-            new app.Actions.Insert_layer_action(settings, can_automate)
+            new app.Actions.Insert_layer_action(settings, can_automate),
         );
     }
 
@@ -521,8 +521,8 @@ class Base_layers_class {
                 width,
                 height,
                 layer_id,
-                can_automate
-            )
+                can_automate,
+            ),
         );
     }
 
@@ -553,7 +553,7 @@ class Base_layers_class {
      */
     async delete(id, force) {
         return app.State.do_action(
-            new app.Actions.Delete_layer_action(id, force)
+            new app.Actions.Delete_layer_action(id, force),
         );
     }
 
@@ -562,7 +562,7 @@ class Base_layers_class {
      */
     async reset_layers(auto_insert) {
         return app.State.do_action(
-            new app.Actions.Reset_layers_action(auto_insert)
+            new app.Actions.Reset_layers_action(auto_insert),
         );
     }
 
@@ -573,7 +573,7 @@ class Base_layers_class {
      */
     async toggle_visibility(id) {
         return app.State.do_action(
-            new app.Actions.Toggle_layer_visibility_action(id)
+            new app.Actions.Toggle_layer_visibility_action(id),
         );
     }
 
@@ -608,7 +608,7 @@ class Base_layers_class {
         return app.State.do_action(
             new app.Actions.Update_layer_action(id, {
                 opacity: value,
-            })
+            }),
         );
     }
 
@@ -629,7 +629,7 @@ class Base_layers_class {
      */
     async move(id, direction) {
         return app.State.do_action(
-            new app.Actions.Reorder_layer_action(id, direction)
+            new app.Actions.Reorder_layer_action(id, direction),
         );
     }
 
@@ -639,7 +639,7 @@ class Base_layers_class {
     get_sorted_layers() {
         return config.layers.concat().sort(
             //sort function
-            (a, b) => b.order - a.order
+            (a, b) => b.order - a.order,
         );
     }
 
@@ -732,7 +732,7 @@ class Base_layers_class {
      */
     add_filter(layer_id, name, params) {
         return app.State.do_action(
-            new app.Actions.Add_layer_filter_action(layer_id, name, params)
+            new app.Actions.Add_layer_filter_action(layer_id, name, params),
         );
     }
 
@@ -744,7 +744,7 @@ class Base_layers_class {
      */
     delete_filter(layer_id, filter_id) {
         return app.State.do_action(
-            new app.Actions.Delete_layer_filter_action(layer_id, filter_id)
+            new app.Actions.Delete_layer_filter_action(layer_id, filter_id),
         );
     }
 
@@ -772,7 +772,7 @@ class Base_layers_class {
                 if (layer_id != null && value.id != layer_id) {
                     return true;
                 }
-            }
+            },
         );
     }
     /**
@@ -828,7 +828,7 @@ class Base_layers_class {
                         w,
                         h,
                         offset_x,
-                        offset_y
+                        offset_y,
                     );
                 }
             }
@@ -848,7 +848,7 @@ class Base_layers_class {
      */
     update_layer_image(canvas, layer_id) {
         return app.State.do_action(
-            new app.Actions.Update_layer_image_action(canvas, layer_id)
+            new app.Actions.Update_layer_image_action(canvas, layer_id),
         );
     }
 

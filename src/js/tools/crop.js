@@ -39,7 +39,7 @@ class Crop_class extends Base_tools_class {
         this.Base_selection = new Base_selection_class(
             ctx,
             sel_config,
-            this.name
+            this.name,
         );
     }
 
@@ -168,7 +168,7 @@ class Crop_class extends Base_tools_class {
             if ($('#requireDimensions').val() == 1) {
                 if (_config2.default.layers.length == 1) {
                     var pixelMod = Math.ceil(
-                        $('#ImageLoaded').width() / _config2.default.WIDTH
+                        $('#ImageLoaded').width() / _config2.default.WIDTH,
                     );
                     var pixelWidth = Math.ceil(pixelMod * this.selection.width);
                     if (pixelWidth < $('#minWidth').val()) {
@@ -241,8 +241,8 @@ class Crop_class extends Base_tools_class {
                 this.selection.y,
                 this.selection.width,
                 this.selection.height,
-                this.mousedown_selection
-            )
+                this.mousedown_selection,
+            ),
         );
     }
 
@@ -322,7 +322,7 @@ class Crop_class extends Base_tools_class {
                 'Crop on rotated layer is not supported. Convert it to raster to continue.' +
                     '(' +
                     rotated_name +
-                    ')'
+                    ')',
             );
             return;
         }
@@ -380,7 +380,7 @@ class Crop_class extends Base_tools_class {
                 canvas.getContext('2d').drawImage(link.link, 0, 0);
                 ctx.translate(0, 0);
                 actions.push(
-                    new app.Actions.Update_layer_image_action(canvas, link.id)
+                    new app.Actions.Update_layer_image_action(canvas, link.id),
                 );
 
                 //update attributes
@@ -400,7 +400,7 @@ class Crop_class extends Base_tools_class {
                     height,
                     width_original,
                     height_original,
-                })
+                }),
             );
         }
 
@@ -411,10 +411,10 @@ class Crop_class extends Base_tools_class {
                 HEIGHT: parseInt(selection.height),
             }),
             new app.Actions.Prepare_canvas_action('do'),
-            new app.Actions.Reset_selection_action(this.selection)
+            new app.Actions.Reset_selection_action(this.selection),
         );
         await app.State.do_action(
-            new app.Actions.Bundle_action('crop_tool', 'Crop Tool', actions)
+            new app.Actions.Bundle_action('crop_tool', 'Crop Tool', actions),
         );
     }
 

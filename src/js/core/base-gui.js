@@ -180,7 +180,10 @@ class Base_gui_class {
             }
             if (this.modules[module][function_name] == undefined) {
                 alertify.error(
-                    'Module function not found. ' + module + '.' + function_name
+                    'Module function not found. ' +
+                        module +
+                        '.' +
+                        function_name,
                 );
                 return;
             }
@@ -223,7 +226,7 @@ class Base_gui_class {
                 _this.prepare_canvas();
                 config.need_render = true;
             },
-            false
+            false,
         );
         this.check_canvas_offset();
 
@@ -246,7 +249,7 @@ class Base_gui_class {
             function (e) {
                 e.preventDefault();
             },
-            false
+            false,
         );
     }
 
@@ -473,11 +476,11 @@ class Base_gui_class {
         //find visible size in pixels, but make sure its correct even if image smaller then screen
         var w = Math.min(
             Math.ceil(config.WIDTH * config.ZOOM),
-            Math.ceil(page_w / config.ZOOM)
+            Math.ceil(page_w / config.ZOOM),
         );
         var h = Math.min(
             Math.ceil(config.HEIGHT * config.ZOOM),
-            Math.ceil(page_h / config.ZOOM)
+            Math.ceil(page_h / config.ZOOM),
         );
 
         return {

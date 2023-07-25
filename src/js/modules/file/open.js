@@ -67,7 +67,7 @@ class File_open_class {
                     event.preventDefault();
                 }
             },
-            false
+            false,
         );
     }
 
@@ -128,7 +128,7 @@ class File_open_class {
             function (e) {
                 _this.open_handler(e);
             },
-            false
+            false,
         );
 
         //force click
@@ -149,7 +149,7 @@ class File_open_class {
 
         function handleError(error) {
             alertify.error(
-                'Sorry, cold not load getUserMedia() data: ' + error
+                'Sorry, cold not load getUserMedia() data: ' + error,
             );
         }
 
@@ -193,10 +193,10 @@ class File_open_class {
                                 height,
                                 null,
                                 true,
-                                true
+                                true,
                             ),
-                        ]
-                    )
+                        ],
+                    ),
                 );
 
                 //destroy
@@ -238,7 +238,7 @@ class File_open_class {
             function (e) {
                 _this.open_handler(e);
             },
-            false
+            false,
         );
 
         //force click
@@ -297,10 +297,10 @@ class File_open_class {
                             img.height,
                             null,
                             true,
-                            true
+                            true,
                         ),
-                    ]
-                )
+                    ],
+                ),
             );
             img.onload = function () {
                 config.need_render = true;
@@ -308,7 +308,7 @@ class File_open_class {
         };
         img.onerror = function (ex) {
             alertify.error(
-                'Sorry, image could not be loaded. Try copy image and paste it.'
+                'Sorry, image could not be loaded. Try copy image and paste it.',
             );
         };
         img.src = data;
@@ -392,13 +392,13 @@ class File_open_class {
                         new app.Actions.Bundle_action(
                             'open_image',
                             'Open Image',
-                            [new app.Actions.Insert_layer_action(new_layer)]
-                        )
+                            [new app.Actions.Insert_layer_action(new_layer)],
+                        ),
                     );
 
                     callIfImageTooSmall(
                         _this.Base_layers.get_sorted_layers()[0],
-                        () => _this.Base_state.undo()
+                        () => _this.Base_state.undo(),
                     );
                 } else {
                     //json
@@ -444,7 +444,7 @@ class File_open_class {
                         //below is fix for firefox, it has empty type
                         (this.file.type == '' &&
                             this.file.name.match(
-                                /\.(png|jpg|jpeg|webp|gif|avif)/g
+                                /\.(png|jpg|jpeg|webp|gif|avif)/g,
                             ))
                     ) {
                         //image
@@ -458,8 +458,12 @@ class File_open_class {
                             new app.Actions.Bundle_action(
                                 'open_image',
                                 'Open Image',
-                                [new app.Actions.Insert_layer_action(new_layer)]
-                            )
+                                [
+                                    new app.Actions.Insert_layer_action(
+                                        new_layer,
+                                    ),
+                                ],
+                            ),
                         );
                     }
                 };
@@ -577,15 +581,15 @@ class File_open_class {
                             img.height,
                             null,
                             true,
-                            true
+                            true,
                         ),
-                    ]
-                )
+                    ],
+                ),
             );
         };
         img.onerror = function (ex) {
             alertify.error(
-                'Sorry, image could not be loaded. Try copy image and paste it.'
+                'Sorry, image could not be loaded. Try copy image and paste it.',
             );
         };
         img.src = url;
@@ -724,7 +728,7 @@ class File_open_class {
             }),
             new app.Actions.Reset_layers_action(),
             new app.Actions.Prepare_canvas_action('do'),
-            new app.Actions.Refresh_action_attributes_action('do')
+            new app.Actions.Refresh_action_attributes_action('do'),
         );
 
         var max_id_order = 0;
@@ -750,8 +754,8 @@ class File_open_class {
             actions.push(
                 new app.Actions.Select_layer_action(
                     json.info.layer_active,
-                    true
-                )
+                    true,
+                ),
             );
         }
         if (json.info.guides != undefined) {
@@ -761,20 +765,20 @@ class File_open_class {
             new app.Actions.Set_object_property_action(
                 this.Base_layers,
                 'auto_increment',
-                max_id_order + 1
+                max_id_order + 1,
             ),
             new app.Actions.Update_config_action({
                 WIDTH: parseInt(json.info.width),
                 HEIGHT: parseInt(json.info.height),
             }),
-            new app.Actions.Prepare_canvas_action('do')
+            new app.Actions.Prepare_canvas_action('do'),
         );
         await app.State.do_action(
             new app.Actions.Bundle_action(
                 'open_json_file',
                 'Open JSON File',
-                actions
-            )
+                actions,
+            ),
         );
     }
 
@@ -801,7 +805,7 @@ class File_open_class {
         if (object.type != undefined) exif_data.general.Type = object.type;
         if (object.lastModified != undefined)
             exif_data.general['Last modified'] = this.Helper.format_time(
-                object.lastModified
+                object.lastModified,
             );
 
         return exif_data;

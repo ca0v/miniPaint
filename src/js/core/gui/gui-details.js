@@ -7,7 +7,7 @@ import app from './../../app.js';
 import config from './../../config.js';
 import Dialog_class from './../../libs/popup.js';
 import Text_class from './../../tools/text.js';
-import Base_layers_class from "../base-layers";
+import Base_layers_class from '../base-layers';
 import Tools_settings_class from './../../modules/tools/settings.js';
 import Helper_class from './../../libs/helpers.js';
 
@@ -114,602 +114,751 @@ var template = `
  * GUI class responsible for rendering selected layer details block on right sidebar
  */
 class GUI_details_class {
+    constructor() {
+        this.POP = new Dialog_class();
+        this.Text = new Text_class();
+        this.Base_layers = new Base_layers_class();
+        this.Tools_settings = new Tools_settings_class();
+        this.Helper = new Helper_class();
+        this.layer_details_active = false;
+    }
 
-	constructor() {
-		this.POP = new Dialog_class();
-		this.Text = new Text_class();
-		this.Base_layers = new Base_layers_class();
-		this.Tools_settings = new Tools_settings_class();
-		this.Helper = new Helper_class();
-		this.layer_details_active = false;
-	}
+    render_main_details() {
+        document.getElementById('toggle_details').innerHTML = template;
 
-	render_main_details() {
-		document.getElementById('toggle_details').innerHTML = template;
+        this.render_details(true);
+    }
 
-		this.render_details(true);
-	}
+    render_details(events = false) {
+        this.render_general('x', events);
+        this.render_general('y', events);
+        this.render_general('width', events);
+        this.render_general('height', events);
 
-	render_details(events = false) {
-		this.render_general('x', events);
-		this.render_general('y', events);
-		this.render_general('width', events);
-		this.render_general('height', events);
+        this.render_general('rotate', events);
+        this.render_general('opacity', events);
+        this.render_color(events);
+        this.render_reset(events);
 
-		this.render_general('rotate', events);
-		this.render_general('opacity', events);
-		this.render_color(events);
-		this.render_reset(events);
+        //text - special case
+        if (config.layer != undefined && config.layer.type == 'text') {
+            document.getElementById('text_detail_params').style.display =
+                'block';
+            document
+                .getElementById('detail_color')
+                .closest('.row').style.display = 'none';
+        } else {
+            document.getElementById('text_detail_params').style.display =
+                'none';
 
-		//text - special case
-		if (config.layer != undefined && config.layer.type == 'text') {
-			document.getElementById('text_detail_params').style.display = 'block';
-			document.getElementById('detail_color').closest('.row').style.display = 'none';
-		}
-		else{
-			document.getElementById('text_detail_params').style.display = 'none';
+            if (
+                config.layer != undefined &&
+                (config.layer.color === null || config.layer.type == 'image')
+            ) {
+                //hide color
+                document
+                    .getElementById('detail_color')
+                    .closest('.row').style.display = 'none';
+            } else {
+                //show color
+                document
+                    .getElementById('detail_color')
+                    .closest('.row').style.display = 'block';
+            }
+        }
 
-			if (config.layer != undefined && (config.layer.color === null || config.layer.type == 'image')) {
-				//hide color
-				document.getElementById('detail_color').closest('.row').style.display = 'none';
-			}
-			else {
-				//show color
-				document.getElementById('detail_color').closest('.row').style.display = 'block';
-			}
-		}
+        //add params
+        this.render_more_parameters();
 
-		//add params
-		this.render_more_parameters();
+        this.render_text(events);
+        this.render_general_select_param('boundary', events);
+        this.render_general_select_param('kerning', events);
+        this.render_general_select_param('text_direction', events);
+        this.render_general_select_param('wrap', events);
+        this.render_general_select_param('wrap_direction', events);
+        this.render_general_select_param('halign', events);
+        this.render_general_select_param('valign', events);
+    }
 
-		this.render_text(events);
-		this.render_general_select_param('boundary', events);
-		this.render_general_select_param('kerning', events);
-		this.render_general_select_param('text_direction', events);
-		this.render_general_select_param('wrap', events);
-		this.render_general_select_param('wrap_direction', events);
-		this.render_general_select_param('halign', events);
-		this.render_general_select_param('valign', events);
-	}
+    render_general(key, events) {
+        var layer = config.layer;
+        var _this = this;
+        var units = this.Tools_settings.get_setting('default_units');
+        var resolution = this.Tools_settings.get_setting('resolution');
 
-	render_general(key, events) {
-		var layer = config.layer;
-		var _this = this;
-		var units = this.Tools_settings.get_setting('default_units');
-		var resolution = this.Tools_settings.get_setting('resolution');
+        if (layer != undefined) {
+            var target = document.getElementById('detail_' + key);
+            target.dataset.layer = layer.id;
+            if (layer[key] == null) {
+                target.value = '';
+                target.disabled = true;
+            } else {
+                var value = layer[key];
 
-		if (layer != undefined) {
-			var target = document.getElementById('detail_' + key);
-			target.dataset.layer = layer.id;
-			if (layer[key] == null) {
-				target.value = '';
-				target.disabled = true;
-			}
-			else {
-				var value = layer[key];
+                if (
+                    key == 'x' ||
+                    key == 'y' ||
+                    key == 'width' ||
+                    key == 'height'
+                ) {
+                    //convert units
+                    value = this.Helper.get_user_unit(value, units, resolution);
+                } else {
+                    value = Math.round(value);
+                }
 
-				if(key == 'x' || key == 'y' || key == 'width' || key == 'height'){
-					//convert units
-					value = this.Helper.get_user_unit(value, units, resolution);
-				}
-				else {
-					value = Math.round(value);
-				}
+                //set
+                target.value = value;
+                target.disabled = false;
+            }
+        }
 
-				//set
-				target.value = value;
-				target.disabled = false;
-			}
-		}
+        if (events) {
+            //events
+            var target = document.getElementById('detail_' + key);
+            if (target == undefined) {
+                console.log(
+                    'Error: missing details event target ' + 'detail_' + key,
+                );
+                return;
+            }
+            let focus_value = null;
+            target.addEventListener('focus', function (e) {
+                focus_value = parseFloat(this.value);
+            });
+            target.addEventListener('blur', function (e) {
+                if (
+                    key == 'x' ||
+                    key == 'y' ||
+                    key == 'width' ||
+                    key == 'height'
+                ) {
+                    //convert units
+                    var value = _this.Helper.get_internal_unit(
+                        this.value,
+                        units,
+                        resolution,
+                    );
+                } else {
+                    var value = parseInt(this.value);
+                }
+                var layer = _this.Base_layers.get_layer(e.target.dataset.layer);
+                layer[key] = focus_value;
+                if (focus_value !== value) {
+                    app.State.do_action(
+                        new app.Actions.Bundle_action(
+                            'change_layer_details',
+                            'Change Layer Details',
+                            [
+                                new app.Actions.Update_layer_action(layer.id, {
+                                    [key]: value,
+                                }),
+                            ],
+                        ),
+                    );
+                }
+            });
+            target.addEventListener('change', function (e) {
+                if (
+                    key == 'x' ||
+                    key == 'y' ||
+                    key == 'width' ||
+                    key == 'height'
+                ) {
+                    //convert units
+                    var value = _this.Helper.get_internal_unit(
+                        this.value,
+                        units,
+                        resolution,
+                    );
+                } else {
+                    var value = parseInt(this.value);
+                }
 
-		if (events) {
-			//events
-			var target = document.getElementById('detail_' + key);
-			if(target == undefined){
-				console.log('Error: missing details event target ' + 'detail_' + key);
-				return;
-			}
-			let focus_value = null;
-			target.addEventListener('focus', function (e) {
-				focus_value = parseFloat(this.value);
-			});
-			target.addEventListener('blur', function (e) {
-				if(key == 'x' || key == 'y' || key == 'width' || key == 'height'){
-					//convert units
-					var value = _this.Helper.get_internal_unit(this.value, units, resolution);
-				}
-				else {
-					var value = parseInt(this.value);
-				}
-				var layer = _this.Base_layers.get_layer(e.target.dataset.layer);
-				layer[key] = focus_value;
-				if (focus_value !== value) {
-					app.State.do_action(
-						new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-							new app.Actions.Update_layer_action(layer.id, {
-								[key]: value
-							})
-						])
-					);
-				}
-			});
-			target.addEventListener('change', function (e) {
-				if(key == 'x' || key == 'y' || key == 'width' || key == 'height'){
-					//convert units
-					var value = _this.Helper.get_internal_unit(this.value, units, resolution);
-				}
-				else {
-					var value = parseInt(this.value);
-				}
-				
-				if(this.min != undefined && this.min != '' && value < this.min){
-					document.getElementById('detail_opacity').value = value;
-					value = this.min;
-				}
-				if(this.max != undefined && this.min != '' && value > this.max){
-					document.getElementById('detail_opacity').value = value;
-					value = this.max;
-				}
-				
-				config.layer[key] = value;
-				config.need_render = true;
-			});
-			target.addEventListener('keyup', function (e) {
-				//for edge....
-				if (e.keyCode != 13) {
-					return;
-				}
+                if (
+                    this.min != undefined &&
+                    this.min != '' &&
+                    value < this.min
+                ) {
+                    document.getElementById('detail_opacity').value = value;
+                    value = this.min;
+                }
+                if (
+                    this.max != undefined &&
+                    this.min != '' &&
+                    value > this.max
+                ) {
+                    document.getElementById('detail_opacity').value = value;
+                    value = this.max;
+                }
 
-				if(key == 'x' || key == 'y' || key == 'width' || key == 'height'){
-					//convert units
-					var value = _this.Helper.get_internal_unit(this.value, units, resolution);
-				}
-				else {
-					var value = parseInt(this.value);
-				}
-				
-				if(this.min != undefined && this.min != '' && value < this.min){
-					document.getElementById('detail_opacity').value = value;
-					value = this.min;
-				}
-				if(this.max != undefined && this.min != '' && value > this.max){
-					document.getElementById('detail_opacity').value = value;
-					value = this.max;
-				}
-				
-				config.layer[key] = value;
-				config.need_render = true;
-			});
-		}
-	}
+                config.layer[key] = value;
+                config.need_render = true;
+            });
+            target.addEventListener('keyup', function (e) {
+                //for edge....
+                if (e.keyCode != 13) {
+                    return;
+                }
 
-	render_general_param(key, events) {
-		var layer = config.layer;
+                if (
+                    key == 'x' ||
+                    key == 'y' ||
+                    key == 'width' ||
+                    key == 'height'
+                ) {
+                    //convert units
+                    var value = _this.Helper.get_internal_unit(
+                        this.value,
+                        units,
+                        resolution,
+                    );
+                } else {
+                    var value = parseInt(this.value);
+                }
 
-		if (layer != undefined) {
-			var target = document.getElementById('detail_param_' + key);
-			if (layer.params[key] == null) {
-				target.value = '';
-				target.disabled = true;
-			}
-			else {
-				if (typeof layer.params[key] == 'boolean') {
-					//boolean
-					if(target.tagName == 'BUTTON'){
-						if(layer.params[key]){
-							target.classList.add('active');
-						}
-						else{
-							target.classList.remove('active');
-						}
-					}
-				}
-				else {
-					//common
-					target.value = layer.params[key];
-				}
-				target.disabled = false;
-			}
-		}
+                if (
+                    this.min != undefined &&
+                    this.min != '' &&
+                    value < this.min
+                ) {
+                    document.getElementById('detail_opacity').value = value;
+                    value = this.min;
+                }
+                if (
+                    this.max != undefined &&
+                    this.min != '' &&
+                    value > this.max
+                ) {
+                    document.getElementById('detail_opacity').value = value;
+                    value = this.max;
+                }
 
-		if (events) {
-			//events
-			var target = document.getElementById('detail_param_' + key);
-			let focus_value = null;
-			target.addEventListener('focus', function (e) {
-				focus_value = parseInt(this.value);
-			});
-			target.addEventListener('blur', function (e) {
-				var value = parseInt(this.value);
-				config.layer.params[key] = focus_value;
-				let params_copy = JSON.parse(JSON.stringify(config.layer.params));
-				params_copy[key] = value;
-				if (focus_value !== value) {
-					app.State.do_action(
-						new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-							new app.Actions.Update_layer_action(config.layer.id, {
-								params: params_copy
-							})
-						])
-					);
-				}
-			});
-			target.addEventListener('change', function (e) {
-				var value = parseInt(this.value);
-				config.layer.params[key] = value;
-				config.need_render = true;
-				config.need_render_changed_params = true;
+                config.layer[key] = value;
+                config.need_render = true;
+            });
+        }
+    }
 
-			});
-			target.addEventListener('click', function (e) {
-				if (typeof config.layer.params[key] != 'boolean')
-					return;
-				this.classList.toggle('active');
-				config.layer.params[key] = !config.layer.params[key];
-				config.need_render = true;
-				config.need_render_changed_params = true;
-			});
-		}
-	}
+    render_general_param(key, events) {
+        var layer = config.layer;
 
-	render_general_select_param(key, events){
-		var layer = config.layer;
+        if (layer != undefined) {
+            var target = document.getElementById('detail_param_' + key);
+            if (layer.params[key] == null) {
+                target.value = '';
+                target.disabled = true;
+            } else {
+                if (typeof layer.params[key] == 'boolean') {
+                    //boolean
+                    if (target.tagName == 'BUTTON') {
+                        if (layer.params[key]) {
+                            target.classList.add('active');
+                        } else {
+                            target.classList.remove('active');
+                        }
+                    }
+                } else {
+                    //common
+                    target.value = layer.params[key];
+                }
+                target.disabled = false;
+            }
+        }
 
-		if (layer != undefined) {
-			var target = document.getElementById('detail_param_' + key);
+        if (events) {
+            //events
+            var target = document.getElementById('detail_param_' + key);
+            let focus_value = null;
+            target.addEventListener('focus', function (e) {
+                focus_value = parseInt(this.value);
+            });
+            target.addEventListener('blur', function (e) {
+                var value = parseInt(this.value);
+                config.layer.params[key] = focus_value;
+                let params_copy = JSON.parse(
+                    JSON.stringify(config.layer.params),
+                );
+                params_copy[key] = value;
+                if (focus_value !== value) {
+                    app.State.do_action(
+                        new app.Actions.Bundle_action(
+                            'change_layer_details',
+                            'Change Layer Details',
+                            [
+                                new app.Actions.Update_layer_action(
+                                    config.layer.id,
+                                    {
+                                        params: params_copy,
+                                    },
+                                ),
+                            ],
+                        ),
+                    );
+                }
+            });
+            target.addEventListener('change', function (e) {
+                var value = parseInt(this.value);
+                config.layer.params[key] = value;
+                config.need_render = true;
+                config.need_render_changed_params = true;
+            });
+            target.addEventListener('click', function (e) {
+                if (typeof config.layer.params[key] != 'boolean') return;
+                this.classList.toggle('active');
+                config.layer.params[key] = !config.layer.params[key];
+                config.need_render = true;
+                config.need_render_changed_params = true;
+            });
+        }
+    }
 
-			if (layer.params[key] == null) {
-				target.value = '';
-				target.disabled = true;
-			}
-			else {
-				if(typeof layer.params[key] == 'object')
-					target.value = layer.params[key].value; //legacy
-				else
-					target.value = layer.params[key];
-				target.disabled = false;
-			}
-		}
+    render_general_select_param(key, events) {
+        var layer = config.layer;
 
-		if (events) {
-			//events
-			var target = document.getElementById('detail_param_' + key);
-			let focus_value = null;
-			target.addEventListener('focus', function (e) {
-				focus_value = this.value;
-			});
-			target.addEventListener('blur', function (e) {
-				var value = this.value;
-				config.layer.params[key] = focus_value;
-				let params_copy = JSON.parse(JSON.stringify(config.layer.params));
-				params_copy[key] = value;
-				if (focus_value !== value) {
-					app.State.do_action(
-						new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-							new app.Actions.Update_layer_action(config.layer.id, {
-								params: params_copy
-							})
-						])
-					);
-				}
-			});
-			target.addEventListener('change', function (e) {
-				var value = this.value;
-				config.layer.params[key] = value;
-				config.need_render = true;
-				config.need_render_changed_params = true;
-			});
-		}
-	}
+        if (layer != undefined) {
+            var target = document.getElementById('detail_param_' + key);
 
-	/**
-	 * item: color
-	 */
-	render_color(events) {
-		var layer = config.layer;
+            if (layer.params[key] == null) {
+                target.value = '';
+                target.disabled = true;
+            } else {
+                if (typeof layer.params[key] == 'object')
+                    target.value = layer.params[key].value; //legacy
+                else target.value = layer.params[key];
+                target.disabled = false;
+            }
+        }
 
-		let $colorInput;
-		if (events) {
-			$colorInput = $(document.getElementById('detail_color')).uiColorInput();
-		} else {
-			$colorInput = $(document.getElementById('detail_color'));
-		}
+        if (events) {
+            //events
+            var target = document.getElementById('detail_param_' + key);
+            let focus_value = null;
+            target.addEventListener('focus', function (e) {
+                focus_value = this.value;
+            });
+            target.addEventListener('blur', function (e) {
+                var value = this.value;
+                config.layer.params[key] = focus_value;
+                let params_copy = JSON.parse(
+                    JSON.stringify(config.layer.params),
+                );
+                params_copy[key] = value;
+                if (focus_value !== value) {
+                    app.State.do_action(
+                        new app.Actions.Bundle_action(
+                            'change_layer_details',
+                            'Change Layer Details',
+                            [
+                                new app.Actions.Update_layer_action(
+                                    config.layer.id,
+                                    {
+                                        params: params_copy,
+                                    },
+                                ),
+                            ],
+                        ),
+                    );
+                }
+            });
+            target.addEventListener('change', function (e) {
+                var value = this.value;
+                config.layer.params[key] = value;
+                config.need_render = true;
+                config.need_render_changed_params = true;
+            });
+        }
+    }
 
-		if (layer != undefined) {
-			$colorInput.uiColorInput('set_value', layer.color);
-		}
+    /**
+     * item: color
+     */
+    render_color(events) {
+        var layer = config.layer;
 
-		if (events) {
-			//events
-			let focus_value = null;
-			$colorInput.on('focus', function (e) {
-				focus_value = $colorInput.uiColorInput('get_value');
-			});
-			$colorInput.on('change', function (e) {
-				const value = $colorInput.uiColorInput('get_value');
-				config.layer.color = focus_value;
-				if (focus_value !== value) {
-					app.State.do_action(
-						new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-							new app.Actions.Update_layer_action(config.layer.id, {
-								color: value
-							})
-						])
-					);
-				}
-			});
-		}
-	}
+        let $colorInput;
+        if (events) {
+            $colorInput = $(
+                document.getElementById('detail_color'),
+            ).uiColorInput();
+        } else {
+            $colorInput = $(document.getElementById('detail_color'));
+        }
 
-	/**
-	 * item: size reset button
-	 */
-	render_reset(events) {
-		var layer = config.layer;
+        if (layer != undefined) {
+            $colorInput.uiColorInput('set_value', layer.color);
+        }
 
-		if (layer != undefined) {
-			//size
-			if (layer.width_original != null) {
-				document.getElementById('reset_size').classList.remove('hidden');
-			}
-			else {
-				document.getElementById('reset_size').classList.add('hidden');
-			}
-		}
+        if (events) {
+            //events
+            let focus_value = null;
+            $colorInput.on('focus', function (e) {
+                focus_value = $colorInput.uiColorInput('get_value');
+            });
+            $colorInput.on('change', function (e) {
+                const value = $colorInput.uiColorInput('get_value');
+                config.layer.color = focus_value;
+                if (focus_value !== value) {
+                    app.State.do_action(
+                        new app.Actions.Bundle_action(
+                            'change_layer_details',
+                            'Change Layer Details',
+                            [
+                                new app.Actions.Update_layer_action(
+                                    config.layer.id,
+                                    {
+                                        color: value,
+                                    },
+                                ),
+                            ],
+                        ),
+                    );
+                }
+            });
+        }
+    }
 
-		if (events) {
-			//events
-			document.getElementById('reset_x').addEventListener('click', function (e) {
-				if (config.layer.x) {
-					app.State.do_action(
-						new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-							new app.Actions.Update_layer_action(config.layer.id, {
-								x: 0
-							})
-						])
-					);
-				}
-			});
-			document.getElementById('reset_y').addEventListener('click', function (e) {
-				if (config.layer.y) {
-					app.State.do_action(
-						new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-							new app.Actions.Update_layer_action(config.layer.id, {
-								y: 0
-							})
-						])
-					);
-				}
-			});
-			document.getElementById('reset_size').addEventListener('click', function (e) {
-				if (config.layer.width !== config.layer.width_original
-					|| config.layer.height !== config.layer.height_original) {
-					app.State.do_action(
-						new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-							new app.Actions.Update_layer_action(config.layer.id, {
-								width: config.layer.width_original,
-								height: config.layer.height_original
-							})
-						])
-					);
-				}
-			});
-			document.getElementById('reset_rotate').addEventListener('click', function (e) {
-				if (config.layer.rotate) {
-					app.State.do_action(
-						new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-							new app.Actions.Update_layer_action(config.layer.id, {
-								rotate: 0
-							})
-						])
-					);
-				}
-			});
-			document.getElementById('reset_opacity').addEventListener('click', function (e) {
-				if (config.layer.opacity != 100) {
-					app.State.do_action(
-						new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-							new app.Actions.Update_layer_action(config.layer.id, {
-								opacity: 100
-							})
-						])
-					);
-				}
-			});
-		}
-	}
+    /**
+     * item: size reset button
+     */
+    render_reset(events) {
+        var layer = config.layer;
 
-	/**
-	 * item: text
-	 */
-	render_text(events) {
-		if (events) {
-			//events
-			document.getElementById('detail_param_text').addEventListener('click', function (e) {
-				document.querySelector('#tools_container #text').click();
-				document.getElementById('text_tool_keyboard_input').focus();
-				config.need_render = true;
-			});
-		}
-	}
+        if (layer != undefined) {
+            //size
+            if (layer.width_original != null) {
+                document
+                    .getElementById('reset_size')
+                    .classList.remove('hidden');
+            } else {
+                document.getElementById('reset_size').classList.add('hidden');
+            }
+        }
 
-	render_more_parameters() {
-		var _this = this;
-		var target_id = "parameters_container";
-		const itemContainer = document.getElementById(target_id);
+        if (events) {
+            //events
+            document
+                .getElementById('reset_x')
+                .addEventListener('click', function (e) {
+                    if (config.layer.x) {
+                        app.State.do_action(
+                            new app.Actions.Bundle_action(
+                                'change_layer_details',
+                                'Change Layer Details',
+                                [
+                                    new app.Actions.Update_layer_action(
+                                        config.layer.id,
+                                        {
+                                            x: 0,
+                                        },
+                                    ),
+                                ],
+                            ),
+                        );
+                    }
+                });
+            document
+                .getElementById('reset_y')
+                .addEventListener('click', function (e) {
+                    if (config.layer.y) {
+                        app.State.do_action(
+                            new app.Actions.Bundle_action(
+                                'change_layer_details',
+                                'Change Layer Details',
+                                [
+                                    new app.Actions.Update_layer_action(
+                                        config.layer.id,
+                                        {
+                                            y: 0,
+                                        },
+                                    ),
+                                ],
+                            ),
+                        );
+                    }
+                });
+            document
+                .getElementById('reset_size')
+                .addEventListener('click', function (e) {
+                    if (
+                        config.layer.width !== config.layer.width_original ||
+                        config.layer.height !== config.layer.height_original
+                    ) {
+                        app.State.do_action(
+                            new app.Actions.Bundle_action(
+                                'change_layer_details',
+                                'Change Layer Details',
+                                [
+                                    new app.Actions.Update_layer_action(
+                                        config.layer.id,
+                                        {
+                                            width: config.layer.width_original,
+                                            height: config.layer
+                                                .height_original,
+                                        },
+                                    ),
+                                ],
+                            ),
+                        );
+                    }
+                });
+            document
+                .getElementById('reset_rotate')
+                .addEventListener('click', function (e) {
+                    if (config.layer.rotate) {
+                        app.State.do_action(
+                            new app.Actions.Bundle_action(
+                                'change_layer_details',
+                                'Change Layer Details',
+                                [
+                                    new app.Actions.Update_layer_action(
+                                        config.layer.id,
+                                        {
+                                            rotate: 0,
+                                        },
+                                    ),
+                                ],
+                            ),
+                        );
+                    }
+                });
+            document
+                .getElementById('reset_opacity')
+                .addEventListener('click', function (e) {
+                    if (config.layer.opacity != 100) {
+                        app.State.do_action(
+                            new app.Actions.Bundle_action(
+                                'change_layer_details',
+                                'Change Layer Details',
+                                [
+                                    new app.Actions.Update_layer_action(
+                                        config.layer.id,
+                                        {
+                                            opacity: 100,
+                                        },
+                                    ),
+                                ],
+                            ),
+                        );
+                    }
+                });
+        }
+    }
 
-		if(this.layer_details_active == true){
-			return;
-		}
+    /**
+     * item: text
+     */
+    render_text(events) {
+        if (events) {
+            //events
+            document
+                .getElementById('detail_param_text')
+                .addEventListener('click', function (e) {
+                    document.querySelector('#tools_container #text').click();
+                    document.getElementById('text_tool_keyboard_input').focus();
+                    config.need_render = true;
+                });
+        }
+    }
 
-		itemContainer.innerHTML = "";
+    render_more_parameters() {
+        var _this = this;
+        var target_id = 'parameters_container';
+        const itemContainer = document.getElementById(target_id);
 
-		if(!config.layer || typeof config.layer.params == 'undefined' || config.layer.type == 'text') {
-			return;
-		}
+        if (this.layer_details_active == true) {
+            return;
+        }
 
-		//find layer parameters settings
-		var params_config = null;
-		for (var i in config.TOOLS) {
-			if (config.TOOLS[i].name == config.layer.type) {
-				params_config =  config.TOOLS[i];
-			}
-		}
-		if(params_config == null){
-			return;
-		}
+        itemContainer.innerHTML = '';
 
-		for (var k in params_config.attributes) {
-			var item = params_config.attributes[k];
+        if (
+            !config.layer ||
+            typeof config.layer.params == 'undefined' ||
+            config.layer.type == 'text'
+        ) {
+            return;
+        }
 
-			//hide some fields, in future name should start with underscore
-			if(params_config.name == 'rectangle' && k == 'square'
-				|| params_config.name == 'ellipse' && k == 'circle'
-				|| params_config.name == 'pencil' && k == 'pressure'
-				|| params_config.name == 'pencil' && k == 'size'){
-				continue;
-			}
+        //find layer parameters settings
+        var params_config = null;
+        for (var i in config.TOOLS) {
+            if (config.TOOLS[i].name == config.layer.type) {
+                params_config = config.TOOLS[i];
+            }
+        }
+        if (params_config == null) {
+            return;
+        }
 
-			//row
-			let item_row = document.createElement('div');
-			item_row.className = 'row';
-			itemContainer.appendChild(item_row);
+        for (var k in params_config.attributes) {
+            var item = params_config.attributes[k];
 
-			//title
-			var title = k[0].toUpperCase() + k.slice(1);
-			title = title.replace("_", " ");
-			let item_title = document.createElement('span');
-			item_title.className = 'trn label';
-			item_title.innerHTML = title;
-			item_row.appendChild(item_title);
+            //hide some fields, in future name should start with underscore
+            if (
+                (params_config.name == 'rectangle' && k == 'square') ||
+                (params_config.name == 'ellipse' && k == 'circle') ||
+                (params_config.name == 'pencil' && k == 'pressure') ||
+                (params_config.name == 'pencil' && k == 'size')
+            ) {
+                continue;
+            }
 
-			//value
-			if (typeof item == 'boolean' || (typeof item == 'object' && typeof item.value == 'boolean')) {
-				//boolean - true, false
+            //row
+            let item_row = document.createElement('div');
+            item_row.className = 'row';
+            itemContainer.appendChild(item_row);
 
-				const elementInput = document.createElement('button');
-				elementInput.type = 'button';
-				elementInput.className = 'trn ui_toggle_button';
-				elementInput.innerHTML = title;
+            //title
+            var title = k[0].toUpperCase() + k.slice(1);
+            title = title.replace('_', ' ');
+            let item_title = document.createElement('span');
+            item_title.className = 'trn label';
+            item_title.innerHTML = title;
+            item_row.appendChild(item_title);
 
-				elementInput.dataset.key = k;
-				item_row.appendChild(elementInput);
+            //value
+            if (
+                typeof item == 'boolean' ||
+                (typeof item == 'object' && typeof item.value == 'boolean')
+            ) {
+                //boolean - true, false
 
-				let value = config.layer.params[k];
-				elementInput.setAttribute('aria-pressed', value);
+                const elementInput = document.createElement('button');
+                elementInput.type = 'button';
+                elementInput.className = 'trn ui_toggle_button';
+                elementInput.innerHTML = title;
 
-				//events
-				elementInput.addEventListener('click', function (e) {
-					//on leave
-					let layer = config.layer;
-					let key = this.dataset.key;
-					let new_value = elementInput.getAttribute('aria-pressed') !== 'true';
-					let params = JSON.parse(JSON.stringify(config.layer.params));
-					params[key] = new_value;
+                elementInput.dataset.key = k;
+                item_row.appendChild(elementInput);
 
-					app.State.do_action(
-						new app.Actions.Update_layer_action(layer.id, {
-							params: params
-						})
-					);
-				});
-			}
-			else if (typeof item == 'number' || (typeof item == 'object' && typeof item.value == 'number')) {
-				//numbers
+                let value = config.layer.params[k];
+                elementInput.setAttribute('aria-pressed', value);
 
-				const elementInput = document.createElement('input');
-				elementInput.type = 'number';
-				elementInput.dataset.key = k;
-				item_row.appendChild(elementInput);
+                //events
+                elementInput.addEventListener('click', function (e) {
+                    //on leave
+                    let layer = config.layer;
+                    let key = this.dataset.key;
+                    let new_value =
+                        elementInput.getAttribute('aria-pressed') !== 'true';
+                    let params = JSON.parse(
+                        JSON.stringify(config.layer.params),
+                    );
+                    params[key] = new_value;
 
-				let min = 1;
-				let max = k === 'power' ? 100 : 999;
-				let step = null;
-				let value = config.layer.params[k];
-				if (typeof item == 'object') {
-					value = item.value;
-					if (item.min != null) {
-						min = item.min;
-					}
-					if (item.max != null) {
-						max = item.max;
-					}
-					if (item.step != null) {
-						step = item.step;
-					}
-				}
-				elementInput.setAttribute('min', min);
-				elementInput.setAttribute('max', max);
-				if (item.step != null) {
-					elementInput.setAttribute('step', step);
-				}
-				elementInput.setAttribute('value', config.layer.params[k]);
+                    app.State.do_action(
+                        new app.Actions.Update_layer_action(layer.id, {
+                            params: params,
+                        }),
+                    );
+                });
+            } else if (
+                typeof item == 'number' ||
+                (typeof item == 'object' && typeof item.value == 'number')
+            ) {
+                //numbers
 
-				//events
-				let focus_value = null;
-				elementInput.addEventListener('focus', function (e) {
-					focus_value = parseFloat(this.value);
-					_this.layer_details_active = true;
-				});
-				elementInput.addEventListener('blur', function (e) {
-					//on leave
-					_this.layer_details_active = false;
-					let layer = config.layer;
-					let key = this.dataset.key;
-					let new_value = parseInt(this.value);
-					let params = JSON.parse(JSON.stringify(config.layer.params));
-					params[key] = new_value;
+                const elementInput = document.createElement('input');
+                elementInput.type = 'number';
+                elementInput.dataset.key = k;
+                item_row.appendChild(elementInput);
 
-					if (focus_value !== new_value) {
-						app.State.do_action(
-							new app.Actions.Update_layer_action(layer.id, {
-								params: params
-							})
-						);
-					}
-				});
-				elementInput.addEventListener('change', function (e) {
-					//on change - lots of events here in short time
-					let key = this.dataset.key;
-					let new_value = parseInt(this.value);
+                let min = 1;
+                let max = k === 'power' ? 100 : 999;
+                let step = null;
+                let value = config.layer.params[k];
+                if (typeof item == 'object') {
+                    value = item.value;
+                    if (item.min != null) {
+                        min = item.min;
+                    }
+                    if (item.max != null) {
+                        max = item.max;
+                    }
+                    if (item.step != null) {
+                        step = item.step;
+                    }
+                }
+                elementInput.setAttribute('min', min);
+                elementInput.setAttribute('max', max);
+                if (item.step != null) {
+                    elementInput.setAttribute('step', step);
+                }
+                elementInput.setAttribute('value', config.layer.params[k]);
 
-					config.layer.params[key] = new_value;
-					config.need_render = true;
-				});
-			}
-			else if (typeof item == 'string' && item[0] == '#') {
-				//color
+                //events
+                let focus_value = null;
+                elementInput.addEventListener('focus', function (e) {
+                    focus_value = parseFloat(this.value);
+                    _this.layer_details_active = true;
+                });
+                elementInput.addEventListener('blur', function (e) {
+                    //on leave
+                    _this.layer_details_active = false;
+                    let layer = config.layer;
+                    let key = this.dataset.key;
+                    let new_value = parseInt(this.value);
+                    let params = JSON.parse(
+                        JSON.stringify(config.layer.params),
+                    );
+                    params[key] = new_value;
 
-				var elementInput = document.createElement('input');
-				elementInput.type = 'color';
-				let focus_value = null;
-				const $colorInput = $(elementInput).uiColorInput({
-						id: k,
-						value: item
-					})
-					.on('change', () => {
-						let layer = config.layer;
-						let key = $colorInput.uiColorInput('get_id');
-						let new_value = $colorInput.uiColorInput('get_value');
-						let params = JSON.parse(JSON.stringify(config.layer.params));
-						params[key] = new_value;
+                    if (focus_value !== new_value) {
+                        app.State.do_action(
+                            new app.Actions.Update_layer_action(layer.id, {
+                                params: params,
+                            }),
+                        );
+                    }
+                });
+                elementInput.addEventListener('change', function (e) {
+                    //on change - lots of events here in short time
+                    let key = this.dataset.key;
+                    let new_value = parseInt(this.value);
 
-						app.State.do_action(
-							new app.Actions.Update_layer_action(layer.id, {
-								params: params
-							})
-						);
-					});
-				$colorInput.uiColorInput('set_value', config.layer.params[k]);
+                    config.layer.params[key] = new_value;
+                    config.need_render = true;
+                });
+            } else if (typeof item == 'string' && item[0] == '#') {
+                //color
 
-				item_row.appendChild($colorInput[0]);
-			}
-			else {
-				alertify.error('Error: unsupported attribute type:' + typeof item + ', ' + k);
-			}
-		}
-	}
+                var elementInput = document.createElement('input');
+                elementInput.type = 'color';
+                let focus_value = null;
+                const $colorInput = $(elementInput)
+                    .uiColorInput({
+                        id: k,
+                        value: item,
+                    })
+                    .on('change', () => {
+                        let layer = config.layer;
+                        let key = $colorInput.uiColorInput('get_id');
+                        let new_value = $colorInput.uiColorInput('get_value');
+                        let params = JSON.parse(
+                            JSON.stringify(config.layer.params),
+                        );
+                        params[key] = new_value;
 
+                        app.State.do_action(
+                            new app.Actions.Update_layer_action(layer.id, {
+                                params: params,
+                            }),
+                        );
+                    });
+                $colorInput.uiColorInput('set_value', config.layer.params[k]);
+
+                item_row.appendChild($colorInput[0]);
+            } else {
+                alertify.error(
+                    'Error: unsupported attribute type:' +
+                        typeof item +
+                        ', ' +
+                        k,
+                );
+            }
+        }
+    }
 }
 
 export default GUI_details_class;

@@ -94,7 +94,7 @@ export function tweakMenuDefinition(menuDefinition) {
 
         const fileOpenMenuItem = findMenuDefinition(
             fileMenuGroup.children,
-            'Open'
+            'Open',
         );
         removeMenuItem(fileOpenMenuItem.children, 'Open URL');
         removeMenuItem(fileOpenMenuItem.children, 'Open Data URL');
@@ -107,7 +107,7 @@ export function tweakMenuDefinition(menuDefinition) {
             {
                 name: 'Save and Return',
                 target: 'file/print.print', // TODO: popup_saveCopy
-            }
+            },
         );
 
         appendMenuDefinition(fileMenuGroup.children, saveAndReturnMenuItem, {
@@ -124,7 +124,7 @@ export function tweakMenuDefinition(menuDefinition) {
             {
                 name: 'Restore Original Image',
                 target: 'edit/restore.restore',
-            }
+            },
         );
 
         removeMenuItem(editMenuGroup.children, 'Select All');
@@ -160,7 +160,7 @@ export function tweakMenuDefinition(menuDefinition) {
             {
                 name: 'Tools',
                 children: [],
-            }
+            },
         );
 
         // the "shapes" handler calls app.GUI_tools.activate_tool
@@ -183,7 +183,7 @@ export function tweakMenuDefinition(menuDefinition) {
             {
                 name: 'Add Image',
                 children: [],
-            }
+            },
         );
 
         const beardsMenuItem = appendMenuDefinition(
@@ -192,7 +192,7 @@ export function tweakMenuDefinition(menuDefinition) {
             {
                 name: 'Beards',
                 children: [],
-            }
+            },
         );
 
         'Blond,Brown,Black & White'.split(',').forEach((menuTitle) => {
@@ -208,7 +208,7 @@ export function tweakMenuDefinition(menuDefinition) {
             {
                 name: 'Moustaches',
                 children: [],
-            }
+            },
         );
 
         'Blond,Brown,Black & White'.split(',').forEach((menuTitle) => {
@@ -224,7 +224,7 @@ export function tweakMenuDefinition(menuDefinition) {
             {
                 name: 'Hats',
                 children: [],
-            }
+            },
         );
 
         'Brown,Black & White'.split(',').forEach((menuTitle) => {
@@ -240,7 +240,7 @@ export function tweakMenuDefinition(menuDefinition) {
             {
                 name: 'Eyewear',
                 children: [],
-            }
+            },
         );
 
         'Black,Gold,Green'.split(',').forEach((menuTitle) => {
@@ -326,7 +326,7 @@ export function tweakLayout(app) {
     app.GUI.Tools_settings.save_setting('exit_confirm', false);
     const tools_container = document.getElementById('tools_container');
     const toolbarItems = Array.from(
-        tools_container.querySelectorAll('span.item')
+        tools_container.querySelectorAll('span.item'),
     );
     toolbarItems.forEach((item) => {
         const title = item.getAttribute('title');
@@ -341,7 +341,7 @@ export function tweakLayout(app) {
     aliasTool(
         app,
         'backgroundReplace',
-        'effects/backgroundReplace.backgroundReplace'
+        'effects/backgroundReplace.backgroundReplace',
     );
 }
 

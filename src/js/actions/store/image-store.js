@@ -30,12 +30,20 @@ export default {
                         // Delete database from a previous page load, if no other tabs have notified that they're open in a while
                         let shouldDeleteDatabase = true;
                         try {
-                            let lastDatabaseTabPing = localStorage.getItem('history_usage_ping');
-                            shouldDeleteDatabase = (!lastDatabaseTabPing || parseInt(lastDatabaseTabPing, 10) < new Date().getTime() - assumeTabIsClosedTimeout);
+                            let lastDatabaseTabPing =
+                                localStorage.getItem('history_usage_ping');
+                            shouldDeleteDatabase =
+                                !lastDatabaseTabPing ||
+                                parseInt(lastDatabaseTabPing, 10) <
+                                    new Date().getTime() -
+                                        assumeTabIsClosedTimeout;
                         } catch (error) {}
                         if (shouldDeleteDatabase) {
                             await new Promise((resolve, reject) => {
-                                let deleteRequest = window.indexedDB.deleteDatabase('undoHistoryImageStore');
+                                let deleteRequest =
+                                    window.indexedDB.deleteDatabase(
+                                        'undoHistoryImageStore',
+                                    );
                                 deleteRequest.onerror = () => {
                                     reject(deleteRequest.error);
                                 };
@@ -46,22 +54,27 @@ export default {
                         }
                         // Initialize database
                         await new Promise((resolve, reject) => {
-                            let openRequest = window.indexedDB.open('undoHistoryImageStore', 1);
-                            openRequest.onupgradeneeded = function(event) {
+                            let openRequest = window.indexedDB.open(
+                                'undoHistoryImageStore',
+                                1,
+                            );
+                            openRequest.onupgradeneeded = function (event) {
                                 database = openRequest.result;
                                 switch (event.oldVersion) {
                                     case 0:
-                                        database.createObjectStore('images', { keyPath: 'id' });
+                                        database.createObjectStore('images', {
+                                            keyPath: 'id',
+                                        });
                                         break;
                                 }
                             };
                             openRequest.onerror = () => {
                                 reject(openRequest.error);
-                            }
+                            };
                             openRequest.onsuccess = () => {
                                 resolve();
                                 database = openRequest.result;
-                            }
+                            };
                         });
                         if (!database) {
                             throw new Error('indexedDB not initialized');
@@ -71,15 +84,21 @@ export default {
                             await this.delete_all();
                         } catch (error) {}
                         // Ping localStorage for as long as this browser tab is open
-                        localStorage.setItem('history_usage_ping', new Date().getTime() + '');
+                        localStorage.setItem(
+                            'history_usage_ping',
+                            new Date().getTime() + '',
+                        );
                         setInterval(() => {
-                            localStorage.setItem('history_usage_ping', new Date().getTime() + '');
+                            localStorage.setItem(
+                                'history_usage_ping',
+                                new Date().getTime() + '',
+                            );
                         }, tabPingInterval);
                     }
                 } catch (error) {
                     database = {
                         isMemory: true,
-                        images: {}
+                        images: {},
                     };
                 }
                 resolveInit();
@@ -92,13 +111,13 @@ export default {
 
     /**
      * Adds the specified image to the database. Returns a promise that is resolved with an id that can be used to retrieve it again.
-     * 
+     *
      * @param {string | canvas | ImageData} imageData the image data to store
      * @returns {Promise<string>} resolves with retrieval id
      */
     async add(imageData) {
         await this.init();
-        let imageId = tabUuid + '-' + (imageIdCounter++);
+        let imageId = tabUuid + '-' + imageIdCounter++;
         if (database.isMemory) {
             database.images[imageId] = imageData;
         } else {
@@ -108,13 +127,13 @@ export default {
                 const image = {
                     id: imageId,
                     tabUuid,
-                    data: imageData
-                }
+                    data: imageData,
+                };
                 const request = images.add(image);
-                request.onsuccess = function() {
+                request.onsuccess = function () {
                     resolve();
                 };
-                request.onerror = function() {
+                request.onerror = function () {
                     reject(request.error);
                 };
             });
@@ -124,7 +143,7 @@ export default {
 
     /**
      * Gets the specified image from the database, by imageId retrieved from "add()" method.
-     * 
+     *
      * @param {string} imageId the id of the image to get
      * @returns {Promise<string | canvas | ImageData>} resolves with the image
      */
@@ -137,10 +156,10 @@ export default {
                 const transaction = database.transaction('images', 'readonly');
                 const images = transaction.objectStore('images');
                 const request = images.get(imageId);
-                request.onsuccess = function() {
+                request.onsuccess = function () {
                     resolve(request.result && request.result.data);
                 };
-                request.onerror = function() {
+                request.onerror = function () {
                     reject(request.error);
                 };
             });
@@ -149,9 +168,9 @@ export default {
 
     /**
      * Deletes the specified image from the database, by imageId retrieved from "add()" method.
-     * 
+     *
      * @param {string} imageId the id of the image to delete
-     * @returns {Promise<void>} 
+     * @returns {Promise<void>}
      */
     async delete(imageId) {
         await this.init();
@@ -162,10 +181,10 @@ export default {
                 const transaction = database.transaction('images', 'readwrite');
                 const images = transaction.objectStore('images');
                 const request = images.delete(imageId);
-                request.onsuccess = function() {
+                request.onsuccess = function () {
                     resolve();
                 };
-                request.onerror = function() {
+                request.onerror = function () {
                     reject(request.error);
                 };
             });
@@ -174,8 +193,8 @@ export default {
 
     /**
      * Deletes all images associated with the current tab.
-     * 
-     * @returns {Promise<void>} 
+     *
+     * @returns {Promise<void>}
      */
     async delete_all() {
         await this.init();
@@ -192,15 +211,17 @@ export default {
                     for (let image of allImages) {
                         if (image.tabUuid === tabUuid) {
                             try {
-                                await new Promise((deleteResolve, deleteReject) => {
-                                    const request = images.delete(image.id);
-                                    request.onsuccess = function() {
-                                        deleteResolve();
-                                    };
-                                    request.onerror = function() {
-                                        deleteReject(request.error);
-                                    };
-                                });
+                                await new Promise(
+                                    (deleteResolve, deleteReject) => {
+                                        const request = images.delete(image.id);
+                                        request.onsuccess = function () {
+                                            deleteResolve();
+                                        };
+                                        request.onerror = function () {
+                                            deleteReject(request.error);
+                                        };
+                                    },
+                                );
                             } catch (error) {
                                 errorOccurred = true;
                                 // Should eventually be deleted when database is deleted due to timeout
@@ -218,5 +239,5 @@ export default {
                 };
             });
         }
-    }
+    },
 };

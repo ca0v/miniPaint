@@ -118,13 +118,13 @@ class Clone_class extends Base_tools_class {
         }
         if (config.layer.type != 'image') {
             alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.'
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
             );
             return;
         }
         if (config.layer.rotate || 0 > 0) {
             alertify.error(
-                'Erase on rotate object is disabled. Please rasterize first.'
+                'Erase on rotate object is disabled. Please rasterize first.',
             );
             return;
         }
@@ -154,13 +154,13 @@ class Clone_class extends Base_tools_class {
         }
         if (config.layer.type != 'image') {
             alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.'
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
             );
             return;
         }
         if (config.layer.rotate || 0 > 0) {
             alertify.error(
-                'Erase on rotate object is disabled. Please rasterize first.'
+                'Erase on rotate object is disabled. Please rasterize first.',
             );
             return;
         }
@@ -194,19 +194,19 @@ class Clone_class extends Base_tools_class {
         }
         if (config.layer.type != 'image') {
             alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.'
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
             );
             return;
         }
         if (config.layer.rotate || 0 > 0) {
             alertify.error(
-                'Erase on rotate object is disabled. Please rasterize first.'
+                'Erase on rotate object is disabled. Please rasterize first.',
             );
             return;
         }
         if (this.clone_coords === null) {
             alertify.error(
-                'Source is empty, right click on image or use long press to save source position.'
+                'Source is empty, right click on image or use long press to save source position.',
             );
             return;
         }
@@ -215,7 +215,7 @@ class Clone_class extends Base_tools_class {
             layer.height != layer.height_original
         ) {
             alertify.error(
-                'Clone tool disabled for resized image. Please rasterize first.'
+                'Clone tool disabled for resized image. Please rasterize first.',
             );
             return;
         }
@@ -225,7 +225,7 @@ class Clone_class extends Base_tools_class {
                 previous_layer.height != previous_layer.height_original)
         ) {
             alertify.error(
-                'Clone tool disabled for resized image. Please rasterize first.'
+                'Clone tool disabled for resized image. Please rasterize first.',
             );
             return;
         }
@@ -237,7 +237,7 @@ class Clone_class extends Base_tools_class {
             }
             if (previous_layer.type != 'image') {
                 alertify.error(
-                    'Previous layer must be image, convert it to raster to apply this tool.'
+                    'Previous layer must be image, convert it to raster to apply this tool.',
                 );
                 return;
             }
@@ -287,7 +287,7 @@ class Clone_class extends Base_tools_class {
         app.State.do_action(
             new app.Actions.Bundle_action('clone_tool', 'Clone Tool', [
                 new app.Actions.Update_layer_image_action(this.tmpCanvas),
-            ])
+            ]),
         );
 
         //decrease memory
@@ -322,10 +322,10 @@ class Clone_class extends Base_tools_class {
 
         //add data
         var x_from = Math.round(
-            this.clone_coords.x - (mouse.click_x - mouse_x)
+            this.clone_coords.x - (mouse.click_x - mouse_x),
         );
         var y_from = Math.round(
-            this.clone_coords.y - (mouse.click_y - mouse_y)
+            this.clone_coords.y - (mouse.click_y - mouse_y),
         );
         if (params.anti_aliasing == false) {
             ctx_source.arc(half, half, half, 0, Math.PI * 2, false);
@@ -333,7 +333,7 @@ class Clone_class extends Base_tools_class {
         }
         if (params.source_layer.value == 'Previous') {
             var previous_layer = this.Base_layers.find_previous(
-                config.layer.id
+                config.layer.id,
             );
 
             x_from =
@@ -354,7 +354,7 @@ class Clone_class extends Base_tools_class {
                 0,
                 0,
                 w,
-                h
+                h,
             );
         } else {
             ctx_source.drawImage(
@@ -366,7 +366,7 @@ class Clone_class extends Base_tools_class {
                 0,
                 0,
                 w,
-                h
+                h,
             );
         }
 
@@ -378,7 +378,7 @@ class Clone_class extends Base_tools_class {
                 0,
                 half,
                 half,
-                half + 1
+                half + 1,
             );
             gradient.addColorStop(0, 'white');
             gradient.addColorStop(0.3, 'white');

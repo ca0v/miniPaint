@@ -91,7 +91,7 @@ export class Insert_layer_action extends Base_action {
 
                 this.delete_layer_action = new app.Actions.Delete_layer_action(
                     config.layer.id,
-                    true
+                    true,
                 );
                 await this.delete_layer_action.do();
             }
@@ -167,7 +167,7 @@ export class Insert_layer_action extends Base_action {
             // Update existing layer, because it's empty
             this.update_layer_action = new app.Actions.Update_layer_action(
                 config.layer.id,
-                layer
+                layer,
             );
             await this.update_layer_action.do();
         } else {

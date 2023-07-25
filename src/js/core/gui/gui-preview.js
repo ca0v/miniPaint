@@ -83,28 +83,28 @@ class GUI_preview_class {
             function (e) {
                 _this.mouse_pressed = true;
             },
-            false
+            false,
         );
         document.addEventListener(
             'mouseup',
             function (e) {
                 _this.mouse_pressed = false;
             },
-            false
+            false,
         );
         document.addEventListener(
             'touchstart',
             function (e) {
                 _this.mouse_pressed = true;
             },
-            false
+            false,
         );
         document.addEventListener(
             'touchend',
             function (e) {
                 _this.mouse_pressed = false;
             },
-            false
+            false,
         );
         document.getElementById('zoom_range').addEventListener(
             'input',
@@ -112,7 +112,7 @@ class GUI_preview_class {
                 _this.set_center_zoom();
                 _this.zoom(this.value);
             },
-            false
+            false,
         );
         document.getElementById('zoom_range').addEventListener(
             'change',
@@ -123,7 +123,7 @@ class GUI_preview_class {
                     _this.zoom(this.value);
                 }
             },
-            false
+            false,
         );
         document.getElementById('zoom_less').addEventListener(
             'click',
@@ -131,14 +131,14 @@ class GUI_preview_class {
                 _this.set_center_zoom();
                 _this.zoom(-1);
             },
-            false
+            false,
         );
         document.getElementById('zoom_100').addEventListener(
             'click',
             function (e) {
                 _this.zoom(100);
             },
-            false
+            false,
         );
         document.getElementById('zoom_more').addEventListener(
             'click',
@@ -146,14 +146,14 @@ class GUI_preview_class {
                 _this.set_center_zoom();
                 _this.zoom(+1);
             },
-            false
+            false,
         );
         document.getElementById('zoom_fit').addEventListener(
             'click',
             function (e) {
                 _this.zoom_auto();
             },
-            false
+            false,
         );
         document.getElementById('main_wrapper').addEventListener(
             'wheel',
@@ -164,12 +164,12 @@ class GUI_preview_class {
                 _this.zoom_data.y = e.offsetY;
                 var delta = Math.max(
                     -1,
-                    Math.min(1, e.wheelDelta || -e.detail || -e.deltaY)
+                    Math.min(1, e.wheelDelta || -e.detail || -e.deltaY),
                 );
                 if (delta > 0) _this.zoom(+1, e);
                 else _this.zoom(-1, e);
             },
-            false
+            false,
         );
         window.addEventListener(
             'resize',
@@ -177,7 +177,7 @@ class GUI_preview_class {
                 //resize
                 config.need_render = true;
             },
-            false
+            false,
         );
         document.getElementById('canvas_preview').addEventListener(
             'mousedown',
@@ -185,7 +185,7 @@ class GUI_preview_class {
                 if (is_touch) return;
                 _this.set_zoom_position(e);
             },
-            false
+            false,
         );
         document.getElementById('canvas_preview').addEventListener(
             'mousemove',
@@ -194,7 +194,7 @@ class GUI_preview_class {
                 if (_this.mouse_pressed == false) return;
                 _this.set_zoom_position(e);
             },
-            false
+            false,
         );
 
         document
@@ -275,7 +275,7 @@ class GUI_preview_class {
             Math.round(mini_rect_x) + 0.5,
             Math.round(mini_rect_y) + 0.5,
             mini_rect_w,
-            mini_rect_h
+            mini_rect_h,
         );
         this.canvas_preview.fillStyle = 'rgba(0, 255, 0, 0.3)';
         this.canvas_preview.strokeStyle = '#00ff00';

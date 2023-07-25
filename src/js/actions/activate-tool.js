@@ -70,7 +70,7 @@ export class Activate_tool_action extends Base_action {
             app.GUI.GUI_tools.show_action_attributes();
             app.GUI.GUI_tools.Helper.setCookie(
                 'active_tool',
-                app.GUI.GUI_tools.active_tool
+                app.GUI.GUI_tools.active_tool,
             );
         }
 
@@ -122,7 +122,7 @@ export class Activate_tool_action extends Base_action {
         app.GUI.GUI_tools.show_action_attributes();
         app.GUI.GUI_tools.Helper.setCookie(
             'active_tool',
-            app.GUI.GUI_tools.active_tool
+            app.GUI.GUI_tools.active_tool,
         );
 
         //set default cursor

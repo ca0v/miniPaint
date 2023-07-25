@@ -194,7 +194,7 @@ class Dialog_class {
                     this.hide(false);
                 }
             },
-            false
+            false,
         );
 
         //register events
@@ -211,7 +211,7 @@ class Dialog_class {
                 this.element_offset.x = target.offsetLeft;
                 this.element_offset.y = target.offsetTop;
             },
-            false
+            false,
         );
 
         this.addEventListener(
@@ -227,7 +227,7 @@ class Dialog_class {
                     target.style.top = this.element_offset.y - dy + 'px';
                 }
             },
-            false
+            false,
         );
 
         this.addEventListener(
@@ -239,7 +239,7 @@ class Dialog_class {
                 this.resize_clicked.x = null;
                 this.resize_clicked.y = null;
             },
-            false
+            false,
         );
 
         this.addEventListener(
@@ -250,7 +250,7 @@ class Dialog_class {
                 target.style.top = null;
                 target.style.left = null;
             },
-            false
+            false,
         );
     }
 
@@ -274,7 +274,7 @@ class Dialog_class {
         if (this.onchange != false) {
             if (this.preview != false) {
                 var canvas_right = this.el.querySelector(
-                    '[data-id="pop_post"]'
+                    '[data-id="pop_post"]',
                 );
                 var ctx_right = canvas_right.getContext('2d');
 
@@ -284,7 +284,7 @@ class Dialog_class {
                     this.preview_padding,
                     this.preview_padding,
                     this.width_mini - this.preview_padding * 2,
-                    this.height_mini - this.preview_padding * 2
+                    this.height_mini - this.preview_padding * 2,
                 );
 
                 this.onchange(
@@ -292,7 +292,7 @@ class Dialog_class {
                     ctx_right,
                     this.width_mini,
                     this.height_mini,
-                    canvas_right
+                    canvas_right,
                 );
             } else {
                 this.onchange(params);
@@ -524,12 +524,12 @@ class Dialog_class {
                 pop_pre,
                 this.width_mini,
                 this.height_mini,
-                10
+                10,
             );
 
             pop_pre.scale(
                 this.width_mini / canvas.width,
-                this.height_mini / canvas.height
+                this.height_mini / canvas.height,
             );
             pop_pre.drawImage(canvas, 0, 0);
             pop_pre.scale(1, 1);
@@ -539,7 +539,7 @@ class Dialog_class {
             this.layer_active_small.height = POP.height_mini;
             this.layer_active_small_ctx.scale(
                 this.width_mini / canvas.width,
-                this.height_mini / canvas.height
+                this.height_mini / canvas.height,
             );
             this.layer_active_small_ctx.drawImage(canvas, 0, 0);
             this.layer_active_small_ctx.scale(1, 1);
@@ -552,7 +552,7 @@ class Dialog_class {
                 canvas_right_back,
                 this.width_mini,
                 this.height_mini,
-                10
+                10,
             );
 
             //copy to right side
@@ -565,7 +565,7 @@ class Dialog_class {
                 this.preview_padding,
                 this.preview_padding,
                 this.width_mini - this.preview_padding * 2,
-                this.height_mini - this.preview_padding * 2
+                this.height_mini - this.preview_padding * 2,
             );
 
             //prepare temp canvas

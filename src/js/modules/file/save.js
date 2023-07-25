@@ -69,7 +69,7 @@ class File_save_class {
                     event.preventDefault();
                 }
             },
-            false
+            false,
         );
     }
 
@@ -198,7 +198,7 @@ class File_save_class {
                                 if (
                                     _this.Helper.strpos(
                                         config.layers[i].name.toLowerCase(),
-                                        '.' + j.toLowerCase()
+                                        '.' + j.toLowerCase(),
                                     ) !== false
                                 ) {
                                     params.type = j;
@@ -209,13 +209,13 @@ class File_save_class {
 
                         new app.Actions.Select_layer_action(
                             config.layers[i].id,
-                            true
+                            true,
                         ).do();
                         _this.save_action(params, true);
                     }
                     new app.Actions.Select_layer_action(
                         active_layer,
-                        true
+                        true,
                     ).do();
                 } else {
                     _this.save_action(params);
@@ -240,7 +240,7 @@ class File_save_class {
             alertify.error(
                 'Size is too big, max ' +
                     this.Helper.number_format(max, 0) +
-                    ' pixels.'
+                    ' pixels.',
             );
             return;
         }
@@ -261,7 +261,7 @@ class File_save_class {
             alertify.error(
                 'Size is too big, max ' +
                     this.Helper.number_format(max, 0) +
-                    ' bytes.'
+                    ' bytes.',
             );
             return;
         }
@@ -444,7 +444,7 @@ class File_save_class {
                     _this.update_file_size(blob.size);
                 },
                 'image/jpeg',
-                quality
+                quality,
             );
         } else if (type == 'WEBP') {
             //WEBP
@@ -463,7 +463,7 @@ class File_save_class {
                     _this.update_file_size(blob.size);
                 },
                 data_header,
-                quality
+                quality,
             );
         } else if (type == 'AVIF') {
             //AVIF
@@ -482,7 +482,7 @@ class File_save_class {
                     _this.update_file_size(blob.size);
                 },
                 data_header,
-                quality
+                quality,
             );
         } else if (type == 'BMP') {
             //bmp
@@ -508,7 +508,7 @@ class File_save_class {
                 function (blob) {
                     _this.update_file_size(blob.size);
                 },
-                data_header
+                data_header,
             );
         } else if (type == 'JSON') {
             //json
@@ -616,7 +616,7 @@ class File_save_class {
                     filesaver.saveAs(blob, fname);
                 },
                 'image/jpeg',
-                quality
+                quality,
             );
 
             if ($.isServerSave) {
@@ -643,7 +643,7 @@ class File_save_class {
                     filesaver.saveAs(blob, fname);
                 },
                 data_header,
-                quality
+                quality,
             );
         } else if (type == 'AVIF') {
             //AVIF
@@ -660,7 +660,7 @@ class File_save_class {
                     filesaver.saveAs(blob, fname);
                 },
                 data_header,
-                quality
+                quality,
             );
         } else if (type == 'BMP') {
             //bmp
@@ -686,7 +686,7 @@ class File_save_class {
                 function (blob) {
                     filesaver.saveAs(blob, fname);
                 },
-                data_header
+                data_header,
             );
         } else if (type == 'JSON') {
             //json - full data with layers
@@ -726,7 +726,7 @@ class File_save_class {
                 this.Base_layers.convert_layers_to_canvas(
                     ctx,
                     config.layers[i].id,
-                    false
+                    false,
                 );
 
                 gif.addFrame(ctx, { copy: true, delay: delay });
@@ -742,7 +742,7 @@ class File_save_class {
         ctx,
         color,
         width = config.WIDTH,
-        height = config.HEIGHT
+        height = config.HEIGHT,
     ) {
         ctx.beginPath();
         ctx.rect(0, 0, width, height);

@@ -50,7 +50,7 @@ class Selection_class extends Base_tools_class {
         this.Base_selection = new Base_selection_class(
             ctx,
             sel_config,
-            this.name
+            this.name,
         );
         this.GUI_tools = new GUI_tools_class();
     }
@@ -92,8 +92,8 @@ class Selection_class extends Base_tools_class {
                         new app.Actions.Bundle_action(
                             'clear_selection',
                             'Clear Selection',
-                            this.on_leave()
-                        )
+                            this.on_leave(),
+                        ),
                     );
                 }
                 if (code == 46) {
@@ -108,7 +108,7 @@ class Selection_class extends Base_tools_class {
                     this.select_all();
                 }
             },
-            false
+            false,
         );
     }
 
@@ -138,7 +138,7 @@ class Selection_class extends Base_tools_class {
 
         if (config.layer.type != 'image') {
             alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.'
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
             );
             return;
         }
@@ -224,8 +224,8 @@ class Selection_class extends Base_tools_class {
                 new app.Actions.Bundle_action(
                     'clear_selection',
                     'Clear Selection',
-                    this.on_leave()
-                )
+                    this.on_leave(),
+                ),
             );
             return;
         }
@@ -255,8 +255,8 @@ class Selection_class extends Base_tools_class {
                     this.selection.y,
                     this.selection.width,
                     this.selection.height,
-                    this.mousedown_selection
-                )
+                    this.mousedown_selection,
+                ),
             );
         }
     }
@@ -264,7 +264,7 @@ class Selection_class extends Base_tools_class {
     select_all() {
         if (config.layer.type != 'image') {
             alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.'
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
             );
             return;
         }
@@ -279,11 +279,11 @@ class Selection_class extends Base_tools_class {
                 0,
                 config.WIDTH,
                 config.HEIGHT,
-                this.selection
-            )
+                this.selection,
+            ),
         );
         app.State.do_action(
-            new app.Actions.Bundle_action('select_all', 'Select All', actions)
+            new app.Actions.Bundle_action('select_all', 'Select All', actions),
         );
     }
 
@@ -298,7 +298,7 @@ class Selection_class extends Base_tools_class {
         app.State.do_action(
             new app.Actions.Bundle_action('selection_tool', 'Selection Tool', [
                 new app.Actions.Update_layer_image_action(this.tmpCanvas),
-            ])
+            ]),
         );
 
         this.reset_tmp_canvas();
@@ -311,7 +311,7 @@ class Selection_class extends Base_tools_class {
 
         if (config.layer.type != 'image') {
             alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.'
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
             );
             return;
         }
@@ -337,7 +337,7 @@ class Selection_class extends Base_tools_class {
             mouse_x,
             mouse_y,
             selection.width,
-            selection.height
+            selection.height,
         );
 
         app.State.do_action(
@@ -347,8 +347,8 @@ class Selection_class extends Base_tools_class {
                 [
                     new app.Actions.Update_layer_image_action(this.tmpCanvas),
                     new app.Actions.Reset_selection_action(this.selection),
-                ]
-            )
+                ],
+            ),
         );
 
         this.reset_tmp_canvas();
@@ -376,8 +376,8 @@ class Selection_class extends Base_tools_class {
             new app.Actions.Bundle_action(
                 'clear_selection',
                 'Clear Selection',
-                this.on_leave()
-            )
+                this.on_leave(),
+            ),
         );
     }
 

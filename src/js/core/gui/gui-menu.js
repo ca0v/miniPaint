@@ -40,14 +40,14 @@ class GUI_menu_class {
             (event) => {
                 return this.on_click_menu(event);
             },
-            true
+            true,
         );
         this.menuContainer.addEventListener(
             'keydown',
             (event) => {
                 return this.on_key_down_menu(event);
             },
-            true
+            true,
         );
         this.menuBarNode.addEventListener('focus', (event) => {
             return this.on_focus_menu_bar(event);
@@ -65,21 +65,21 @@ class GUI_menu_class {
             (event) => {
                 return this.on_mouse_down_body(event);
             },
-            true
+            true,
         );
         document.body.addEventListener(
             'touchstart',
             (event) => {
                 return this.on_mouse_down_body(event);
             },
-            true
+            true,
         );
         window.addEventListener(
             'resize',
             (event) => {
                 return this.on_resize_window(event);
             },
-            true
+            true,
         );
 
         document.body.classList.add('loaded');
@@ -122,14 +122,14 @@ class GUI_menu_class {
             return `
 				<li>
 					<a id="main_menu_${level}_${index}" role="menuitem" tabindex="-1" aria-haspopup="${
-                !!definition.children + ''
-            }"
+                        !!definition.children + ''
+                    }"
 						href="${definition.href ? definition.href : 'javascript:void(0)'}"
 						target="${definition.href ? '_blank' : '_self'}"
 						data-level="${level}" data-index="${index}">
 						<span class="name"><span class="trn">${definition.name}</span>${
-                definition.ellipsis ? ' ...' : ''
-            }</span>
+                            definition.ellipsis ? ' ...' : ''
+                        }</span>
 						${
                             !!definition.shortcut
                                 ? `
@@ -158,7 +158,7 @@ class GUI_menu_class {
     on_focus_menu_bar(event) {
         if (document.activeElement === this.menuBarNode) {
             let lastFocusedLink = this.menuBarNode.querySelector(
-                `[data-index="${this.lastFocusedMenuBarLink}"]`
+                `[data-index="${this.lastFocusedMenuBarLink}"]`,
             );
             if (!lastFocusedLink) {
                 lastFocusedLink = this.menuBarNode.querySelector('a');
@@ -189,7 +189,7 @@ class GUI_menu_class {
             if (linkLevel === 0) {
                 if (['Right', 'ArrowRight'].includes(event.key)) {
                     let nextLink = menuParent.querySelector(
-                        `[data-index="${linkIndex + 1}"]`
+                        `[data-index="${linkIndex + 1}"]`,
                     );
                     if (!nextLink) {
                         nextLink = menuParent.querySelector(`[data-index="0"]`);
@@ -197,14 +197,14 @@ class GUI_menu_class {
                     nextLink.focus();
                 } else if (['Left', 'ArrowLeft'].includes(event.key)) {
                     let previousLink = menuParent.querySelector(
-                        `[data-index="${linkIndex - 1}"]`
+                        `[data-index="${linkIndex - 1}"]`,
                     );
                     if (!previousLink) {
                         previousLink = menuParent.querySelector(
                             `[data-index="${
                                 menuParent.querySelectorAll('[data-index]')
                                     .length - 1
-                            }"]`
+                            }"]`,
                         );
                     }
                     previousLink.focus();
@@ -223,7 +223,7 @@ class GUI_menu_class {
                             `[data-index="${
                                 menuParent.querySelectorAll('[data-index]')
                                     .length - 1
-                            }"]`
+                            }"]`,
                         )
                         .focus();
                 } else if ([' ', 'Enter'].includes(event.key)) {
@@ -234,11 +234,11 @@ class GUI_menu_class {
                 if (['Up', 'ArrowUp'].includes(event.key)) {
                     event.preventDefault();
                     let previousLink = menuParent.querySelector(
-                        `[data-index="${linkIndex - 1}"]`
+                        `[data-index="${linkIndex - 1}"]`,
                     );
                     if (!previousLink) {
                         previousLink = menuParent.querySelector(
-                            `[data-index="${linkIndex - 2}"]`
+                            `[data-index="${linkIndex - 2}"]`,
                         ); // Skip dividers
                     }
                     if (!previousLink) {
@@ -246,18 +246,18 @@ class GUI_menu_class {
                             `[data-index="${
                                 this.dropdownStack[linkLevel - 1].children
                                     .length - 1
-                            }"]`
+                            }"]`,
                         );
                     }
                     previousLink.focus();
                 } else if (['Down', 'ArrowDown'].includes(event.key)) {
                     event.preventDefault();
                     let nextLink = menuParent.querySelector(
-                        `[data-index="${linkIndex + 1}"]`
+                        `[data-index="${linkIndex + 1}"]`,
                     );
                     if (!nextLink) {
                         nextLink = menuParent.querySelector(
-                            `[data-index="${linkIndex + 2}"]`
+                            `[data-index="${linkIndex + 2}"]`,
                         ); // Skip dividers
                     }
                     if (!nextLink) {
@@ -277,17 +277,17 @@ class GUI_menu_class {
                         const menuBarLinkIndex =
                             parseInt(
                                 this.dropdownStack[0].opener.getAttribute(
-                                    'data-index'
+                                    'data-index',
                                 ),
-                                10
+                                10,
                             ) || 0;
                         let nextLink = this.menuBarNode.querySelector(
-                            `[data-index="${menuBarLinkIndex + 1}"]`
+                            `[data-index="${menuBarLinkIndex + 1}"]`,
                         );
                         if (!nextLink) {
                             nextLink =
                                 this.menuBarNode.querySelector(
-                                    `[data-index="0"]`
+                                    `[data-index="0"]`,
                                 );
                         }
                         nextLink.click();
@@ -301,20 +301,20 @@ class GUI_menu_class {
                         const menuBarLinkIndex =
                             parseInt(
                                 this.dropdownStack[0].opener.getAttribute(
-                                    'data-index'
+                                    'data-index',
                                 ),
-                                10
+                                10,
                             ) || 0;
                         let previousLink = this.menuBarNode.querySelector(
-                            `[data-index="${menuBarLinkIndex - 1}"]`
+                            `[data-index="${menuBarLinkIndex - 1}"]`,
                         );
                         if (!previousLink) {
                             previousLink = this.menuBarNode.querySelector(
                                 `[data-index="${
                                     this.menuBarNode.querySelectorAll(
-                                        '[data-index]'
+                                        '[data-index]',
                                     ).length - 1
-                                }"]`
+                                }"]`,
                             );
                         }
                         previousLink.click();
@@ -327,7 +327,7 @@ class GUI_menu_class {
                             `[data-index="${
                                 this.dropdownStack[linkLevel - 1].children
                                     .length - 1
-                            }"]`
+                            }"]`,
                         )
                         .focus();
                 } else if ([' ', 'Enter'].includes(event.key)) {
@@ -411,11 +411,11 @@ class GUI_menu_class {
         for (let i = this.dropdownStack.length - 1; i >= 0; i--) {
             if (i >= level) {
                 this.dropdownStack[i].element.parentNode.removeChild(
-                    this.dropdownStack[i].element
+                    this.dropdownStack[i].element,
                 );
                 this.dropdownStack[i].opener.setAttribute(
                     'aria-expanded',
-                    false
+                    false,
                 );
             }
         }
@@ -442,14 +442,14 @@ class GUI_menu_class {
         dropdownElement.tabIndex = 0;
         dropdownElement.setAttribute(
             'aria-labelledby',
-            'main_menu_' + level + '_' + index
+            'main_menu_' + level + '_' + index,
         );
         let dropdownTemplate = '';
         for (let i = 0; i < children.length; i++) {
             dropdownTemplate += this.generate_menu_dropdown_item_template(
                 children[i],
                 level + 1,
-                i
+                i,
             );
         }
         dropdownElement.innerHTML = dropdownTemplate;
@@ -477,11 +477,11 @@ class GUI_menu_class {
     position_dropdowns() {
         const vw = Math.max(
             document.documentElement.clientWidth || 0,
-            window.innerWidth || 0
+            window.innerWidth || 0,
         );
         const vh = Math.max(
             document.documentElement.clientHeight || 0,
-            window.innerHeight || 0
+            window.innerHeight || 0,
         );
 
         let topNavHeight = 0;

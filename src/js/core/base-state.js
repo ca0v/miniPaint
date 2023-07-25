@@ -54,7 +54,7 @@ class Base_state_class {
                     event.preventDefault();
                 }
             },
-            false
+            false,
         );
     }
 
@@ -73,7 +73,7 @@ class Base_state_class {
                 .reverse();
             this.action_history = this.action_history.slice(
                 0,
-                this.action_history_index
+                this.action_history_index,
             );
             for (let freed_action of freed_actions) {
                 try {
@@ -94,7 +94,7 @@ class Base_state_class {
                     new app.Actions.Bundle_action(
                         last_action.action_id,
                         last_action.action_description,
-                        [last_action, action]
+                        [last_action, action],
                     );
             }
         } else {
@@ -123,7 +123,7 @@ class Base_state_class {
 
         if (error_during_free) {
             alertify.error(
-                "A problem occurred while removing undo history. It's suggested you save your work and refresh the page in order to free up memory."
+                "A problem occurred while removing undo history. It's suggested you save your work and refresh the page in order to free up memory.",
             );
         }
         return { status: 'completed' };
@@ -208,7 +208,7 @@ class Base_state_class {
         }
         if (has_error) {
             alertify.error(
-                "A problem occurred while removing undo history. It's suggested you save your work and refresh the page in order to free up memory."
+                "A problem occurred while removing undo history. It's suggested you save your work and refresh the page in order to free up memory.",
             );
         }
         return {

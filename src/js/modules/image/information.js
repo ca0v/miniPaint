@@ -41,7 +41,7 @@ class Image_information_class {
                     event.preventDefault();
                 }
             },
-            false
+            false,
         );
     }
 
@@ -57,7 +57,7 @@ class Image_information_class {
         var height = this.Helper.get_user_unit(
             config.HEIGHT,
             units,
-            resolution
+            resolution,
         );
 
         var settings = {

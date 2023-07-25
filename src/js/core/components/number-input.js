@@ -8,7 +8,6 @@ var Helper = new Helper_class();
  */
 
 (function ($) {
-
     const template = `
         <div class="ui_number_input">
             <input type="number">
@@ -51,39 +50,58 @@ var Helper = new Helper_class();
         const $el = $(event.target.closest('.ui_number_input'));
         const { value, step, disabled } = $el.data();
         event.preventDefault();
-        const delta = (event.originalEvent.deltaY > 0 ? -1 : (event.originalEvent.deltaY < 0 ? 1 : 0));
+        const delta =
+            event.originalEvent.deltaY > 0
+                ? -1
+                : event.originalEvent.deltaY < 0
+                ? 1
+                : 0;
         if (!disabled && delta !== 0) {
-            set_value($el, (isNaN(value) ? 0 : value) + (step * delta)); // Intentionally not using get_step_amount
+            set_value($el, (isNaN(value) ? 0 : value) + step * delta); // Intentionally not using get_step_amount
             $el.trigger('input');
         }
-    }
+    };
 
     const on_touch_start_increase_button = (event) => {
         const $el = $(event.target.closest('.ui_number_input'));
-        const { value, buttonRepeatTimeout, buttonRepeatInterval, disabled } = $el.data();
+        const { value, buttonRepeatTimeout, buttonRepeatInterval, disabled } =
+            $el.data();
         if (!disabled) {
             clearTimeout(buttonRepeatTimeout);
             clearInterval(buttonRepeatInterval);
-            set_value($el, (isNaN(value) ? 0 : value) + get_step_amount($el, true));
+            set_value(
+                $el,
+                (isNaN(value) ? 0 : value) + get_step_amount($el, true),
+            );
             $el.trigger('input');
         }
     };
 
     const on_mouse_down_increase_button = (event) => {
         const $el = $(event.target.closest('.ui_number_input'));
-        const { value, buttonRepeatTimeout, buttonRepeatInterval, disabled } = $el.data();
+        const { value, buttonRepeatTimeout, buttonRepeatInterval, disabled } =
+            $el.data();
         if (!disabled) {
             clearTimeout(buttonRepeatTimeout);
             clearInterval(buttonRepeatInterval);
-            set_value($el, (isNaN(value) ? 0 : value) + get_step_amount($el, true));
+            set_value(
+                $el,
+                (isNaN(value) ? 0 : value) + get_step_amount($el, true),
+            );
             $el.trigger('input');
-            $el.data('buttonRepeatTimeout', setTimeout(() => {
-                $el.data('buttonRepeatInterval', setInterval(() => {
-                    const { value } = $el.data();
-                    set_value($el, value + get_step_amount($el, true));
-                    $el.trigger('input');
-                }, 50));
-            }, 400));
+            $el.data(
+                'buttonRepeatTimeout',
+                setTimeout(() => {
+                    $el.data(
+                        'buttonRepeatInterval',
+                        setInterval(() => {
+                            const { value } = $el.data();
+                            set_value($el, value + get_step_amount($el, true));
+                            $el.trigger('input');
+                        }, 50),
+                    );
+                }, 400),
+            );
         }
     };
 
@@ -96,30 +114,44 @@ var Helper = new Helper_class();
 
     const on_touch_start_decrease_button = (event) => {
         const $el = $(event.target.closest('.ui_number_input'));
-        const { value, buttonRepeatTimeout, buttonRepeatInterval, disabled } = $el.data();
+        const { value, buttonRepeatTimeout, buttonRepeatInterval, disabled } =
+            $el.data();
         if (!disabled) {
             clearTimeout(buttonRepeatTimeout);
             clearInterval(buttonRepeatInterval);
-            set_value($el, (isNaN(value) ? 0 : value) - get_step_amount($el, false));
+            set_value(
+                $el,
+                (isNaN(value) ? 0 : value) - get_step_amount($el, false),
+            );
             $el.trigger('input');
         }
     };
 
     const on_mouse_down_decrease_button = (event) => {
         const $el = $(event.target.closest('.ui_number_input'));
-        const { value, buttonRepeatTimeout, buttonRepeatInterval, disabled } = $el.data();
+        const { value, buttonRepeatTimeout, buttonRepeatInterval, disabled } =
+            $el.data();
         if (!disabled) {
             clearTimeout(buttonRepeatTimeout);
             clearInterval(buttonRepeatInterval);
-            set_value($el, (isNaN(value) ? 0 : value) - get_step_amount($el, false));
+            set_value(
+                $el,
+                (isNaN(value) ? 0 : value) - get_step_amount($el, false),
+            );
             $el.trigger('input');
-            $el.data('buttonRepeatTimeout', setTimeout(() => {
-                $el.data('buttonRepeatInterval', setInterval(() => {
-                    const { value } = $el.data();
-                    set_value($el, value - get_step_amount($el, false));
-                    $el.trigger('input');
-                }, 50));
-            }, 400));
+            $el.data(
+                'buttonRepeatTimeout',
+                setTimeout(() => {
+                    $el.data(
+                        'buttonRepeatInterval',
+                        setInterval(() => {
+                            const { value } = $el.data();
+                            set_value($el, value - get_step_amount($el, false));
+                            $el.trigger('input');
+                        }, 50),
+                    );
+                }, 400),
+            );
         }
     };
 
@@ -136,7 +168,9 @@ var Helper = new Helper_class();
             value = parseFloat(value);
         }
         if (!isNaN(value)) {
-            value = parseFloat((step * Math.round(value / step)).toFixed(stepDecimalPlaces));
+            value = parseFloat(
+                (step * Math.round(value / step)).toFixed(stepDecimalPlaces),
+            );
             value = Math.max(min, Math.min(max, value));
             if (value + '.' !== input.value) {
                 input.value = value;
@@ -162,40 +196,60 @@ var Helper = new Helper_class();
         const { value, step, exponentialStepButtons } = $el.data();
         if (exponentialStepButtons) {
             let amount = step;
-            let absValue = Math.abs((isNaN(value) ? 0 : value));
-            if (absValue >= (increasing ? 500 : 501))
-                amount = 100;
-            else if (absValue >= (increasing ? 100 : 101))
-                amount = 50;
-            else if (absValue >= (increasing ? 10 : 11))
-                amount = 10;
-            else if (absValue >= (increasing ? 5 : 6))
-                amount = 5;
-            else
-                amount = 1;
+            let absValue = Math.abs(isNaN(value) ? 0 : value);
+            if (absValue >= (increasing ? 500 : 501)) amount = 100;
+            else if (absValue >= (increasing ? 100 : 101)) amount = 50;
+            else if (absValue >= (increasing ? 10 : 11)) amount = 10;
+            else if (absValue >= (increasing ? 5 : 6)) amount = 5;
+            else amount = 1;
             return amount;
         } else {
             return step;
         }
     };
 
-    $.fn.uiNumberInput = function(behavior, ...args) {
+    $.fn.uiNumberInput = function (behavior, ...args) {
         let returnValues = [];
         for (let i = 0; i < this.length; i++) {
             let el = this[i];
 
             // Constructor
-            if (Object.prototype.toString.call(behavior) !== '[object String]') {
+            if (
+                Object.prototype.toString.call(behavior) !== '[object String]'
+            ) {
                 const definition = behavior || {};
 
                 const classList = el.className;
-                const id = definition.id != null ? definition.id : el.getAttribute('id');
-                const min = definition.min != null ? definition.min : parseFloat(el.getAttribute('min')) || null;
-                const max = definition.max != null ? definition.max : parseFloat(el.getAttribute('max')) || null;
-                const step = definition.step != null ? definition.step : el.hasAttribute('step') ? parseFloat(el.getAttribute('step')) : 1;
-                const exponentialStepButtons = !!definition.exponentialStepButtons;
-                const disabled = definition.disabled != null ? definition.disabled : el.hasAttribute('disabled') ? true : false;
-                const value = definition.value != null ? definition.value : parseFloat(el.value) || 0;
+                const id =
+                    definition.id != null
+                        ? definition.id
+                        : el.getAttribute('id');
+                const min =
+                    definition.min != null
+                        ? definition.min
+                        : parseFloat(el.getAttribute('min')) || null;
+                const max =
+                    definition.max != null
+                        ? definition.max
+                        : parseFloat(el.getAttribute('max')) || null;
+                const step =
+                    definition.step != null
+                        ? definition.step
+                        : el.hasAttribute('step')
+                        ? parseFloat(el.getAttribute('step'))
+                        : 1;
+                const exponentialStepButtons =
+                    !!definition.exponentialStepButtons;
+                const disabled =
+                    definition.disabled != null
+                        ? definition.disabled
+                        : el.hasAttribute('disabled')
+                        ? true
+                        : false;
+                const value =
+                    definition.value != null
+                        ? definition.value
+                        : parseFloat(el.value) || 0;
                 const ariaLabeledBy = el.getAttribute('aria-labelledby');
 
                 let $el;
@@ -238,8 +292,8 @@ var Helper = new Helper_class();
                 }
 
                 let stepDecimalPlaces = 0;
-                if ((step % 1) != 0) 
-                    stepDecimalPlaces = step.toString().split(".")[1].length;  
+                if (step % 1 != 0)
+                    stepDecimalPlaces = step.toString().split('.')[1].length;
 
                 $el.data({
                     id,
@@ -253,7 +307,7 @@ var Helper = new Helper_class();
                     max,
                     step,
                     stepDecimalPlaces,
-                    exponentialStepButtons
+                    exponentialStepButtons,
                 });
 
                 $(input)
@@ -265,12 +319,15 @@ var Helper = new Helper_class();
                 $(increaseButton)
                     .on('touchstart', on_touch_start_increase_button)
                     .on('mousedown', on_mouse_down_increase_button)
-                    .on('mouseup mouseleave touchend', on_mouse_up_increase_button);
+                    .on(
+                        'mouseup mouseleave touchend',
+                        on_mouse_up_increase_button,
+                    );
                 $(decreaseButton)
                     .on('touchstart', on_touch_start_decrease_button)
                     .on('mousedown', on_mouse_down_decrease_button)
                     .on('mouseup mouseleave', on_mouse_up_decrease_button);
-                
+
                 set_value($el, value);
                 set_disabled($el, disabled);
             }
@@ -281,18 +338,14 @@ var Helper = new Helper_class();
                 if ($el.data('value') !== newValue) {
                     set_value($(el), newValue);
                 }
-            }
-            else if (behavior === 'get_value') {
+            } else if (behavior === 'get_value') {
                 returnValues.push($(el).data('value'));
-            }
-            else if (behavior === 'get_id') {
+            } else if (behavior === 'get_id') {
                 returnValues.push($(el).data('id'));
-            }
-            else if (behavior === 'set_disabled') {
+            } else if (behavior === 'set_disabled') {
                 const newValue = !!args[0];
                 set_disabled($(el), newValue);
-            }
-            else if (behavior === 'get_disabled') {
+            } else if (behavior === 'get_disabled') {
                 returnValues.push($(el).data('disabled'));
             }
         }
@@ -302,5 +355,4 @@ var Helper = new Helper_class();
             return this;
         }
     };
-
 })(jQuery);

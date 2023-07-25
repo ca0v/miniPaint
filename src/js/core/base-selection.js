@@ -91,7 +91,7 @@ class Base_selection_class {
             (event) => {
                 this.selected_object_actions(event);
             },
-            { passive: false }
+            { passive: false },
         );
         document.addEventListener('touchend', (event) => {
             this.selected_object_actions(event);
@@ -150,7 +150,7 @@ class Base_selection_class {
 
         return Math.max(
             Math.min(layerW * 0.9, Math.abs(layerW - 2 * block_size)),
-            layerW / 2 - block_size / 2
+            layerW / 2 - block_size / 2,
         );
     }
     /**
@@ -199,7 +199,7 @@ class Base_selection_class {
             isRotated = true;
             this.ctx.translate(
                 data.x + data.width / 2,
-                data.y + data.height / 2
+                data.y + data.height / 2,
             );
             this.ctx.rotate((data.rotate * Math.PI) / 180);
             x = Math.round(-data.width / 2);
@@ -226,7 +226,7 @@ class Base_selection_class {
                 x - halfLineWidth,
                 y - halfLineWidth,
                 w + wholeLineWidth,
-                h + wholeLineWidth
+                h + wholeLineWidth,
             );
             this.ctx.lineWidth = halfLineWidth;
             this.ctx.strokeStyle = 'rgb(0, 0, 0)';
@@ -234,7 +234,7 @@ class Base_selection_class {
                 x - wholeLineWidth,
                 y - wholeLineWidth,
                 w + wholeLineWidth * 2,
-                h + wholeLineWidth * 2
+                h + wholeLineWidth * 2,
             );
         }
 
@@ -305,7 +305,7 @@ class Base_selection_class {
                 y + dy * block_size,
                 block_size / 2,
                 0,
-                2 * Math.PI
+                2 * Math.PI,
             );
 
             //draw
@@ -353,7 +353,7 @@ class Base_selection_class {
                 r_y + r_dy * block_size,
                 block_size / 2,
                 0,
-                2 * Math.PI
+                2 * Math.PI,
             );
 
             //draw
@@ -377,7 +377,7 @@ class Base_selection_class {
                 hitsLeftEdge ? 0.5 : 0,
                 hitsTopEdge ? 0.5 : 0,
                 DRAG_TYPE_LEFT | DRAG_TYPE_TOP,
-                'nwse-resize'
+                'nwse-resize',
             );
             corner(
                 x + w + corner_offset + wholeLineWidth,
@@ -385,7 +385,7 @@ class Base_selection_class {
                 hitsRightEdge ? -0.5 : 0,
                 hitsTopEdge ? 0.5 : 0,
                 DRAG_TYPE_RIGHT | DRAG_TYPE_TOP,
-                'nesw-resize'
+                'nesw-resize',
             );
             corner(
                 x - corner_offset - wholeLineWidth,
@@ -393,7 +393,7 @@ class Base_selection_class {
                 hitsLeftEdge ? 0.5 : 0,
                 hitsBottomEdge ? -0.5 : 0,
                 DRAG_TYPE_LEFT | DRAG_TYPE_BOTTOM,
-                'nesw-resize'
+                'nesw-resize',
             );
             corner(
                 x + w + corner_offset + wholeLineWidth,
@@ -401,7 +401,7 @@ class Base_selection_class {
                 hitsRightEdge ? -0.5 : 0,
                 hitsBottomEdge ? -0.5 : 0,
                 DRAG_TYPE_RIGHT | DRAG_TYPE_BOTTOM,
-                'nwse-resize'
+                'nwse-resize',
             );
         }
 
@@ -415,7 +415,7 @@ class Base_selection_class {
                         0,
                         hitsTopEdge ? 0.5 : 0,
                         DRAG_TYPE_TOP,
-                        'ns-resize'
+                        'ns-resize',
                     );
                     corner(
                         x + w / 2,
@@ -423,7 +423,7 @@ class Base_selection_class {
                         0,
                         hitsBottomEdge ? -0.5 : 0,
                         DRAG_TYPE_BOTTOM,
-                        'ns-resize'
+                        'ns-resize',
                     );
                 }
                 if (Math.abs(h) > block_size * 5) {
@@ -433,7 +433,7 @@ class Base_selection_class {
                         hitsLeftEdge ? 0.5 : 0,
                         0,
                         DRAG_TYPE_LEFT,
-                        'ew-resize'
+                        'ew-resize',
                     );
                     corner(
                         x + w + middle_offset + wholeLineWidth,
@@ -441,7 +441,7 @@ class Base_selection_class {
                         hitsRightEdge ? -0.5 : 0,
                         0,
                         DRAG_TYPE_RIGHT,
-                        'ew-resize'
+                        'ew-resize',
                     );
                 }
             }
@@ -463,7 +463,7 @@ class Base_selection_class {
         if (data.rotate != null && data.rotate != 0) {
             this.ctx.translate(
                 data.x + data.width / 2,
-                data.y + data.height / 2
+                data.y + data.height / 2,
             );
             this.ctx.rotate((data.rotate * Math.PI) / 180);
         }
@@ -515,7 +515,7 @@ class Base_selection_class {
             const allowNegativeDimensions =
                 settings.data.render_function &&
                 ['line', 'arrow', 'gradient'].includes(
-                    settings.data.render_function[0]
+                    settings.data.render_function[0],
                 );
 
             mainWrapper.style.cursor = 'pointer';
