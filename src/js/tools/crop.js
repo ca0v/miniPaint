@@ -9,6 +9,10 @@ import Base_gui_class from './../core/base-gui.js';
 import Base_selection_class from './../core/base-selection.js';
 import alertify from './../../../node_modules/alertifyjs/build/alertify.min.js';
 
+const USE_DATAWORKS = true;
+
+const mouseDownState = { mouse: { x: 0, y: 0 }, selection: { x: 0, y: 0 } };
+
 class Crop_class extends Base_tools_class {
     constructor(ctx) {
         super();
@@ -30,7 +34,7 @@ class Crop_class extends Base_tools_class {
             enable_controls: true,
             crop_lines: false,
             enable_rotation: false,
-            enable_move: true,
+            enable_move: false,
             data_function: function () {
                 return _this.selection;
             },
@@ -54,6 +58,9 @@ class Crop_class extends Base_tools_class {
 
     mousedown(e) {
         var mouse = this.get_mouse_info(e);
+        mouseDownState.mouse = { x: mouse.x, y: mouse.y };
+        mouseDownState.selection = { x: this.selection.x, y: this.selection.y };
+
         if (this.Base_selection.is_drag == false || mouse.click_valid == false) return;
 
         this.mousedown_selection = JSON.parse(JSON.stringify(this.selection));
@@ -62,25 +69,27 @@ class Crop_class extends Base_tools_class {
             return;
         }
 
-        //create new selection
-        if (
-            this.selection.width != null &&
-            this.selection.height != null &&
-            mouse.x > this.selection.x &&
-            mouse.x < this.selection.x + this.selection.width &&
-            mouse.y > this.selection.y &&
-            mouse.y < this.selection.height
-        ) {
-            //move
-            log('dataworks is forcing a move here', {
-                mouse,
-                selection: this.selection,
-            });
-            this.type = 'move'; // dataworks: from bundle_9771.js line 33544
-        } else {
+        if (USE_DATAWORKS) {
             //create new selection
-            this.Base_selection.set_selection(mouse.x, mouse.y, 0, 0);
+            if (
+                this.selection.width != null &&
+                this.selection.height != null &&
+                mouse.x > this.selection.x &&
+                mouse.x < this.selection.x + this.selection.width &&
+                mouse.y > this.selection.y &&
+                mouse.y < this.selection.height
+            ) {
+                //move
+                log('dataworks is forcing a move here', {
+                    mouse,
+                    selection: this.selection,
+                });
+                this.type = 'move'; // dataworks: from bundle_9771.js line 33544
+                return;
+            }
         }
+        //create new selection
+        this.Base_selection.set_selection(mouse.x, mouse.y, 0, 0);
     }
 
     mousemove(e) {
@@ -95,14 +104,23 @@ class Crop_class extends Base_tools_class {
             return;
         }
 
-        if (this.type == 'move') {
-            log('dataworks is forcing a "move"');
-            //move selection
-            var x = this.selection.x + (mouse.x - mouse.last_x);
-            var y = this.selection.y + (mouse.y - mouse.last_y);
-            config.need_render = true;
-            this.Base_selection.set_selection(x, y, null, null);
-            return;
+        if (USE_DATAWORKS) {
+            if (this.type == 'move') {
+                //move selection
+                const dx = mouse.x - mouseDownState.mouse.x;
+                const dy = mouse.y - mouseDownState.mouse.y;
+                config.need_render = true;
+                log(`dataworks is moving the selection by ${dx}, ${dy}`);
+                this.selection.x = mouseDownState.selection.x + dx;
+                this.selection.y = mouseDownState.selection.y + dy;
+                this.Base_selection.set_selection(
+                    this.selection.x,
+                    this.selection.y,
+                    this.selection.width,
+                    this.selection.height,
+                );
+                return;
+            }
         }
 
         var width = mouse.x - mouse.click_x;
@@ -122,9 +140,11 @@ class Crop_class extends Base_tools_class {
                 else width = -width_new;
             }
         } else if (!e.shiftKey) {
-            const dh = width * config.RATIO - height;
-            log(`dataworks is modifying height by ${dh} to enforce ratio ${config.RATIO}`);
-            height += dh;
+            if (USE_DATAWORKS) {
+                const dh = width * config.RATIO - height;
+                log(`dataworks is modifying height by ${dh} to enforce ratio ${config.RATIO}`);
+                height += dh;
+            }
         }
 
         this.Base_selection.set_selection(null, null, width, height);
@@ -150,7 +170,7 @@ class Crop_class extends Base_tools_class {
             return;
         }
 
-        {
+        if (USE_DATAWORKS) {
             // dataworks
             // This is to check the minimum width. (from the server variables)
             // If the selection is to small, destroy it.
@@ -205,8 +225,7 @@ class Crop_class extends Base_tools_class {
             this.selection.height = config.HEIGHT - this.selection.y;
         }
 
-        {
-            // dataworks
+        if (USE_DATAWORKS) {
             if (this.selection.width > config.WIDTH) {
                 log(`dataworks is limiting width to ${config.WIDTH}`);
                 this.selection.width = config.WIDTH;
