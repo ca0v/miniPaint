@@ -34,7 +34,7 @@ class Crop_class extends Base_tools_class {
             enable_controls: true,
             crop_lines: false,
             enable_rotation: false,
-            enable_move: false,
+            enable_move: true /* shows the move cursor */,
             data_function: function () {
                 return _this.selection;
             },
@@ -70,15 +70,12 @@ class Crop_class extends Base_tools_class {
         }
 
         if (USE_DATAWORKS) {
-            //create new selection
-            if (
-                this.selection.width != null &&
-                this.selection.height != null &&
-                mouse.x > this.selection.x &&
-                mouse.x < this.selection.x + this.selection.width &&
-                mouse.y > this.selection.y &&
-                mouse.y < this.selection.height
-            ) {
+            // if mouse is inside selection, enter 'move' mode
+            const left = this.selection.x;
+            const top = this.selection.y;
+            const right = this.selection.x + this.selection.width;
+            const bottom = this.selection.y + this.selection.height;
+            if (mouse.x > left && mouse.x < right && mouse.y > top && mouse.y < bottom) {
                 //move
                 log('dataworks is forcing a move here', {
                     mouse,
