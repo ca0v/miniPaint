@@ -81,7 +81,8 @@ export function updatePreviewSize(preview) {
     canvas.height = sizerHeight;
 }
 
-export async function injectPopupSaveCopyHandler(config) {
+export async function injectPopupSaveCopyHandler(options) {
+    const { save } = options;
     await sleep(2000);
     const target = document.getElementById('popup_saveCopy');
     if (!target) {
@@ -91,7 +92,7 @@ export async function injectPopupSaveCopyHandler(config) {
     target.onclick = function () {
         if (config.REQUIRE_CROP?.value == '1') {
             if (config.ASPECT == true) {
-                var img = _this.prepareCavasForServerSave();
+                var img = save.prepareCavasForServerSave();
 
                 $('#PMEditedPhoto').val(img);
                 goSaveAndBack();
@@ -99,7 +100,7 @@ export async function injectPopupSaveCopyHandler(config) {
                 reportError('Image requires cropping before being saved.');
             }
         } else {
-            var img = _this.prepareCavasForServerSave();
+            var img = save.prepareCavasForServerSave();
 
             $('#PMEditedPhoto').val(img);
             goSaveAndBack();
@@ -323,7 +324,7 @@ export function tweakMousePosition(state) {
 export function callIfImageTooSmall(layer, cb) {
     if (!config.REQUIRE_CROP?.value == '1') return;
     setTimeout(function () {
-        if (layer.width_original < _config2.default.MIN_WIDTH || layer.height_original < _config2.default.MIN_HEIGHT) {
+        if (layer.width_original < config.MIN_WIDTH || layer.height_original < config2.MIN_HEIGHT) {
             $('#errorModalDimensions').modal('show');
             cb();
         }
