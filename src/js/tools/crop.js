@@ -11,7 +11,7 @@ import alertify from './../../../node_modules/alertifyjs/build/alertify.min.js';
 
 const USE_DATAWORKS = true;
 
-const mouseDownState = { mouse: { x: 0, y: 0 }, selection: { x: 0, y: 0 } };
+const mouseDownState = { mouse: { x: 0, y: 0 }, selection: { x: 0, y: 0 }, mode: '' };
 
 class Crop_class extends Base_tools_class {
     constructor(ctx) {
@@ -60,6 +60,7 @@ class Crop_class extends Base_tools_class {
         var mouse = this.get_mouse_info(e);
         mouseDownState.mouse = { x: mouse.x, y: mouse.y };
         mouseDownState.selection = { x: this.selection.x, y: this.selection.y };
+        mouseDownState.mode = '';
 
         if (this.Base_selection.is_drag == false || mouse.click_valid == false) return;
 
@@ -77,11 +78,8 @@ class Crop_class extends Base_tools_class {
             const bottom = this.selection.y + this.selection.height;
             if (mouse.x > left && mouse.x < right && mouse.y > top && mouse.y < bottom) {
                 //move
-                log('dataworks is forcing a move here', {
-                    mouse,
-                    selection: this.selection,
-                });
-                this.type = 'move'; // dataworks: from bundle_9771.js line 33544
+                log(`dataworks entering 'move' mode because mouse is inside selection`);
+                mouseDownState.mode = 'move'; // dataworks: from bundle_9771.js line 33544
                 return;
             }
         }
@@ -102,7 +100,7 @@ class Crop_class extends Base_tools_class {
         }
 
         if (USE_DATAWORKS) {
-            if (this.type == 'move') {
+            if (mouseDownState.mode == 'move') {
                 //move selection
                 const dx = mouse.x - mouseDownState.mouse.x;
                 const dy = mouse.y - mouseDownState.mouse.y;
@@ -250,11 +248,6 @@ class Crop_class extends Base_tools_class {
                 const dy = config.HEIGHT - this.selection.height - this.selection.y;
                 log(`dataworks is adjusting vertical position by ${dy}`);
                 this.selection.y += dy;
-            }
-
-            if (!!this.type) {
-                log(`dataworks is forcing a type from ${this.type} to null`);
-                this.type = null; // no explanation provided
             }
         }
 
