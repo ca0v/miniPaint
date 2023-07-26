@@ -308,16 +308,30 @@ export function tweakMousePosition(state) {
 
     const dy = dx * config.RATIO;
 
-    const allowUpdateWidth =
-        (is_drag_type_left && settings.data.width - dx >= $('#minWidth').val()) ||
-        (is_drag_type_right && settings.data.width + dx >= $('#minWidth').val());
+    const minWidth = $('#minWidth').val();
+    if (!minWidth) {
+        log(`#minWidth not found`);
+        return;
+    }
 
-    if (allowUpdateWidth) {
-        // dx would be negative when moving left
-        settings.data.x += dx;
-        settings.data.y += dy;
-        settings.data.width -= dx;
-        settings.data.height -= dy;
+    if (is_drag_type_left) {
+        const newWidth = settings.data.width - dx;
+        if (newWidth >= minWidth) {
+            log(`left: updating width by ${dx}`);
+            settings.data.x += dx;
+            settings.data.width -= dx;
+            return;
+        }
+    }
+
+    if (is_drag_type_right) {
+        const newWidth = settings.data.width + dx;
+        if (newWidth >= minWidth) {
+            log(`right: updating width by ${dx}`);
+            settings.data.x += dx;
+            settings.data.width += dx;
+            return;
+        }
     }
 }
 
