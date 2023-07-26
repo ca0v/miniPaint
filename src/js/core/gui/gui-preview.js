@@ -14,14 +14,16 @@ import Base_layers_class from './../base-layers.js';
 
 var instance = null;
 
-const USE_DATAWORKS = false;
+const USE_DATAWORKS = true;
 
 USE_DATAWORKS && updateConfigurationSize(config);
+
+// SKIPPED: dataworks is setting width and height of #canvas_preview to config.WIDTH and config.HEIGHT
 
 var template = `
 	<div class="canvas_preview_wrapper">
 		<div class="transparent-grid" id="canvas_preview_background"></div>
-		<canvas width="176" height="100" class="transparent" id="canvas_preview" width="${config.WIDTH}" height="${config.HEIGHT}"></canvas>
+		<canvas width="176" height="100" class="transparent" id="canvas_preview"></canvas>
 	</div>
 	<div class="canvas_preview_details">
 		<div class="details">
@@ -47,8 +49,11 @@ class GUI_preview_class {
         document.getElementById('toggle_preview').innerHTML = template;
 
         // preview mini window size on right sidebar
-        updateConfigurationSize(config);
-        this.PREVIEW_SIZE = { w: config.WIDTH, h: config.HEIGHT };
+        this.PREVIEW_SIZE = { w: 176, h: 100 };
+        if (USE_DATAWORKS) {
+            updateConfigurationSize(config);
+            updatePreviewSize(this);
+        }
 
         this.canvas_offset = { x: 0, y: 0 };
 
@@ -360,8 +365,10 @@ class GUI_preview_class {
     }
 
     set_zoom_position(event) {
-        USE_DATAWORKS && updateConfigurationVisibleSize(config);
-        USE_DATAWORKS && updatePreviewSize(this);
+        if (USE_DATAWORKS) {
+            updateConfigurationVisibleSize(config);
+            updatePreviewSize(this);
+        }
         var mouse_x = event.offsetX;
         var mouse_y = event.offsetY;
         if (event.changedTouches) {

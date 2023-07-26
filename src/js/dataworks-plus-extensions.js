@@ -1,6 +1,7 @@
 import config from './config.js';
 
 import alertify from '../../node_modules/alertifyjs/build/alertify.min.js';
+import { parse } from 'uuid';
 
 export const enableDrawCenters = false;
 
@@ -33,23 +34,51 @@ export function updateConfigurationSize(config) {
 }
 
 export function updateConfigurationVisibleSize(config) {
+    if (!config) {
+        warn(`config not defined`);
+        return;
+    }
     const sizer = document.getElementById('canvas_minipaint');
     if (!sizer) {
         warn(`'canvas_minipaint' element not found`);
         return;
     }
+    log(`setting config.visible_width to ${sizer.width}`);
     config.visible_width = sizer.width;
+
+    log(`setting config.HEIGHT to ${sizer.height}`);
     config.HEIGHT = sizer.height;
 }
 
 export function updatePreviewSize(preview) {
-    var sizer = document.getElementById('canvas_preview_wrapper_target');
+    if (!preview?.PREVIEW_SIZE) {
+        warn(`preview.PREVIEW_SIZE not defined`);
+    }
+
+    // this element does not exist...but why are we wanting to modify the preview window size?
+    const sizer = document.querySelector('.canvas_preview_wrapper');
     if (!sizer) {
-        warn(`'canvas_preview_wrapper_target' element not found`);
+        warn(`'.canvas_preview_wrapper' element not found`);
         return;
     }
-    preview.PREVIEW_SIZE.w = sizer.offsetWidth;
-    preview.PREVIEW_SIZE.h = sizer.offsetHeight;
+
+    const canvas = document.querySelector('canvas#canvas_preview');
+    if (!canvas) {
+        warn(`'canvas#canvas_preview' element not found`);
+        return;
+    }
+
+    const { width } = getComputedStyle(sizer);
+
+    const sizerWidth = parseInt(width);
+    const sizerHeight = sizerWidth * config.RATIO;
+
+    log(`setting sizer height to ${sizerWidth}px`);
+    sizer.style.height = sizerHeight + 'px';
+
+    log(`setting PREVIEW_SIZE to ${sizerWidth}x${sizerHeight}`);
+    preview.PREVIEW_SIZE.h = sizerHeight;
+    canvas.height = sizerHeight;
 }
 
 export async function injectPopupSaveCopyHandler(config) {
@@ -92,31 +121,20 @@ export function tweakMenuDefinition(menuDefinition) {
         const fileMenuGroup = findMenuDefinition(menuDefinition, 'File');
         removeMenuItem(fileMenuGroup.children, 'New');
 
-        'Search Images,Save As,Save As Data URL,Quick Save,Quick Load'
-            .split(',')
-            .forEach((menuTitle) => {
-                removeMenuItem(fileMenuGroup.children, menuTitle);
-            });
+        'Search Images,Save As,Save As Data URL,Quick Save,Quick Load'.split(',').forEach((menuTitle) => {
+            removeMenuItem(fileMenuGroup.children, menuTitle);
+        });
 
-        const fileOpenMenuItem = findMenuDefinition(
-            fileMenuGroup.children,
-            'Open',
-        );
+        const fileOpenMenuItem = findMenuDefinition(fileMenuGroup.children, 'Open');
 
-        'Open URL,Open Data URL,Open Test Template,Open from Webcam'
-            .split(',')
-            .forEach((menuTitle) => {
-                removeMenuItem(fileOpenMenuItem.children, menuTitle);
-            });
+        'Open URL,Open Data URL,Open Test Template,Open from Webcam'.split(',').forEach((menuTitle) => {
+            removeMenuItem(fileOpenMenuItem.children, menuTitle);
+        });
 
-        const saveAndReturnMenuItem = appendMenuDefinition(
-            fileMenuGroup.children,
-            lastItem(fileMenuGroup.children),
-            {
-                name: 'Save and Return',
-                target: 'file/print.print', // TODO: popup_saveCopy
-            },
-        );
+        const saveAndReturnMenuItem = appendMenuDefinition(fileMenuGroup.children, lastItem(fileMenuGroup.children), {
+            name: 'Save and Return',
+            target: 'file/print.print', // TODO: popup_saveCopy
+        });
 
         appendMenuDefinition(fileMenuGroup.children, saveAndReturnMenuItem, {
             name: 'Cancel Image Editing',
@@ -126,14 +144,10 @@ export function tweakMenuDefinition(menuDefinition) {
 
     {
         const editMenuGroup = findMenuDefinition(menuDefinition, 'Edit');
-        appendMenuDefinition(
-            editMenuGroup.children,
-            findMenuDefinition(editMenuGroup.children, 'Redo'),
-            {
-                name: 'Restore Original Image',
-                target: 'edit/restore.restore',
-            },
-        );
+        appendMenuDefinition(editMenuGroup.children, findMenuDefinition(editMenuGroup.children, 'Redo'), {
+            name: 'Restore Original Image',
+            target: 'edit/restore.restore',
+        });
 
         removeMenuItem(editMenuGroup.children, 'Select All');
     }
@@ -154,10 +168,7 @@ export function tweakMenuDefinition(menuDefinition) {
 
     {
         const effectsMenuGroup = findMenuDefinition(menuDefinition, 'Effects');
-        const commonFiltersMenuGroup = findMenuDefinition(
-            effectsMenuGroup.children,
-            'Common Filters',
-        );
+        const commonFiltersMenuGroup = findMenuDefinition(effectsMenuGroup.children, 'Common Filters');
 
         'Borders,Blueprint,Night Vision,Pencil,Box Blur,Denoise,Dither,Dot Screen,Edge,Emboss,Grains,Heatmap,Mosaic,Oil,Solarize,Tilt Shift,Vignette,Vibrance,Vintage,Zoom Blur'
             .split(',')
@@ -165,25 +176,19 @@ export function tweakMenuDefinition(menuDefinition) {
                 removeMenuItem(effectsMenuGroup.children, menuTitle);
             });
 
-        'Gaussian Blur,Hue Rotate,Negative,Sepia,Shadow'
-            .split(',')
-            .forEach((menuTitle) => {
-                removeMenuItem(commonFiltersMenuGroup.children, menuTitle);
-            });
+        'Gaussian Blur,Hue Rotate,Negative,Sepia,Shadow'.split(',').forEach((menuTitle) => {
+            removeMenuItem(commonFiltersMenuGroup.children, menuTitle);
+        });
 
         // removeMenuItem(effectsMenuGroup.children, 'Common Filters');
         removeMenuItem(effectsMenuGroup.children, 'Instagram Filters');
 
         // Completely obliterate the existing 'Tools' menu
         removeMenuItem(menuDefinition, 'Tools');
-        const toolsMenuGroup = appendMenuDefinition(
-            menuDefinition,
-            effectsMenuGroup,
-            {
-                name: 'Tools',
-                children: [],
-            },
-        );
+        const toolsMenuGroup = appendMenuDefinition(menuDefinition, effectsMenuGroup, {
+            name: 'Tools',
+            children: [],
+        });
 
         appendMenuDefinition(toolsMenuGroup.children, null, {
             divider: true,
@@ -203,23 +208,15 @@ export function tweakMenuDefinition(menuDefinition) {
 
     {
         const toolsMenuGroup = findMenuDefinition(menuDefinition, 'Tools');
-        const addImageMenuItem = appendMenuDefinition(
-            menuDefinition,
-            toolsMenuGroup,
-            {
-                name: 'Add Image',
-                children: [],
-            },
-        );
+        const addImageMenuItem = appendMenuDefinition(menuDefinition, toolsMenuGroup, {
+            name: 'Add Image',
+            children: [],
+        });
 
-        const beardsMenuItem = appendMenuDefinition(
-            addImageMenuItem.children,
-            null,
-            {
-                name: 'Beards',
-                children: [],
-            },
-        );
+        const beardsMenuItem = appendMenuDefinition(addImageMenuItem.children, null, {
+            name: 'Beards',
+            children: [],
+        });
 
         'Blond,Brown,Black & White'.split(',').forEach((menuTitle) => {
             appendMenuDefinition(beardsMenuItem.children, null, {
@@ -228,14 +225,10 @@ export function tweakMenuDefinition(menuDefinition) {
             });
         });
 
-        const moustachesMenuItem = appendMenuDefinition(
-            addImageMenuItem.children,
-            beardsMenuItem,
-            {
-                name: 'Moustaches',
-                children: [],
-            },
-        );
+        const moustachesMenuItem = appendMenuDefinition(addImageMenuItem.children, beardsMenuItem, {
+            name: 'Moustaches',
+            children: [],
+        });
 
         'Blond,Brown,Black & White'.split(',').forEach((menuTitle) => {
             appendMenuDefinition(moustachesMenuItem.children, null, {
@@ -244,14 +237,10 @@ export function tweakMenuDefinition(menuDefinition) {
             });
         });
 
-        const hatsMenuItem = appendMenuDefinition(
-            addImageMenuItem.children,
-            moustachesMenuItem,
-            {
-                name: 'Hats',
-                children: [],
-            },
-        );
+        const hatsMenuItem = appendMenuDefinition(addImageMenuItem.children, moustachesMenuItem, {
+            name: 'Hats',
+            children: [],
+        });
 
         'Brown,Black & White'.split(',').forEach((menuTitle) => {
             appendMenuDefinition(hatsMenuItem.children, null, {
@@ -260,14 +249,10 @@ export function tweakMenuDefinition(menuDefinition) {
             });
         });
 
-        const eyewearMenuItem = appendMenuDefinition(
-            addImageMenuItem.children,
-            hatsMenuItem,
-            {
-                name: 'Eyewear',
-                children: [],
-            },
-        );
+        const eyewearMenuItem = appendMenuDefinition(addImageMenuItem.children, hatsMenuItem, {
+            name: 'Eyewear',
+            children: [],
+        });
 
         'Black,Gold,Green'.split(',').forEach((menuTitle) => {
             appendMenuDefinition(eyewearMenuItem.children, null, {
@@ -317,23 +302,14 @@ export function tweakMousePosition(state) {
     const selectActive = $('#select').hasClass('active');
     if (!selectActive) return;
 
-    const {
-        config,
-        settings,
-        is_drag_type_left,
-        is_drag_type_right,
-        is_drag_type_top,
-        is_drag_type_bottom,
-        dx,
-    } = state;
+    const { config, settings, is_drag_type_left, is_drag_type_right, is_drag_type_top, is_drag_type_bottom, dx } =
+        state;
 
     const dy = dx * config.RATIO;
 
     const allowUpdateWidth =
-        (is_drag_type_left &&
-            settings.data.width - dx >= $('#minWidth').val()) ||
-        (is_drag_type_right &&
-            settings.data.width + dx >= $('#minWidth').val());
+        (is_drag_type_left && settings.data.width - dx >= $('#minWidth').val()) ||
+        (is_drag_type_right && settings.data.width + dx >= $('#minWidth').val());
 
     if (allowUpdateWidth) {
         // dx would be negative when moving left
@@ -347,10 +323,7 @@ export function tweakMousePosition(state) {
 export function callIfImageTooSmall(layer, cb) {
     if (!config.REQUIRE_CROP?.value == '1') return;
     setTimeout(function () {
-        if (
-            layer.width_original < _config2.default.MIN_WIDTH ||
-            layer.height_original < _config2.default.MIN_HEIGHT
-        ) {
+        if (layer.width_original < _config2.default.MIN_WIDTH || layer.height_original < _config2.default.MIN_HEIGHT) {
             $('#errorModalDimensions').modal('show');
             cb();
         }
@@ -361,9 +334,7 @@ export function tweakLayout(app) {
     // prevent prompting user when navigating away
     app.GUI.Tools_settings.save_setting('exit_confirm', false);
     const tools_container = document.getElementById('tools_container');
-    const toolbarItems = Array.from(
-        tools_container.querySelectorAll('span.item'),
-    );
+    const toolbarItems = Array.from(tools_container.querySelectorAll('span.item'));
     toolbarItems.forEach((item) => {
         const title = item.getAttribute('title');
         if (title) {
@@ -374,11 +345,7 @@ export function tweakLayout(app) {
     aliasTool(app, 'rotate', 'image/rotate.rotate');
     aliasTool(app, 'grayscale', 'effects/common/grayscale.grayscale');
     aliasTool(app, 'brightness', 'effects/common/brightness.brightness');
-    aliasTool(
-        app,
-        'backgroundReplace',
-        'effects/backgroundReplace.backgroundReplace',
-    );
+    aliasTool(app, 'backgroundReplace', 'effects/backgroundReplace.backgroundReplace');
 }
 
 async function sleep(ms) {
@@ -435,11 +402,9 @@ export function tweakConfig(config) {
 
     config.need_render = true;
 
-    'selection,shape,media,text,clone,blur,sharpen,desaturate,bulge_pinch,animation'
-        .split(',')
-        .forEach((name) => {
-            removeFromConfig(config, name);
-        });
+    'selection,shape,media,text,clone,blur,sharpen,desaturate,bulge_pinch,animation'.split(',').forEach((name) => {
+        removeFromConfig(config, name);
+    });
 
     const crop = modifyFromConfig(config, 'crop');
     crop.crop = undefined;
