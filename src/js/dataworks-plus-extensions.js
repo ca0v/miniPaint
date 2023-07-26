@@ -19,8 +19,9 @@ export function updateDialogSize(dialog) {
         warn(`#ImageLoaded element not found`);
         return;
     }
-    dialog.width_mini = sizer.naturalWidth;
-    dialog.height_mini = sizer.naturalHeight;
+
+    dialog.width_mini = sizer.width;
+    dialog.height_mini = sizer.height;
 }
 
 export function updateConfigurationSize(config) {
@@ -29,8 +30,9 @@ export function updateConfigurationSize(config) {
         warn(`#ImageLoaded element not found`);
         return;
     }
-    config.WIDTH = sizer.naturalWidth;
-    config.HEIGHT = sizer.naturalHeight;
+
+    config.WIDTH = sizer.width;
+    config.HEIGHT = sizer.height;
 }
 
 export function updateConfigurationVisibleSize(config) {
@@ -588,6 +590,7 @@ export function isModuleFunctionDefined(modules, options) {
 }
 
 export function onFinishRotate(it, options) {
+    return; // I do not understand the purpose of the below code
     const { config } = options;
     const [w, h] = [config.WIDTH, config.HEIGHT];
     it.PREVIEW_SIZE = { w, h };

@@ -170,14 +170,14 @@ class Crop_class extends Base_tools_class {
             // If the selection is to small, destroy it.
             if ($('#requireDimensions').val() == 1) {
                 log('dataworks is checking the minimum width');
-                if (_config2.default.layers.length == 1) {
-                    var pixelMod = Math.ceil($('#ImageLoaded').width() / _config2.default.WIDTH);
+                if (config.layers.length == 1) {
+                    var pixelMod = Math.ceil($('#ImageLoaded').width() / config.WIDTH);
                     var pixelWidth = Math.ceil(pixelMod * this.selection.width);
                     if (pixelWidth < $('#minWidth').val()) {
                         this.selection.width = 0;
                         this.selection.height = 0;
                         this.Base_selection.reset_selection();
-                        _config2.default.need_render = true;
+                        config.need_render = true;
                         return;
                     }
                 }
