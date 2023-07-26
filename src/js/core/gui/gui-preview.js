@@ -14,7 +14,9 @@ import Base_layers_class from './../base-layers.js';
 
 var instance = null;
 
-updateConfigurationSize(config);
+const USE_DATAWORKS = false;
+
+USE_DATAWORKS && updateConfigurationSize(config);
 
 var template = `
 	<div class="canvas_preview_wrapper">
@@ -65,9 +67,7 @@ class GUI_preview_class {
     }
 
     render_main_preview() {
-        this.canvas_preview = document
-            .getElementById('canvas_preview')
-            .getContext('2d');
+        this.canvas_preview = document.getElementById('canvas_preview').getContext('2d');
 
         this.prepare_canvas();
         config.need_render = true;
@@ -162,10 +162,7 @@ class GUI_preview_class {
                 e.preventDefault();
                 _this.zoom_data.x = e.offsetX;
                 _this.zoom_data.y = e.offsetY;
-                var delta = Math.max(
-                    -1,
-                    Math.min(1, e.wheelDelta || -e.detail || -e.deltaY),
-                );
+                var delta = Math.max(-1, Math.min(1, e.wheelDelta || -e.detail || -e.deltaY));
                 if (delta > 0) _this.zoom(+1, e);
                 else _this.zoom(-1, e);
             },
@@ -197,29 +194,23 @@ class GUI_preview_class {
             false,
         );
 
-        document
-            .getElementById('canvas_preview')
-            .addEventListener('touchstart', function (e) {
-                is_touch = true;
+        document.getElementById('canvas_preview').addEventListener('touchstart', function (e) {
+            is_touch = true;
 
-                //calc canvas position offset
-                var bodyRect = document.body.getBoundingClientRect();
-                var canvas_el = document
-                    .getElementById('canvas_preview')
-                    .getBoundingClientRect();
-                _this.canvas_offset.x = canvas_el.left - bodyRect.left;
-                _this.canvas_offset.y = canvas_el.top - bodyRect.top;
+            //calc canvas position offset
+            var bodyRect = document.body.getBoundingClientRect();
+            var canvas_el = document.getElementById('canvas_preview').getBoundingClientRect();
+            _this.canvas_offset.x = canvas_el.left - bodyRect.left;
+            _this.canvas_offset.y = canvas_el.top - bodyRect.top;
 
-                //change zoom offset
-                _this.set_zoom_position(e);
-            });
-        document
-            .getElementById('canvas_preview')
-            .addEventListener('touchmove', function (e) {
-                //change zoom offset
-                if (_this.mouse_pressed == false) return;
-                _this.set_zoom_position(e);
-            });
+            //change zoom offset
+            _this.set_zoom_position(e);
+        });
+        document.getElementById('canvas_preview').addEventListener('touchmove', function (e) {
+            //change zoom offset
+            if (_this.mouse_pressed == false) return;
+            _this.set_zoom_position(e);
+        });
     }
 
     prepare_canvas() {
@@ -231,13 +222,11 @@ class GUI_preview_class {
 
     render_preview_active_zone() {
         if (this.canvas_preview == undefined) {
-            this.canvas_preview = document
-                .getElementById('canvas_preview')
-                .getContext('2d');
+            this.canvas_preview = document.getElementById('canvas_preview').getContext('2d');
         }
 
         //active zone
-        updateConfigurationVisibleSize(config);
+        USE_DATAWORKS && updateConfigurationVisibleSize(config);
         var visible_w = config.visible_width / config.ZOOM;
         var visible_h = config.visible_height / config.ZOOM;
 
@@ -253,10 +242,8 @@ class GUI_preview_class {
         mini_rect_y = Math.max(0, mini_rect_y);
         mini_rect_w = Math.min(this.PREVIEW_SIZE.w - 1, mini_rect_w);
         mini_rect_h = Math.min(this.PREVIEW_SIZE.h - 1, mini_rect_h);
-        if (mini_rect_x + mini_rect_w > this.PREVIEW_SIZE.w)
-            mini_rect_x = this.PREVIEW_SIZE.w - mini_rect_w;
-        if (mini_rect_y + mini_rect_h > this.PREVIEW_SIZE.h)
-            mini_rect_y = this.PREVIEW_SIZE.h - mini_rect_h;
+        if (mini_rect_x + mini_rect_w > this.PREVIEW_SIZE.w) mini_rect_x = this.PREVIEW_SIZE.w - mini_rect_w;
+        if (mini_rect_y + mini_rect_h > this.PREVIEW_SIZE.h) mini_rect_y = this.PREVIEW_SIZE.h - mini_rect_h;
 
         if (
             mini_rect_x == 0 &&
@@ -336,8 +323,7 @@ class GUI_preview_class {
             config.ZOOM = Math.min(config.ZOOM, 500);
         }
 
-        document.getElementById('zoom_100').innerHTML =
-            Math.round(config.ZOOM * 100) + '%';
+        document.getElementById('zoom_100').innerHTML = Math.round(config.ZOOM * 100) + '%';
         document.getElementById('zoom_range').value = config.ZOOM * 100;
 
         config.need_render = true;
@@ -368,14 +354,14 @@ class GUI_preview_class {
     }
 
     set_center_zoom() {
-        updateConfigurationVisibleSize(config);
+        USE_DATAWORKS && updateConfigurationVisibleSize(config);
         this.zoom_data.x = config.visible_width / 2;
         this.zoom_data.y = config.visible_height / 2;
     }
 
     set_zoom_position(event) {
-        updateConfigurationVisibleSize(config);
-        updatePreviewSize(this);
+        USE_DATAWORKS && updateConfigurationVisibleSize(config);
+        USE_DATAWORKS && updatePreviewSize(this);
         var mouse_x = event.offsetX;
         var mouse_y = event.offsetY;
         if (event.changedTouches) {
@@ -391,10 +377,8 @@ class GUI_preview_class {
         var mini_w = (this.PREVIEW_SIZE.w * visible_w) / config.WIDTH;
         var mini_h = (this.PREVIEW_SIZE.h * visible_h) / config.HEIGHT;
 
-        var change_x =
-            ((mouse_x - mini_w / 2) / this.PREVIEW_SIZE.w) * config.WIDTH;
-        var change_y =
-            ((mouse_y - mini_h / 2) / this.PREVIEW_SIZE.h) * config.HEIGHT;
+        var change_x = ((mouse_x - mini_w / 2) / this.PREVIEW_SIZE.w) * config.WIDTH;
+        var change_y = ((mouse_y - mini_h / 2) / this.PREVIEW_SIZE.h) * config.HEIGHT;
 
         var zoom_data = this.zoom_data;
         zoom_data.move_pos = {};
