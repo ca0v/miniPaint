@@ -14,19 +14,19 @@ export function reportError(message) {
 }
 
 export function updateDialogSize(dialog) {
-    const imageLoadedElement = document.getElementById('ImageLoaded');
-    if (!imageLoadedElement) {
-        warn(`ImageLoaded element not found`);
+    const sizer = document.querySelector('#ImageLoaded');
+    if (!sizer) {
+        warn(`#ImageLoaded element not found`);
         return;
     }
-    dialog.width_mini = imageLoadedElement.naturalWidth;
-    dialog.height_mini = imageLoadedElement.naturalHeight;
+    dialog.width_mini = sizer.naturalWidth;
+    dialog.height_mini = sizer.naturalHeight;
 }
 
 export function updateConfigurationSize(config) {
-    const sizer = document.getElementById('ImageLoaded');
+    const sizer = document.querySelector('#ImageLoaded');
     if (!sizer) {
-        warn(`'ImageLoaded' element not found`);
+        warn(`#ImageLoaded element not found`);
         return;
     }
     config.WIDTH = sizer.naturalWidth;
