@@ -550,16 +550,6 @@ class Base_selection_class {
                         }
                     }
                 }
-                tweakMousePosition({
-                    dx,
-                    dy,
-                    config,
-                    settings,
-                    is_drag_type_left,
-                    is_drag_type_right,
-                    is_drag_type_top,
-                    is_drag_type_bottom,
-                });
                 config.need_render = true;
             }
             return;
