@@ -1,4 +1,4 @@
-import { injectPopupSaveCopyHandler } from '../../dataworks-plus-extensions.js';
+import { warn, injectPopupSaveCopyHandler } from '../../dataworks-plus-extensions.js';
 
 import app from './../../app.js';
 import config from './../../config.js';
@@ -769,6 +769,36 @@ class File_save_class {
         ctx.oImageSmoothingEnabled = false;
         ctx.msImageSmoothingEnabled = false;
         ctx.imageSmoothingEnabled = false;
+    }
+
+    dataworks_save_and_go_back() {
+        if (typeof goBack !== 'function') {
+            warn('Function goBack() not found');
+            return false;
+        }
+        goBack();
+    }
+
+    dataworks_save_copy() {
+        // THISISFORTHESAVETOSERVER
+        if (typeof goSaveAndBack !== 'function') {
+            warn('Function goSaveAndBack() not found');
+            return false;
+        }
+
+        if (config.REQUIRE_CROP?.value == '1') {
+            if (config.ASPECT == true) {
+                const img = this.prepareCavasForServerSave();
+                $('#PMEditedPhoto').val(img);
+                goSaveAndBack();
+            } else {
+                confirm('Image requires cropping before being saved.');
+            }
+        } else {
+            const img = this.prepareCavasForServerSave();
+            $('#PMEditedPhoto').val(img);
+            goSaveAndBack();
+        }
     }
 }
 

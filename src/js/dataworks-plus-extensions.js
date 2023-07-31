@@ -136,12 +136,12 @@ export function tweakMenuDefinition(menuDefinition) {
 
         const saveAndReturnMenuItem = appendMenuDefinition(fileMenuGroup.children, lastItem(fileMenuGroup.children), {
             name: 'Save and Return',
-            target: 'file/print.print', // TODO: popup_saveCopy
+            target: 'file/save.dataworks_save_copy', // TODO: popup_saveCopy
         });
 
         appendMenuDefinition(fileMenuGroup.children, saveAndReturnMenuItem, {
             name: 'Cancel Image Editing',
-            target: 'file/print.print', // TODO: goBack()
+            target: 'file/save.dataworks_save_and_go_back', // TODO: goBack()
         });
     }
 
