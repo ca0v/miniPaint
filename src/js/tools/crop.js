@@ -243,25 +243,33 @@ class Crop_class extends Base_tools_class {
             if (minWidth) {
                 if (this.selection.width < minWidth) {
                     const dw = minWidth - this.selection.width;
-                    log(`dataworks is adjusting width by ${dw} to enforce minimum width ${minWidth}`);
-                    this.selection.width += dw;
+                    if (dw) {
+                        log(`dataworks is adjusting width by ${dw} to enforce minimum width ${minWidth}`);
+                        this.selection.width += dw;
+                    }
                     // adjust height to honor aspect ratio
                     const dh = this.selection.width * config.RATIO - this.selection.height;
-                    log(`dataworks is adjusting height by ${dh} to enforce ratio ${config.RATIO}`);
-                    this.selection.height += dh;
+                    if (dh) {
+                        log(`dataworks is adjusting height by ${dh} to enforce ratio ${config.RATIO}`);
+                        this.selection.height += dh;
+                    }
                 }
             }
 
             if (this.selection.x + this.selection.width > config.WIDTH) {
-                const dx = config.WIDTH - this.selection.width - this.selection.x;
-                log(`dataworks is adjusting horizontal position by ${dx}`);
-                this.selection.x += dx;
+                const dx = config.WIDTH - (this.selection.width + this.selection.x);
+                if (dx < 0) {
+                    log(`dataworks is adjusting horizontal position by ${dx}`);
+                    this.selection.x += dx;
+                }
             }
 
             if (this.selection.y + this.selection.height > config.HEIGHT) {
-                const dy = config.HEIGHT - this.selection.height - this.selection.y;
-                log(`dataworks is adjusting vertical position by ${dy}`);
-                this.selection.y += dy;
+                const dy = config.HEIGHT - (this.selection.height + this.selection.y);
+                if (dy < 0) {
+                    log(`dataworks is adjusting vertical position by ${dy}`);
+                    this.selection.y += dy;
+                }
             }
         }
 
