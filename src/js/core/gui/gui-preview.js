@@ -3,11 +3,7 @@
  * author: Vilius L.
  */
 
-import {
-    updateConfigurationSize,
-    updateConfigurationVisibleSize,
-    updatePreviewSize,
-} from '../../dataworks-plus-extensions.js';
+import { updateConfigurationSize, updatePreviewSize } from '../../dataworks-plus-extensions.js';
 
 import config from './../../config.js';
 import Base_layers_class from './../base-layers.js';
@@ -231,7 +227,6 @@ class GUI_preview_class {
         }
 
         //active zone
-        USE_DATAWORKS && updateConfigurationVisibleSize();
         var visible_w = config.visible_width / config.ZOOM;
         var visible_h = config.visible_height / config.ZOOM;
 
@@ -359,14 +354,12 @@ class GUI_preview_class {
     }
 
     set_center_zoom() {
-        USE_DATAWORKS && updateConfigurationVisibleSize();
         this.zoom_data.x = config.visible_width / 2;
         this.zoom_data.y = config.visible_height / 2;
     }
 
     set_zoom_position(event) {
         if (USE_DATAWORKS) {
-            updateConfigurationVisibleSize();
             updatePreviewSize(this);
         }
         var mouse_x = event.offsetX;

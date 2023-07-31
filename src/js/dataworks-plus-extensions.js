@@ -35,20 +35,6 @@ export function updateConfigurationSize(config) {
     config.HEIGHT = sizer.height;
 }
 
-export function updateConfigurationVisibleSize() {
-    return; // this is causing layout problems (scroll in and then out)
-    const sizer = document.getElementById('canvas_minipaint');
-    if (!sizer) {
-        warn(`'canvas_minipaint' element not found`);
-        return;
-    }
-    log(`setting config.visible_width to ${sizer.width}`);
-    config.visible_width = sizer.width;
-
-    log(`setting config.HEIGHT to ${sizer.height}`);
-    config.HEIGHT = sizer.height;
-}
-
 export function updatePreviewSize(preview) {
     if (!preview?.PREVIEW_SIZE) {
         warn(`preview.PREVIEW_SIZE not defined`);
