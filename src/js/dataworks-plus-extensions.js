@@ -139,11 +139,6 @@ export function tweakMenuDefinition(menuDefinition) {
     {
         const imageMenuGroup = findMenuDefinition(menuDefinition, 'Image');
         removeMenuItem(imageMenuGroup.children, 'Color Palette');
-        appendMenuDefinition(imageMenuGroup.children, null, {
-            name: 'Background Replace',
-            ellipsis: true,
-            target: 'image/dataworks-background_replace.backgroundReplace',
-        });
     }
 
     {
@@ -153,16 +148,32 @@ export function tweakMenuDefinition(menuDefinition) {
 
     {
         const effectsMenuGroup = findMenuDefinition(menuDefinition, 'Effects');
-        const commonFiltersMenuGroup = findMenuDefinition(effectsMenuGroup.children, 'Common Filters');
 
-        'Borders,Blueprint,Night Vision,Pencil,Box Blur,Denoise,Dither,Dot Screen,Edge,Emboss,Grains,Heatmap,Mosaic,Oil,Solarize,Tilt Shift,Vignette,Vibrance,Vintage,Zoom Blur'
+        'Effect browser,Borders,Blueprint,Night Vision,Pencil,Box Blur,Denoise,Dither,Dot Screen,Edge,Emboss,Grains,Heatmap,Mosaic,Oil,Solarize,Tilt Shift,Vignette,Vibrance,Vintage,Zoom Blur'
             .split(',')
             .forEach((menuTitle) => {
                 removeMenuItem(effectsMenuGroup.children, menuTitle);
             });
 
+        const commonFiltersMenuGroup = findMenuDefinition(effectsMenuGroup.children, 'Common Filters');
         'Gaussian Blur,Hue Rotate,Negative,Sepia,Shadow'.split(',').forEach((menuTitle) => {
             removeMenuItem(commonFiltersMenuGroup.children, menuTitle);
+        });
+
+        // move commonFilters up one level
+        'Brightness,Contrast,Grayscale,Saturate'
+            .split(',')
+            .reverse()
+            .forEach((menuTitle) => {
+                const menuDef = findMenuDefinition(commonFiltersMenuGroup.children, menuTitle);
+                removeMenuItem(commonFiltersMenuGroup.children, menuDef.name);
+                appendMenuDefinition(effectsMenuGroup.children, commonFiltersMenuGroup, menuDef);
+            });
+        removeMenuItem(effectsMenuGroup.children, commonFiltersMenuGroup.name);
+        appendMenuDefinition(effectsMenuGroup.children, null, {
+            name: 'Background Replace',
+            ellipsis: true,
+            target: 'image/dataworks-background_replace.backgroundReplace',
         });
 
         // removeMenuItem(effectsMenuGroup.children, 'Common Filters');
