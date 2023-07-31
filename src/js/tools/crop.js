@@ -168,40 +168,6 @@ class Crop_class extends Base_tools_class {
             return;
         }
 
-        if (USE_DATAWORKS) {
-            // dataworks
-            // This is to check the minimum width. (from the server variables)
-            // If the selection is to small, destroy it.
-            if (!document.querySelector('#minWidth')) {
-                log('dataworks is not checking the minimum width because #minWidth is not loaded');
-                return;
-            }
-            if (!document.querySelector('#ImageLoaded')) {
-                log('dataworks is not checking the minimum width because #ImageLoaded is not loaded');
-                return;
-            }
-            if (!document.querySelector('#requireDimensions')) {
-                log(`dataworks is not checking the minimum width because "#requireDimensions" is not loaded`);
-                return;
-            }
-            if ($('#requireDimensions').val() == 1) {
-                log('dataworks is checking the minimum width');
-                if (config.layers.length != 1) {
-                    log(
-                        'dataworks is not tampering with the selection because there is not exactly one layer selected',
-                    );
-                } else {
-                    const pixelMod = Math.ceil($('#ImageLoaded').width() / config.WIDTH);
-                    const pixelWidth = Math.ceil(pixelMod * this.selection.width);
-                    const minWidth = $('#minWidth').val();
-                    if (pixelWidth < minWidth) {
-                        log(`dataworks is forcing the width to be at least ${minWidth} pixels`);
-                        this.selection.width = minWidth;
-                    }
-                }
-            }
-        }
-
         if (this.selection.width != null) {
             //make sure coords not negative
             var details = this.selection;
@@ -238,6 +204,25 @@ class Crop_class extends Base_tools_class {
         }
 
         if (USE_DATAWORKS) {
+            let minWidth = 0;
+            // dataworks
+            // This is to check the minimum width. (from the server variables)
+            // If the selection is to small, destroy it.
+            if (!document.querySelector('#minWidth')) {
+                log('dataworks is not checking the minimum width because #minWidth is not loaded');
+            } else if (!document.querySelector('#requireDimensions')) {
+                log(`dataworks is not checking the minimum width because "#requireDimensions" is not loaded`);
+            } else if ($('#requireDimensions').val() == 1) {
+                log('dataworks is checking the minimum width');
+                if (config.layers.length != 1) {
+                    log(
+                        'dataworks is not tampering with the selection because there is not exactly one layer selected',
+                    );
+                } else {
+                    minWidth = $('#minWidth').val();
+                }
+            }
+
             if (this.selection.width > config.WIDTH) {
                 log(`dataworks is limiting width to ${config.WIDTH}`);
                 this.selection.width = config.WIDTH;
@@ -253,6 +238,18 @@ class Crop_class extends Base_tools_class {
                 const dw = desiredWidth - this.selection.width;
                 log(`dataworks is adjusting width by ${dw} to enforce ratio ${config.RATIO}`);
                 this.selection.width += dw;
+            }
+
+            if (minWidth) {
+                if (this.selection.width < minWidth) {
+                    const dw = minWidth - this.selection.width;
+                    log(`dataworks is adjusting width by ${dw} to enforce minimum width ${minWidth}`);
+                    this.selection.width += dw;
+                    // adjust height to honor aspect ratio
+                    const dh = this.selection.width * config.RATIO - this.selection.height;
+                    log(`dataworks is adjusting height by ${dh} to enforce ratio ${config.RATIO}`);
+                    this.selection.height += dh;
+                }
             }
 
             if (this.selection.x + this.selection.width > config.WIDTH) {
