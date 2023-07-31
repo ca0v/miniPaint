@@ -35,11 +35,8 @@ export function updateConfigurationSize(config) {
     config.HEIGHT = sizer.height;
 }
 
-export function updateConfigurationVisibleSize(config) {
-    if (!config) {
-        warn(`config not defined`);
-        return;
-    }
+export function updateConfigurationVisibleSize() {
+    return; // this is causing layout problems (scroll in and then out)
     const sizer = document.getElementById('canvas_minipaint');
     if (!sizer) {
         warn(`'canvas_minipaint' element not found`);
@@ -71,16 +68,15 @@ export function updatePreviewSize(preview) {
     }
 
     const { width } = getComputedStyle(sizer);
-
     const sizerWidth = parseInt(width);
     const sizerHeight = sizerWidth * config.RATIO;
 
-    log(`setting sizer height to ${sizerWidth}px`);
-    sizer.style.height = sizerHeight + 'px';
+    log(`setting --canvas-preview-height CSS variable to ${sizerHeight}px`);
+    document.documentElement.style.setProperty('--canvas-preview-height', sizerHeight + 'px');
 
-    log(`setting PREVIEW_SIZE to ${sizerWidth}x${sizerHeight}`);
-    preview.PREVIEW_SIZE.h = sizerHeight;
+    log(`setting canvas_preview.height to ${sizerHeight}`);
     canvas.height = sizerHeight;
+    preview.PREVIEW_SIZE.h = sizerHeight;
 }
 
 export async function injectPopupSaveCopyHandler(options) {
