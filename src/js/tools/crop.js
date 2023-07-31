@@ -10,7 +10,7 @@ import Base_selection_class from './../core/base-selection.js';
 import alertify from './../../../node_modules/alertifyjs/build/alertify.min.js';
 
 const USE_DATAWORKS = true;
-const mouseDownState = { mouse: { x: 0, y: 0 }, selection: { x: 0, y: 0 }, mode: '' };
+const mouseDownState = { mouse: { x: 0, y: 0 }, selection: { x: 0, y: 0, width: 0, height: 0 }, mode: '' };
 
 class Crop_class extends Base_tools_class {
     constructor(ctx) {
@@ -58,7 +58,12 @@ class Crop_class extends Base_tools_class {
     mousedown(e) {
         var mouse = this.get_mouse_info(e);
         mouseDownState.mouse = { x: mouse.x, y: mouse.y };
-        mouseDownState.selection = { x: this.selection.x, y: this.selection.y };
+        mouseDownState.selection = {
+            x: this.selection.x,
+            y: this.selection.y,
+            width: this.selection.width,
+            height: this.selection.height,
+        };
         mouseDownState.mode = '';
 
         if (this.Base_selection.is_drag == false || mouse.click_valid == false) return;
@@ -160,7 +165,6 @@ class Crop_class extends Base_tools_class {
         if (width == 0 || height == 0) {
             //cancel selection
             this.Base_selection.reset_selection();
-            config.need_render = true;
             return;
         }
 
@@ -168,17 +172,31 @@ class Crop_class extends Base_tools_class {
             // dataworks
             // This is to check the minimum width. (from the server variables)
             // If the selection is to small, destroy it.
+            if (!document.querySelector('#minWidth')) {
+                log('dataworks is not checking the minimum width because #minWidth is not loaded');
+                return;
+            }
+            if (!document.querySelector('#ImageLoaded')) {
+                log('dataworks is not checking the minimum width because #ImageLoaded is not loaded');
+                return;
+            }
+            if (!document.querySelector('#requireDimensions')) {
+                log(`dataworks is not checking the minimum width because "#requireDimensions" is not loaded`);
+                return;
+            }
             if ($('#requireDimensions').val() == 1) {
                 log('dataworks is checking the minimum width');
-                if (config.layers.length == 1) {
-                    var pixelMod = Math.ceil($('#ImageLoaded').width() / config.WIDTH);
-                    var pixelWidth = Math.ceil(pixelMod * this.selection.width);
-                    if (pixelWidth < $('#minWidth').val()) {
-                        this.selection.width = 0;
-                        this.selection.height = 0;
-                        this.Base_selection.reset_selection();
-                        config.need_render = true;
-                        return;
+                if (config.layers.length != 1) {
+                    log(
+                        'dataworks is not tampering with the selection because there is not exactly one layer selected',
+                    );
+                } else {
+                    const pixelMod = Math.ceil($('#ImageLoaded').width() / config.WIDTH);
+                    const pixelWidth = Math.ceil(pixelMod * this.selection.width);
+                    const minWidth = $('#minWidth').val();
+                    if (pixelWidth < minWidth) {
+                        log(`dataworks is forcing the width to be at least ${minWidth} pixels`);
+                        this.selection.width = minWidth;
                     }
                 }
             }
