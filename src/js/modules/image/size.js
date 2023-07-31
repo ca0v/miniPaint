@@ -19,8 +19,7 @@ class Image_size_class {
         var common_dimensions = this.Base_gui.common_dimensions;
         var units = this.Tools_settings.get_setting('default_units');
         var resolution = this.Tools_settings.get_setting('resolution');
-        var enable_autoresize =
-            this.Tools_settings.get_setting('enable_autoresize');
+        var enable_autoresize = this.Tools_settings.get_setting('enable_autoresize');
 
         var resolutions = ['Custom'];
         for (var i in common_dimensions) {
@@ -30,11 +29,7 @@ class Image_size_class {
 
         //convert units
         var width = this.Helper.get_user_unit(config.WIDTH, units, resolution);
-        var height = this.Helper.get_user_unit(
-            config.HEIGHT,
-            units,
-            resolution,
-        );
+        var height = this.Helper.get_user_unit(config.HEIGHT, units, resolution);
 
         var settings = {
             title: 'Canvas size',
@@ -96,10 +91,7 @@ class Image_size_class {
             height = 1;
         }
 
-        this.Tools_settings.save_setting(
-            'enable_autoresize',
-            data.enable_autoresize,
-        );
+        this.Tools_settings.save_setting('enable_autoresize', data.enable_autoresize);
 
         //aspect ratio
         if (isNaN(width) && isNaN(height)) {
@@ -151,18 +143,14 @@ class Image_size_class {
                         x: Math.round(layer.x / width_ratio),
                         y: Math.round(layer.y / height_ratio),
                     };
-                    actions.push(
-                        new app.Actions.Update_layer_action(layer.id, data_new),
-                    );
+                    actions.push(new app.Actions.Update_layer_action(layer.id, data_new));
                 }
                 if (layer.width != null && layer.height != null) {
                     var data_new = {
                         width: Math.round(layer.width / ratio),
                         height: Math.round(layer.height / ratio),
                     };
-                    actions.push(
-                        new app.Actions.Update_layer_action(layer.id, data_new),
-                    );
+                    actions.push(new app.Actions.Update_layer_action(layer.id, data_new));
                 }
             }
         }
@@ -170,13 +158,7 @@ class Image_size_class {
         actions.push(new app.Actions.Prepare_canvas_action('do'));
 
         //execute
-        app.State.do_action(
-            new app.Actions.Bundle_action(
-                'set_image_size',
-                'Set Image Size',
-                actions,
-            ),
-        );
+        app.State.do_action(new app.Actions.Bundle_action('set_image_size', 'Set Image Size', actions));
     }
 }
 

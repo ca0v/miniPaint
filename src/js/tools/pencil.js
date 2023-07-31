@@ -36,12 +36,7 @@ class Pencil_class extends Base_tools_class {
     pointerdown(e) {
         // Devices that don't actually support pen pressure can give 0.5 as a false reading.
         // It is highly unlikely a real pen will read exactly 0.5 at the start of a stroke.
-        if (
-            e.pressure &&
-            e.pressure !== 0 &&
-            e.pressure !== 0.5 &&
-            e.pressure <= 1
-        ) {
+        if (e.pressure && e.pressure !== 0 && e.pressure !== 0.5 && e.pressure <= 1) {
             this.pressure_supported = true;
             this.pointer_pressure = e.pressure;
         } else {
@@ -83,11 +78,9 @@ class Pencil_class extends Base_tools_class {
                 color: config.COLOR,
             };
             app.State.do_action(
-                new app.Actions.Bundle_action(
-                    'new_pencil_layer',
-                    'New Pencil Layer',
-                    [new app.Actions.Insert_layer_action(this.layer)],
-                ),
+                new app.Actions.Bundle_action('new_pencil_layer', 'New Pencil Layer', [
+                    new app.Actions.Insert_layer_action(this.layer),
+                ]),
             );
             this.params_hash = params_hash;
         } else {
@@ -95,15 +88,11 @@ class Pencil_class extends Base_tools_class {
             const new_data = JSON.parse(JSON.stringify(config.layer.data));
             new_data.push(null);
             app.State.do_action(
-                new app.Actions.Bundle_action(
-                    'update_pencil_layer',
-                    'Update Pencil Layer',
-                    [
-                        new app.Actions.Update_layer_action(config.layer.id, {
-                            data: new_data,
-                        }),
-                    ],
-                ),
+                new app.Actions.Bundle_action('update_pencil_layer', 'Update Pencil Layer', [
+                    new app.Actions.Update_layer_action(config.layer.id, {
+                        data: new_data,
+                    }),
+                ]),
             );
         }
     }
@@ -125,11 +114,7 @@ class Pencil_class extends Base_tools_class {
         }
 
         //more data
-        config.layer.data.push([
-            Math.ceil(mouse.x - config.layer.x),
-            Math.ceil(mouse.y - config.layer.y),
-            new_size,
-        ]);
+        config.layer.data.push([Math.ceil(mouse.x - config.layer.x), Math.ceil(mouse.y - config.layer.y), new_size]);
         this.Base_layers.render();
     }
 
@@ -150,11 +135,7 @@ class Pencil_class extends Base_tools_class {
         }
 
         //more data
-        config.layer.data.push([
-            Math.ceil(mouse.x - config.layer.x),
-            Math.ceil(mouse.y - config.layer.y),
-            new_size,
-        ]);
+        config.layer.data.push([Math.ceil(mouse.x - config.layer.x), Math.ceil(mouse.y - config.layer.y), new_size]);
 
         this.check_dimensions();
 
@@ -210,26 +191,14 @@ class Pencil_class extends Base_tools_class {
                 } else {
                     //lines
                     ctx.beginPath();
-                    this.draw_simple_line(
-                        ctx,
-                        data[i - 1][0],
-                        data[i - 1][1],
-                        data[i][0],
-                        data[i][1],
-                        size,
-                    );
+                    this.draw_simple_line(ctx, data[i - 1][0], data[i - 1][1], data[i][0], data[i][1], size);
                 }
             }
         }
         if (n == 1 || data[1] == null) {
             //point
             ctx.beginPath();
-            ctx.fillRect(
-                data[0][0] - Math.floor(size / 2) - 1,
-                data[0][1] - Math.floor(size / 2) - 1,
-                size,
-                size,
-            );
+            ctx.fillRect(data[0][0] - Math.floor(size / 2) - 1, data[0][1] - Math.floor(size / 2) - 1, size, size);
         }
 
         ctx.translate(-layer.x, -layer.y);
@@ -252,14 +221,8 @@ class Pencil_class extends Base_tools_class {
         var radiance = Math.atan2(dist_y, dist_x);
 
         for (var j = 0; j < distance; j++) {
-            var x_tmp =
-                Math.round(to_x + Math.cos(radiance) * j) -
-                Math.floor(size / 2) -
-                1;
-            var y_tmp =
-                Math.round(to_y + Math.sin(radiance) * j) -
-                Math.floor(size / 2) -
-                1;
+            var x_tmp = Math.round(to_x + Math.cos(radiance) * j) - Math.floor(size / 2) - 1;
+            var y_tmp = Math.round(to_y + Math.sin(radiance) * j) - Math.floor(size / 2) - 1;
 
             ctx.fillRect(x_tmp, y_tmp, size, size);
         }

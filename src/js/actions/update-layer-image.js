@@ -42,15 +42,10 @@ export class Update_layer_image_action extends Base_action {
             try {
                 canvas_data_url = await image_store.get(this.new_image_id);
             } catch (error) {
-                throw new Error(
-                    'Aborted - problem retrieving cached image from database',
-                );
+                throw new Error('Aborted - problem retrieving cached image from database');
             }
         } else if (this.canvas) {
-            if (
-                Helper.is_edge_or_ie() == false &&
-                typeof FileReader !== 'undefined'
-            ) {
+            if (Helper.is_edge_or_ie() == false && typeof FileReader !== 'undefined') {
                 // Update image using blob and FileReader (async)
                 await new Promise((resolve) => {
                     this.canvas.toBlob((blob) => {
@@ -74,9 +69,7 @@ export class Update_layer_image_action extends Base_action {
                 if (this.reference_layer._link_database_id) {
                     this.old_image_id = this.reference_layer._link_database_id;
                 } else {
-                    this.old_image_id = await image_store.add(
-                        this.reference_layer.link.src,
-                    );
+                    this.old_image_id = await image_store.add(this.reference_layer.link.src);
                 }
             }
             if (!this.new_image_id) {
@@ -91,9 +84,7 @@ export class Update_layer_image_action extends Base_action {
 
         // Estimate storage size
         try {
-            this.database_estimate = new Blob([
-                await image_store.get(this.old_image_id),
-            ]).size;
+            this.database_estimate = new Blob([await image_store.get(this.old_image_id)]).size;
         } catch (e) {}
 
         // Assign layer properties
@@ -110,17 +101,13 @@ export class Update_layer_image_action extends Base_action {
 
         // Estimate storage size
         try {
-            this.database_estimate = new Blob([
-                this.reference_layer.link.src,
-            ]).size;
+            this.database_estimate = new Blob([this.reference_layer.link.src]).size;
         } catch (e) {}
 
         // Restore old image
         if (this.old_image_id != null) {
             try {
-                this.reference_layer.link.src = await image_store.get(
-                    this.old_image_id,
-                );
+                this.reference_layer.link.src = await image_store.get(this.old_image_id);
             } catch (error) {
                 throw new Error('Failed to retrieve image from store');
             }

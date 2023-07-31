@@ -8,9 +8,7 @@ class Layer_clear_class {
     }
 
     clear() {
-        return app.State.do_action(
-            new app.Actions.Clear_layer_action(config.layer.id),
-        );
+        return app.State.do_action(new app.Actions.Clear_layer_action(config.layer.id));
     }
 }
 

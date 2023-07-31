@@ -12,9 +12,7 @@ class Effects_lofi_class {
 
     lofi() {
         if (config.layer.type != 'image') {
-            alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.',
-            );
+            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
             return;
         }
 
@@ -28,9 +26,7 @@ class Effects_lofi_class {
         ctx.drawImage(data, 0, 0);
 
         //save
-        return app.State.do_action(
-            new app.Actions.Update_layer_image_action(canvas),
-        );
+        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
     }
 
     change(canvas, width, height) {
@@ -44,14 +40,7 @@ class Effects_lofi_class {
         //merge
         ctx2.globalCompositeOperation = 'multiply';
         var min = Math.min(width, height);
-        var gradient = ctx2.createRadialGradient(
-            width / 2,
-            height / 2,
-            min * 0.7,
-            width / 2,
-            height / 2,
-            min * 1.5,
-        );
+        var gradient = ctx2.createRadialGradient(width / 2, height / 2, min * 0.7, width / 2, height / 2, min * 1.5);
         gradient.addColorStop(0, 'rgba(0,0,0,0)');
         gradient.addColorStop(1, '#222222');
         ctx2.fillStyle = gradient;
@@ -71,11 +60,7 @@ class Effects_lofi_class {
         var ctx = canvas.getContext('2d');
 
         //modify
-        var data = this.change(
-            canvas_thumb,
-            canvas_thumb.width,
-            canvas_thumb.height,
-        );
+        var data = this.change(canvas_thumb, canvas_thumb.width, canvas_thumb.height);
 
         //draw
         ctx.drawImage(data, 0, 0);

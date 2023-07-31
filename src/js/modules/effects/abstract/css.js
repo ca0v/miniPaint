@@ -50,14 +50,7 @@ class Effects_common_class {
     }
 
     save(params, type, filter_id) {
-        return app.State.do_action(
-            new app.Actions.Add_layer_filter_action(
-                null,
-                type,
-                params,
-                filter_id,
-            ),
-        );
+        return app.State.do_action(new app.Actions.Add_layer_filter_action(null, type, params, filter_id));
     }
 
     preview(params, type) {

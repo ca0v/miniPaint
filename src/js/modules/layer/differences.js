@@ -29,12 +29,7 @@ class Layer_differences_class {
                 },
             ],
             on_change: function (params, canvas_preview, w, h) {
-                _this.calc_differences(
-                    params.sensitivity,
-                    canvas_preview,
-                    w,
-                    h,
-                );
+                _this.calc_differences(params.sensitivity, canvas_preview, w, h);
             },
             on_finish: function (params) {
                 _this.calc_differences(params.sensitivity);

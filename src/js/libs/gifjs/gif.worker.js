@@ -2,9 +2,7 @@
     function e(r) {
         if (i[r]) return i[r].exports;
         var s = (i[r] = { exports: {}, id: r, loaded: !1 });
-        return (
-            t[r].call(s.exports, s, s.exports, e), (s.loaded = !0), s.exports
-        );
+        return t[r].call(s.exports, s, s.exports, e), (s.loaded = !0), s.exports;
     }
     var i = {};
     return (e.m = t), (e.c = i), (e.p = ''), e(0);
@@ -25,8 +23,7 @@
                     e.setGlobalPalette(t.globalPalette),
                     e.addFrame(t.data),
                     t.last && e.finish(),
-                    t.globalPalette === !0 &&
-                        (t.globalPalette = e.getGlobalPalette()),
+                    t.globalPalette === !0 && (t.globalPalette = e.getGlobalPalette()),
                     (s = e.stream()),
                     (t.data = s.pages),
                     (t.cursor = s.cursor),
@@ -34,12 +31,7 @@
                     t.canTransfer
                         ? ((o = (function () {
                               var e, r, s, o;
-                              for (
-                                  s = t.data, o = [], e = 0, r = s.length;
-                                  e < r;
-                                  e++
-                              )
-                                  (i = s[e]), o.push(i.buffer);
+                              for (s = t.data, o = [], e = 0, r = s.length; e < r; e++) (i = s[e]), o.push(i.buffer);
                               return o;
                           })()),
                           self.postMessage(t, o))
@@ -81,26 +73,21 @@
         (r.pageSize = 4096), (r.charMap = {});
         for (var a = 0; a < 256; a++) r.charMap[a] = String.fromCharCode(a);
         (r.prototype.newPage = function () {
-            (this.pages[++this.page] = new Uint8Array(r.pageSize)),
-                (this.cursor = 0);
+            (this.pages[++this.page] = new Uint8Array(r.pageSize)), (this.cursor = 0);
         }),
             (r.prototype.getData = function () {
                 for (var t = '', e = 0; e < this.pages.length; e++)
-                    for (var i = 0; i < r.pageSize; i++)
-                        t += r.charMap[this.pages[e][i]];
+                    for (var i = 0; i < r.pageSize; i++) t += r.charMap[this.pages[e][i]];
                 return t;
             }),
             (r.prototype.writeByte = function (t) {
-                this.cursor >= r.pageSize && this.newPage(),
-                    (this.pages[this.page][this.cursor++] = t);
+                this.cursor >= r.pageSize && this.newPage(), (this.pages[this.page][this.cursor++] = t);
             }),
             (r.prototype.writeUTFBytes = function (t) {
-                for (var e = t.length, i = 0; i < e; i++)
-                    this.writeByte(t.charCodeAt(i));
+                for (var e = t.length, i = 0; i < e; i++) this.writeByte(t.charCodeAt(i));
             }),
             (r.prototype.writeBytes = function (t, e, i) {
-                for (var r = i || t.length, s = e || 0; s < r; s++)
-                    this.writeByte(t[s]);
+                for (var r = i || t.length, s = e || 0; s < r; s++) this.writeByte(t[s]);
             }),
             (s.prototype.setDelay = function (t) {
                 this.delay = Math.round(t / 10);
@@ -119,23 +106,15 @@
             }),
             (s.prototype.addFrame = function (t) {
                 (this.image = t),
-                    (this.colorTab =
-                        this.globalPalette && this.globalPalette.slice
-                            ? this.globalPalette
-                            : null),
+                    (this.colorTab = this.globalPalette && this.globalPalette.slice ? this.globalPalette : null),
                     this.getImagePixels(),
                     this.analyzePixels(),
-                    this.globalPalette === !0 &&
-                        (this.globalPalette = this.colorTab),
+                    this.globalPalette === !0 && (this.globalPalette = this.colorTab),
                     this.firstFrame &&
-                        (this.writeLSD(),
-                        this.writePalette(),
-                        this.repeat >= 0 && this.writeNetscapeExt()),
+                        (this.writeLSD(), this.writePalette(), this.repeat >= 0 && this.writeNetscapeExt()),
                     this.writeGraphicCtrlExt(),
                     this.writeImageDesc(),
-                    this.firstFrame ||
-                        this.globalPalette ||
-                        this.writePalette(),
+                    this.firstFrame || this.globalPalette || this.writePalette(),
                     this.writePixels(),
                     (this.firstFrame = !1);
             }),
@@ -153,9 +132,7 @@
             }),
             (s.prototype.getGlobalPalette = function () {
                 return (
-                    (this.globalPalette &&
-                        this.globalPalette.slice &&
-                        this.globalPalette.slice(0)) ||
+                    (this.globalPalette && this.globalPalette.slice && this.globalPalette.slice(0)) ||
                     this.globalPalette
                 );
             }),
@@ -176,21 +153,13 @@
                     (this.pixels = null),
                     (this.colorDepth = 8),
                     (this.palSize = 7),
-                    null !== this.transparent &&
-                        (this.transIndex = this.findClosest(
-                            this.transparent,
-                            !0,
-                        ));
+                    null !== this.transparent && (this.transIndex = this.findClosest(this.transparent, !0));
             }),
             (s.prototype.indexPixels = function () {
                 var t = this.pixels.length / 3;
                 this.indexedPixels = new Uint8Array(t);
                 for (var e = 0, i = 0; i < t; i++) {
-                    var r = this.findClosestRGB(
-                        255 & this.pixels[e++],
-                        255 & this.pixels[e++],
-                        255 & this.pixels[e++],
-                    );
+                    var r = this.findClosestRGB(255 & this.pixels[e++], 255 & this.pixels[e++], 255 & this.pixels[e++]);
                     (this.usedEntry[r] = !0), (this.indexedPixels[i] = r);
                 }
             }),
@@ -240,11 +209,7 @@
                 this.indexedPixels = new Uint8Array(this.pixels.length / 3);
                 for (var l = 0; l < o; l++) {
                     e && (h *= -1);
-                    for (
-                        var u = 1 == h ? 0 : n - 1, p = 1 == h ? n : 0;
-                        u !== p;
-                        u += h
-                    ) {
+                    for (var u = 1 == h ? 0 : n - 1, p = 1 == h ? n : 0; u !== p; u += h) {
                         s = l * n + u;
                         var f = 3 * s,
                             c = a[f],
@@ -268,53 +233,25 @@
                         ) {
                             var S = r[m][1],
                                 T = r[m][2];
-                            if (
-                                S + u >= 0 &&
-                                S + u < n &&
-                                T + l >= 0 &&
-                                T + l < o
-                            ) {
+                            if (S + u >= 0 && S + u < n && T + l >= 0 && T + l < o) {
                                 var M = r[m][0];
                                 (f = s + S + T * n),
                                     (f *= 3),
-                                    (a[f] = Math.max(
-                                        0,
-                                        Math.min(255, a[f] + b * M),
-                                    )),
-                                    (a[f + 1] = Math.max(
-                                        0,
-                                        Math.min(255, a[f + 1] + v * M),
-                                    )),
-                                    (a[f + 2] = Math.max(
-                                        0,
-                                        Math.min(255, a[f + 2] + P * M),
-                                    ));
+                                    (a[f] = Math.max(0, Math.min(255, a[f] + b * M))),
+                                    (a[f + 1] = Math.max(0, Math.min(255, a[f + 1] + v * M))),
+                                    (a[f + 2] = Math.max(0, Math.min(255, a[f + 2] + P * M)));
                             }
                         }
                     }
                 }
             }),
             (s.prototype.findClosest = function (t, e) {
-                return this.findClosestRGB(
-                    (16711680 & t) >> 16,
-                    (65280 & t) >> 8,
-                    255 & t,
-                    e,
-                );
+                return this.findClosestRGB((16711680 & t) >> 16, (65280 & t) >> 8, 255 & t, e);
             }),
             (s.prototype.findClosestRGB = function (t, e, i, r) {
                 if (null === this.colorTab) return -1;
-                if (this.neuQuant && !r)
-                    return this.neuQuant.lookupRGB(t, e, i);
-                for (
-                    var s = 0,
-                        o = 16777216,
-                        n = this.colorTab.length,
-                        a = 0,
-                        h = 0;
-                    a < n;
-                    h++
-                ) {
+                if (this.neuQuant && !r) return this.neuQuant.lookupRGB(t, e, i);
+                for (var s = 0, o = 16777216, n = this.colorTab.length, a = 0, h = 0; a < n; h++) {
                     var l = t - (255 & this.colorTab[a++]),
                         u = e - (255 & this.colorTab[a++]),
                         p = i - (255 & this.colorTab[a++]),
@@ -329,19 +266,12 @@
                 this.pixels = new Uint8Array(t * e * 3);
                 for (var i = this.image, r = 0, s = 0, o = 0; o < e; o++)
                     for (var n = 0; n < t; n++)
-                        (this.pixels[s++] = i[r++]),
-                            (this.pixels[s++] = i[r++]),
-                            (this.pixels[s++] = i[r++]),
-                            r++;
+                        (this.pixels[s++] = i[r++]), (this.pixels[s++] = i[r++]), (this.pixels[s++] = i[r++]), r++;
             }),
             (s.prototype.writeGraphicCtrlExt = function () {
-                this.out.writeByte(33),
-                    this.out.writeByte(249),
-                    this.out.writeByte(4);
+                this.out.writeByte(33), this.out.writeByte(249), this.out.writeByte(4);
                 var t, e;
-                null === this.transparent
-                    ? ((t = 0), (e = 0))
-                    : ((t = 1), (e = 2)),
+                null === this.transparent ? ((t = 0), (e = 0)) : ((t = 1), (e = 2)),
                     this.dispose >= 0 && (e = 7 & dispose),
                     (e <<= 2),
                     this.out.writeByte(0 | e | 0 | t),
@@ -378,19 +308,13 @@
             }),
             (s.prototype.writePalette = function () {
                 this.out.writeBytes(this.colorTab);
-                for (var t = 768 - this.colorTab.length, e = 0; e < t; e++)
-                    this.out.writeByte(0);
+                for (var t = 768 - this.colorTab.length, e = 0; e < t; e++) this.out.writeByte(0);
             }),
             (s.prototype.writeShort = function (t) {
                 this.out.writeByte(255 & t), this.out.writeByte((t >> 8) & 255);
             }),
             (s.prototype.writePixels = function () {
-                var t = new n(
-                    this.width,
-                    this.height,
-                    this.indexedPixels,
-                    this.colorDepth,
-                );
+                var t = new n(this.width, this.height, this.indexedPixels, this.colorDepth);
                 t.encode(this.out);
             }),
             (s.prototype.stream = function () {
@@ -408,17 +332,10 @@
                     (Q = new Int32Array(s >> 3));
                 var t, e;
                 for (t = 0; t < s; t++)
-                    (e = (t << (n + 8)) / s),
-                        (z[t] = new Float64Array([e, e, e, 0])),
-                        (U[t] = h / s),
-                        (R[t] = 0);
+                    (e = (t << (n + 8)) / s), (z[t] = new Float64Array([e, e, e, 0])), (U[t] = h / s), (R[t] = 0);
             }
             function c() {
-                for (var t = 0; t < s; t++)
-                    (z[t][0] >>= n),
-                        (z[t][1] >>= n),
-                        (z[t][2] >>= n),
-                        (z[t][3] = t);
+                for (var t = 0; t < s; t++) (z[t][0] >>= n), (z[t][1] >>= n), (z[t][2] >>= n), (z[t][3] = t);
             }
             function w(t, e, i, r, s) {
                 (z[e][0] -= (t * (z[e][0] - i)) / b),
@@ -427,13 +344,7 @@
             }
             function x(t, e, i, r, o) {
                 for (
-                    var n,
-                        a,
-                        h = Math.abs(e - t),
-                        l = Math.min(e + t, s),
-                        u = e + 1,
-                        p = e - 1,
-                        f = 1;
+                    var n, a, h = Math.abs(e - t), l = Math.min(e + t, s), u = e + 1, p = e - 1, f = 1;
                     u < l || p > h;
 
                 )
@@ -462,11 +373,7 @@
                     x = g;
                 for (r = 0; r < s; r++)
                     (o = z[r]),
-                        (h =
-                            (Math.abs((0 | o[0]) - t) +
-                                Math.abs((0 | o[1]) - e) +
-                                Math.abs((0 | o[2]) - i)) |
-                            0),
+                        (h = (Math.abs((0 | o[0]) - t) + Math.abs((0 | o[1]) - e) + Math.abs((0 | o[2]) - i)) | 0),
                         h < w && ((w = h), (g = r)),
                         (c = h - ((0 | R[r]) >> (a - n))),
                         c < d && ((d = c), (x = r)),
@@ -504,8 +411,7 @@
                             (i[3] = e)),
                         a != h)
                     ) {
-                        for (E[h] = (l + t) >> 1, e = h + 1; e < a; e++)
-                            E[e] = t;
+                        for (E[h] = (l + t) >> 1, e = h + 1; e < a; e++) E[e] = t;
                         (h = a), (l = t);
                     }
                 }
@@ -513,11 +419,7 @@
             }
             function C(t, e, i) {
                 (t = 0 | t), (e = 0 | e), (i = 0 | i);
-                for (
-                    var r, o, n, a = 1e3, h = -1, l = 0 | E[e], u = l - 1;
-                    l < s || u >= 0;
-
-                )
+                for (var r, o, n, a = 1e3, h = -1, l = 0 | E[e], u = l - 1; l < s || u >= 0; )
                     l < s &&
                         ((o = z[l]),
                         (n = (0 | o[1]) - e),
@@ -559,19 +461,11 @@
                     l = b,
                     u = d,
                     p = u >> y;
-                for (p <= 1 && (p = 0), i = 0; i < p; i++)
-                    Q[i] = l * (((p * p - i * i) * P) / (p * p));
+                for (p <= 1 && (p = 0), i = 0; i < p; i++) Q[i] = l * (((p * p - i * i) * P) / (p * p));
                 var f;
                 s < A
                     ? ((e = 1), (f = 3))
-                    : (f =
-                          s % S !== 0
-                              ? 3 * S
-                              : s % T !== 0
-                              ? 3 * T
-                              : s % M !== 0
-                              ? 3 * M
-                              : 3 * F);
+                    : (f = s % S !== 0 ? 3 * S : s % T !== 0 ? 3 * T : s % M !== 0 ? 3 * M : 3 * F);
                 var c,
                     m,
                     B,
@@ -591,15 +485,7 @@
                         0 === h && (h = 1),
                         i % h === 0)
                     )
-                        for (
-                            l -= l / o,
-                                u -= u / g,
-                                p = u >> y,
-                                p <= 1 && (p = 0),
-                                C = 0;
-                            C < p;
-                            C++
-                        )
+                        for (l -= l / o, u -= u / g, p = u >> y, p <= 1 && (p = 0), C = 0; C < p; C++)
                             Q[C] = l * (((p * p - C * C) * P) / (p * p));
             }
             function D() {
@@ -614,9 +500,7 @@
                 return t;
             }
             var z, E, R, U, Q;
-            (this.buildColormap = D),
-                (this.getColormap = G),
-                (this.lookupRGB = C);
+            (this.buildColormap = D), (this.getColormap = G), (this.lookupRGB = C);
         }
         var r = 100,
             s = 256,
@@ -687,18 +571,12 @@
                                 }
                             while (T[a] >= 0);
                         }
-                        d(h, e),
-                            (h = n),
-                            A < 1 << s ? ((M[a] = A++), (T[a] = i)) : l(e);
+                        d(h, e), (h = n), A < 1 << s ? ((M[a] = A++), (T[a] = i)) : l(e);
                     } else h = M[a];
                 d(h, e), d(m, e);
             }
             function f(i) {
-                i.writeByte(B),
-                    (remaining = t * e),
-                    (curPixel = 0),
-                    p(B + 1, i),
-                    i.writeByte(0);
+                i.writeByte(B), (remaining = t * e), (curPixel = 0), p(B + 1, i), i.writeByte(0);
             }
             function c(t) {
                 x > 0 && (t.writeByte(x), t.writeBytes(S, 0, x), (x = 0));
@@ -713,18 +591,11 @@
                 return 255 & t;
             }
             function d(t, e) {
-                for (
-                    g &= n[F], F > 0 ? (g |= t << F) : (g = t), F += n_bits;
-                    F >= 8;
-
-                )
+                for (g &= n[F], F > 0 ? (g |= t << F) : (g = t), F += n_bits; F >= 8; )
                     h(255 & g, e), (g >>= 8), (F -= 8);
                 if (
                     ((A > b || C) &&
-                        (C
-                            ? ((b = y((n_bits = v))), (C = !1))
-                            : (++n_bits,
-                              (b = n_bits == s ? 1 << s : y(n_bits)))),
+                        (C ? ((b = y((n_bits = v))), (C = !1)) : (++n_bits, (b = n_bits == s ? 1 << s : y(n_bits)))),
                     t == m)
                 ) {
                     for (; F > 0; ) h(255 & g, e), (g >>= 8), (F -= 8);
@@ -749,10 +620,7 @@
         var r = -1,
             s = 12,
             o = 5003,
-            n = [
-                0, 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023, 2047, 4095, 8191,
-                16383, 32767, 65535,
-            ];
+            n = [0, 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023, 2047, 4095, 8191, 16383, 32767, 65535];
         t.exports = i;
     },
 ]);

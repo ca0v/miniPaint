@@ -39,9 +39,7 @@ const Helper = new Helper_class();
                 set_value(
                     $el,
                     colorsDialog.COLOR +
-                        (colorsDialog.ALPHA < 255
-                            ? colorsDialog.ALPHA.toString(16).padStart(2, '0')
-                            : ''),
+                        (colorsDialog.ALPHA < 255 ? colorsDialog.ALPHA.toString(16).padStart(2, '0') : ''),
                 );
                 $el.trigger('input');
                 $el.trigger('change');
@@ -109,25 +107,15 @@ const Helper = new Helper_class();
             let el = this[i];
 
             // Constructor
-            if (
-                Object.prototype.toString.call(behavior) !== '[object String]'
-            ) {
+            if (Object.prototype.toString.call(behavior) !== '[object String]') {
                 const definition = behavior || {};
 
                 const classList = el.className;
-                const id =
-                    definition.id != null
-                        ? definition.id
-                        : el.getAttribute('id');
+                const id = definition.id != null ? definition.id : el.getAttribute('id');
                 const inputId = definition.inputId || '';
                 const disabled =
-                    definition.disabled != null
-                        ? definition.disabled
-                        : el.hasAttribute('disabled')
-                        ? true
-                        : false;
-                const value =
-                    definition.value != null ? definition.value : el.value || 0;
+                    definition.disabled != null ? definition.disabled : el.hasAttribute('disabled') ? true : false;
+                const value = definition.value != null ? definition.value : el.value || 0;
                 const ariaLabeledBy = el.getAttribute('aria-labelledby');
 
                 let $el;

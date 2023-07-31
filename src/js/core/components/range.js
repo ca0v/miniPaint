@@ -57,34 +57,20 @@
 
     const on_mouse_down_range = (event) => {
         event.preventDefault();
-        const target =
-            event.touches && event.touches.length > 0
-                ? event.touches[0].target
-                : event.target;
+        const target = event.touches && event.touches.length > 0 ? event.touches[0].target : event.target;
         const $el = $(target.closest('.ui_range'));
         const { handle, paddedTrack, value, min, max, vertical } = $el.data();
-        const mouseDownClientX =
-            event.touches && event.touches.length > 0
-                ? event.touches[0].clientX
-                : event.clientX;
-        const mouseDownClientY =
-            event.touches && event.touches.length > 0
-                ? event.touches[0].clientY
-                : event.clientY;
+        const mouseDownClientX = event.touches && event.touches.length > 0 ? event.touches[0].clientX : event.clientX;
+        const mouseDownClientY = event.touches && event.touches.length > 0 ? event.touches[0].clientY : event.clientY;
         const mouseDownPaddedTrackRect = paddedTrack.getBoundingClientRect();
         let mouseDownValue = value;
         if (target !== handle) {
             let range, valueInRange;
             if (vertical) {
-                range =
-                    mouseDownPaddedTrackRect.top -
-                    mouseDownPaddedTrackRect.bottom;
-                valueInRange =
-                    mouseDownClientY - mouseDownPaddedTrackRect.bottom;
+                range = mouseDownPaddedTrackRect.top - mouseDownPaddedTrackRect.bottom;
+                valueInRange = mouseDownClientY - mouseDownPaddedTrackRect.bottom;
             } else {
-                range =
-                    mouseDownPaddedTrackRect.right -
-                    mouseDownPaddedTrackRect.left;
+                range = mouseDownPaddedTrackRect.right - mouseDownPaddedTrackRect.left;
                 valueInRange = mouseDownClientX - mouseDownPaddedTrackRect.left;
             }
             const ratio = Math.max(0, Math.min(1, valueInRange / range));
@@ -115,51 +101,23 @@
         return (event) => {
             event.preventDefault();
             event.stopPropagation();
-            const {
-                mouseDownValue,
-                min,
-                max,
-                vertical,
-                mouseDownClientX,
-                mouseDownClientY,
-                mouseDownPaddedTrackRect,
-            } = $el.data();
+            const { mouseDownValue, min, max, vertical, mouseDownClientX, mouseDownClientY, mouseDownPaddedTrackRect } =
+                $el.data();
             let range, offset, startValue;
             if (vertical) {
-                const clientY =
-                    event.touches && event.touches.length > 0
-                        ? event.touches[0].clientY
-                        : event.clientY;
-                range =
-                    mouseDownPaddedTrackRect.top -
-                    mouseDownPaddedTrackRect.bottom;
-                const mouseDownValueInPixelRange =
-                    ((mouseDownValue - min) / (max - min)) * range;
+                const clientY = event.touches && event.touches.length > 0 ? event.touches[0].clientY : event.clientY;
+                range = mouseDownPaddedTrackRect.top - mouseDownPaddedTrackRect.bottom;
+                const mouseDownValueInPixelRange = ((mouseDownValue - min) / (max - min)) * range;
                 startValue = mouseDownClientY - mouseDownPaddedTrackRect.bottom;
-                offset =
-                    clientY -
-                    mouseDownClientY +
-                    (mouseDownValueInPixelRange - startValue);
+                offset = clientY - mouseDownClientY + (mouseDownValueInPixelRange - startValue);
             } else {
-                const clientX =
-                    event.touches && event.touches.length > 0
-                        ? event.touches[0].clientX
-                        : event.clientX;
-                range =
-                    mouseDownPaddedTrackRect.right -
-                    mouseDownPaddedTrackRect.left;
-                const mouseDownValueInPixelRange =
-                    ((mouseDownValue - min) / (max - min)) * range;
+                const clientX = event.touches && event.touches.length > 0 ? event.touches[0].clientX : event.clientX;
+                range = mouseDownPaddedTrackRect.right - mouseDownPaddedTrackRect.left;
+                const mouseDownValueInPixelRange = ((mouseDownValue - min) / (max - min)) * range;
                 startValue = mouseDownClientX - mouseDownPaddedTrackRect.left;
-                offset =
-                    clientX -
-                    mouseDownClientX +
-                    (mouseDownValueInPixelRange - startValue);
+                offset = clientX - mouseDownClientX + (mouseDownValueInPixelRange - startValue);
             }
-            const ratio = Math.max(
-                0,
-                Math.min(1, (startValue + offset) / range),
-            );
+            const ratio = Math.max(0, Math.min(1, (startValue + offset) / range));
             const value = (max - min) * ratio;
             set_value($el, value);
             $el.trigger('input');
@@ -170,10 +128,7 @@
         return (event) => {
             const $window = $(window);
             $el.removeClass('active');
-            $window.off(
-                'mousemove touchmove',
-                $el.data('mouseMoveWindowHandler'),
-            );
+            $window.off('mousemove touchmove', $el.data('mouseMoveWindowHandler'));
             $window.off('mouseup touchend', $el.data('mouseUpWindowHandler'));
         };
     };
@@ -199,28 +154,14 @@
             let el = this[i];
 
             // Constructor
-            if (
-                Object.prototype.toString.call(behavior) !== '[object String]'
-            ) {
+            if (Object.prototype.toString.call(behavior) !== '[object String]') {
                 const definition = behavior || {};
 
                 const classList = el.className;
-                const id =
-                    definition.id != null
-                        ? definition.id
-                        : el.getAttribute('id');
-                const value =
-                    definition.value != null
-                        ? definition.value
-                        : parseFloat(el.value) || 0;
-                const min =
-                    definition.min != null
-                        ? definition.min
-                        : parseFloat(el.getAttribute('min')) || 0;
-                const max =
-                    definition.max != null
-                        ? definition.max
-                        : parseFloat(el.getAttribute('max')) || 0;
+                const id = definition.id != null ? definition.id : el.getAttribute('id');
+                const value = definition.value != null ? definition.value : parseFloat(el.value) || 0;
+                const min = definition.min != null ? definition.min : parseFloat(el.getAttribute('min')) || 0;
+                const max = definition.max != null ? definition.max : parseFloat(el.getAttribute('max')) || 0;
                 const step =
                     definition.step != null
                         ? definition.step

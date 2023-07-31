@@ -17,9 +17,7 @@ class Effects_tiltShift_class {
         var _this = this;
 
         if (config.layer.type != 'image') {
-            alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.',
-            );
+            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
             return;
         }
 
@@ -109,9 +107,7 @@ class Effects_tiltShift_class {
         this.change(canvas, params);
 
         //save
-        return app.State.do_action(
-            new app.Actions.Update_layer_image_action(canvas),
-        );
+        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
     }
 
     change(canvas, params) {
@@ -141,10 +137,7 @@ class Effects_tiltShift_class {
 
         //main effect
         var texture = this.fx_filter.texture(canvas);
-        this.fx_filter
-            .draw(texture)
-            .tiltShift(param3, param4, param5, param6, param1, param2)
-            .update();
+        this.fx_filter.draw(texture).tiltShift(param3, param4, param5, param6, param1, param2).update();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(this.fx_filter, 0, 0);
 

@@ -74,12 +74,7 @@ class Arrow_class extends Base_tools_class {
         var click_y = Math.round(this.mouse_click.y);
 
         //apply snap
-        var snap_info = this.calc_snap_position(
-            e,
-            mouse_x,
-            mouse_y,
-            config.layer.id,
-        );
+        var snap_info = this.calc_snap_position(e, mouse_x, mouse_y, config.layer.id);
         if (snap_info != null) {
             if (snap_info.x != null) {
                 mouse_x = snap_info.x;
@@ -117,12 +112,7 @@ class Arrow_class extends Base_tools_class {
         var click_y = Math.round(this.mouse_click.y);
 
         //apply snap
-        var snap_info = this.calc_snap_position(
-            e,
-            mouse_x,
-            mouse_y,
-            config.layer.id,
-        );
+        var snap_info = this.calc_snap_position(e, mouse_x, mouse_y, config.layer.id);
         if (snap_info != null) {
             if (snap_info.x != null) {
                 mouse_x = snap_info.x;
@@ -200,15 +190,9 @@ class Arrow_class extends Base_tools_class {
         ctx.lineTo(tox, toy);
         ctx.stroke();
         ctx.beginPath();
-        ctx.moveTo(
-            tox - headlen * Math.cos(angle - Math.PI / 6),
-            toy - headlen * Math.sin(angle - Math.PI / 6),
-        );
+        ctx.moveTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
         ctx.lineTo(tox, toy);
-        ctx.lineTo(
-            tox - headlen * Math.cos(angle + Math.PI / 6),
-            toy - headlen * Math.sin(angle + Math.PI / 6),
-        );
+        ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
         ctx.stroke();
     }
 }

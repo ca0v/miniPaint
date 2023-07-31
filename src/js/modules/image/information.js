@@ -30,13 +30,7 @@ class Image_information_class {
                 if (this.Helper.is_input(event.target)) return;
 
                 if (code == 'i') {
-                    if (
-                        event.altKey ||
-                        event.ctrlKey ||
-                        event.metaKey ||
-                        event.shiftKey
-                    )
-                        return;
+                    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
                     this.information();
                     event.preventDefault();
                 }
@@ -54,11 +48,7 @@ class Image_information_class {
         var resolution = this.Tools_settings.get_setting('resolution');
 
         var width = this.Helper.get_user_unit(config.WIDTH, units, resolution);
-        var height = this.Helper.get_user_unit(
-            config.HEIGHT,
-            units,
-            resolution,
-        );
+        var height = this.Helper.get_user_unit(config.HEIGHT, units, resolution);
 
         var settings = {
             title: 'Information',
@@ -133,8 +123,7 @@ class Image_information_class {
             var n = 0;
             for (var i = 0; i < imgData.length; i += 4) {
                 if (imgData[i + 3] == 0) continue; //transparent
-                var key =
-                    imgData[i] + '.' + imgData[i + 1] + '.' + imgData[i + 2];
+                var key = imgData[i] + '.' + imgData[i + 1] + '.' + imgData[i + 2];
                 if (colors[key] == undefined) {
                     colors[key] = 1;
                     n++;

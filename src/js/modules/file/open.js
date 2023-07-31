@@ -148,16 +148,12 @@ class File_open_class {
         }
 
         function handleError(error) {
-            alertify.error(
-                'Sorry, cold not load getUserMedia() data: ' + error,
-            );
+            alertify.error('Sorry, cold not load getUserMedia() data: ' + error);
         }
 
         var settings = {
             title: 'Webcam',
-            params: [
-                { title: 'Stream:', html: '<div id="webcam_container"></div>' },
-            ],
+            params: [{ title: 'Stream:', html: '<div id="webcam_container"></div>' }],
             on_load: function (params) {
                 document.getElementById('webcam_container').appendChild(video);
             },
@@ -183,20 +179,10 @@ class File_open_class {
                     height_original: height,
                 };
                 app.State.do_action(
-                    new app.Actions.Bundle_action(
-                        'open_file_webcam',
-                        'Open File Webcam',
-                        [
-                            new app.Actions.Insert_layer_action(new_layer),
-                            new app.Actions.Autoresize_canvas_action(
-                                width,
-                                height,
-                                null,
-                                true,
-                                true,
-                            ),
-                        ],
-                    ),
+                    new app.Actions.Bundle_action('open_file_webcam', 'Open File Webcam', [
+                        new app.Actions.Insert_layer_action(new_layer),
+                        new app.Actions.Autoresize_canvas_action(width, height, null, true, true),
+                    ]),
                 );
 
                 //destroy
@@ -218,10 +204,7 @@ class File_open_class {
         };
         this.POP.show(settings);
 
-        navigator.mediaDevices
-            .getUserMedia({ audio: false, video: true })
-            .then(handleSuccess)
-            .catch(handleError);
+        navigator.mediaDevices.getUserMedia({ audio: false, video: true }).then(handleSuccess).catch(handleError);
     }
 
     open_dir() {
@@ -287,29 +270,17 @@ class File_open_class {
                 height_original: img.height,
             };
             app.State.do_action(
-                new app.Actions.Bundle_action(
-                    'open_file_data_url',
-                    'Open File Data URL',
-                    [
-                        new app.Actions.Insert_layer_action(new_layer),
-                        new app.Actions.Autoresize_canvas_action(
-                            img.width,
-                            img.height,
-                            null,
-                            true,
-                            true,
-                        ),
-                    ],
-                ),
+                new app.Actions.Bundle_action('open_file_data_url', 'Open File Data URL', [
+                    new app.Actions.Insert_layer_action(new_layer),
+                    new app.Actions.Autoresize_canvas_action(img.width, img.height, null, true, true),
+                ]),
             );
             img.onload = function () {
                 config.need_render = true;
             };
         };
         img.onerror = function (ex) {
-            alertify.error(
-                'Sorry, image could not be loaded. Try copy image and paste it.',
-            );
+            alertify.error('Sorry, image could not be loaded. Try copy image and paste it.');
         };
         img.src = data;
     }
@@ -370,8 +341,7 @@ class File_open_class {
                 continue;
             }
             if (files.length == 1) {
-                this.SAVE_NAME =
-                    f.name.split('.')[f.name.split('.').length - 2];
+                this.SAVE_NAME = f.name.split('.')[f.name.split('.').length - 2];
             }
 
             var FR = new FileReader();
@@ -389,17 +359,12 @@ class File_open_class {
                         _exif: _this.extract_exif(this.file),
                     };
                     app.State.do_action(
-                        new app.Actions.Bundle_action(
-                            'open_image',
-                            'Open Image',
-                            [new app.Actions.Insert_layer_action(new_layer)],
-                        ),
+                        new app.Actions.Bundle_action('open_image', 'Open Image', [
+                            new app.Actions.Insert_layer_action(new_layer),
+                        ]),
                     );
 
-                    callIfImageTooSmall(
-                        _this.Base_layers.get_sorted_layers()[0],
-                        () => _this.Base_state.undo(),
-                    );
+                    callIfImageTooSmall(_this.Base_layers.get_sorted_layers()[0], () => _this.Base_state.undo());
                 } else {
                     //json
                     var response = _this.load_json(event.target.result);
@@ -442,10 +407,7 @@ class File_open_class {
                     if (
                         this.file.type.match('image.*') ||
                         //below is fix for firefox, it has empty type
-                        (this.file.type == '' &&
-                            this.file.name.match(
-                                /\.(png|jpg|jpeg|webp|gif|avif)/g,
-                            ))
+                        (this.file.type == '' && this.file.name.match(/\.(png|jpg|jpeg|webp|gif|avif)/g))
                     ) {
                         //image
                         var new_layer = {
@@ -455,15 +417,9 @@ class File_open_class {
                             _exif: _this.extract_exif(this.file),
                         };
                         app.State.do_action(
-                            new app.Actions.Bundle_action(
-                                'open_image',
-                                'Open Image',
-                                [
-                                    new app.Actions.Insert_layer_action(
-                                        new_layer,
-                                    ),
-                                ],
-                            ),
+                            new app.Actions.Bundle_action('open_image', 'Open Image', [
+                                new app.Actions.Insert_layer_action(new_layer),
+                            ]),
                         );
                     }
                 };
@@ -522,10 +478,7 @@ class File_open_class {
     open_resource(resource_url) {
         var _this = this;
 
-        if (
-            resource_url.toLowerCase().indexOf('.json') ==
-            resource_url.length - 5
-        ) {
+        if (resource_url.toLowerCase().indexOf('.json') == resource_url.length - 5) {
             //load json
             window
                 .fetch(resource_url)
@@ -571,26 +524,14 @@ class File_open_class {
                 config.need_render = true;
             };
             app.State.do_action(
-                new app.Actions.Bundle_action(
-                    'open_file_url',
-                    'Open File URL',
-                    [
-                        new app.Actions.Insert_layer_action(new_layer),
-                        new app.Actions.Autoresize_canvas_action(
-                            img.width,
-                            img.height,
-                            null,
-                            true,
-                            true,
-                        ),
-                    ],
-                ),
+                new app.Actions.Bundle_action('open_file_url', 'Open File URL', [
+                    new app.Actions.Insert_layer_action(new_layer),
+                    new app.Actions.Autoresize_canvas_action(img.width, img.height, null, true, true),
+                ]),
             );
         };
         img.onerror = function (ex) {
-            alertify.error(
-                'Sorry, image could not be loaded. Try copy image and paste it.',
-            );
+            alertify.error('Sorry, image could not be loaded. Try copy image and paste it.');
         };
         img.src = url;
     }
@@ -637,10 +578,7 @@ class File_open_class {
             for (var i in json.layers) {
                 var old_type = json.layers[i].type;
 
-                if (
-                    old_type == 'line' &&
-                    json.layers[i].params.type.value == 'Arrow'
-                ) {
+                if (old_type == 'line' && json.layers[i].params.type.value == 'Arrow') {
                     //migrate line (type=arrow) to arrow.
                     json.layers[i].type = 'arrow';
                     delete json.layers[i].params.type;
@@ -648,8 +586,7 @@ class File_open_class {
                 }
                 if (old_type == 'rectangle' || old_type == 'circle') {
                     //migrate params
-                    json.layers[i].params.border_size =
-                        json.layers[i].params.size;
+                    json.layers[i].params.border_size = json.layers[i].params.size;
                     delete json.layers[i].params.size;
 
                     if (json.layers[i].params.fill == true) {
@@ -695,10 +632,7 @@ class File_open_class {
             for (var i in json.layers) {
                 var old_type = json.layers[i].type;
 
-                if (
-                    old_type == 'star' &&
-                    typeof json.layers[i].params.corners == 'undefined'
-                ) {
+                if (old_type == 'star' && typeof json.layers[i].params.corners == 'undefined') {
                     json.layers[i].params.corners = 5;
                     json.layers[i].params.inner_radius = 40;
                     json.layers[i].render_function = ['star', 'render'];
@@ -736,8 +670,7 @@ class File_open_class {
             var value = json.layers[i];
 
             if (value.id > max_id_order) max_id_order = value.id;
-            if (typeof value.order != undefined && value.order > max_id_order)
-                max_id_order = value.order;
+            if (typeof value.order != undefined && value.order > max_id_order) max_id_order = value.order;
 
             if (value.type == 'image') {
                 //add image data
@@ -751,35 +684,20 @@ class File_open_class {
             actions.push(new app.Actions.Insert_layer_action(value, false));
         }
         if (json.info.layer_active != undefined) {
-            actions.push(
-                new app.Actions.Select_layer_action(
-                    json.info.layer_active,
-                    true,
-                ),
-            );
+            actions.push(new app.Actions.Select_layer_action(json.info.layer_active, true));
         }
         if (json.info.guides != undefined) {
             config.guides = json.info.guides;
         }
         actions.push(
-            new app.Actions.Set_object_property_action(
-                this.Base_layers,
-                'auto_increment',
-                max_id_order + 1,
-            ),
+            new app.Actions.Set_object_property_action(this.Base_layers, 'auto_increment', max_id_order + 1),
             new app.Actions.Update_config_action({
                 WIDTH: parseInt(json.info.width),
                 HEIGHT: parseInt(json.info.height),
             }),
             new app.Actions.Prepare_canvas_action('do'),
         );
-        await app.State.do_action(
-            new app.Actions.Bundle_action(
-                'open_json_file',
-                'Open JSON File',
-                actions,
-            ),
-        );
+        await app.State.do_action(new app.Actions.Bundle_action('open_json_file', 'Open JSON File', actions));
     }
 
     /**
@@ -799,14 +717,10 @@ class File_open_class {
 
         //general
         if (object.name != undefined) exif_data.general.Name = object.name;
-        if (object.size != undefined)
-            exif_data.general.Size =
-                this.Helper.number_format(object.size / 1000, 2) + ' KB';
+        if (object.size != undefined) exif_data.general.Size = this.Helper.number_format(object.size / 1000, 2) + ' KB';
         if (object.type != undefined) exif_data.general.Type = object.type;
         if (object.lastModified != undefined)
-            exif_data.general['Last modified'] = this.Helper.format_time(
-                object.lastModified,
-            );
+            exif_data.general['Last modified'] = this.Helper.format_time(object.lastModified);
 
         return exif_data;
     }

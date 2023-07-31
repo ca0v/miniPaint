@@ -26,12 +26,7 @@ export class Init_canvas_zoom_action extends Base_action {
 
     async undo() {
         super.undo();
-        zoomView.setBounds(
-            this.old_bounds.top,
-            this.old_bounds.left,
-            this.old_bounds.right,
-            this.old_bounds.bottom,
-        );
+        zoomView.setBounds(this.old_bounds.top, this.old_bounds.left, this.old_bounds.right, this.old_bounds.bottom);
         zoomView.setContext(this.old_context);
         app.Layers.stable_dimensions = this.old_stable_dimensions;
         this.old_bounds = null;

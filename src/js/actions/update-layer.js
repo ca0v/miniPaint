@@ -33,11 +33,7 @@ export class Update_layer_action extends Base_action {
         if (this.reference_layer.type === 'text') {
             this.reference_layer._needs_update_data = true;
         }
-        if (
-            this.settings.params ||
-            this.settings.width ||
-            this.settings.height
-        ) {
+        if (this.settings.params || this.settings.width || this.settings.height) {
             config.need_render_changed_params = true;
         }
         config.need_render = true;
@@ -52,11 +48,7 @@ export class Update_layer_action extends Base_action {
             if (this.reference_layer.type === 'text') {
                 this.reference_layer._needs_update_data = true;
             }
-            if (
-                this.old_settings.params ||
-                this.old_settings.width ||
-                this.old_settings.height
-            ) {
+            if (this.old_settings.params || this.old_settings.width || this.old_settings.height) {
                 config.need_render_changed_params = true;
             }
             this.old_settings = {};

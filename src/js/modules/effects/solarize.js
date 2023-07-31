@@ -13,9 +13,7 @@ class Effects_solarize_class {
 
     solarize() {
         if (config.layer.type != 'image') {
-            alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.',
-            );
+            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
             return;
         }
 
@@ -29,9 +27,7 @@ class Effects_solarize_class {
         ctx.putImageData(data, 0, 0);
 
         //save
-        return app.State.do_action(
-            new app.Actions.Update_layer_image_action(canvas),
-        );
+        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
     }
 
     change(data) {
@@ -46,12 +42,7 @@ class Effects_solarize_class {
         ctx.drawImage(canvas_thumb, 0, 0);
 
         //now update
-        var img = ctx.getImageData(
-            0,
-            0,
-            canvas_thumb.width,
-            canvas_thumb.height,
-        );
+        var img = ctx.getImageData(0, 0, canvas_thumb.width, canvas_thumb.height);
         var data = this.change(img);
         ctx.putImageData(data, 0, 0);
     }

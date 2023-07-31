@@ -20,9 +20,7 @@ class Effects_backgroundReplace_class {
     backgroundReplace() {
         const _this = this;
         if (config.layer.type != 'image') {
-            reportError(
-                'Please merge layers to apply this tool. Layers -> Merge Down.',
-            );
+            reportError('Please merge layers to apply this tool. Layers -> Merge Down.');
             return;
         }
 
@@ -43,9 +41,7 @@ class Effects_backgroundReplace_class {
                     },
                 });
 
-                const NewImage = document.getElementById(
-                    'backgroundReplaceImageHolder',
-                );
+                const NewImage = document.getElementById('backgroundReplaceImageHolder');
 
                 const $label = $('<label>').text('Select a background color: ');
 
@@ -69,10 +65,7 @@ class Effects_backgroundReplace_class {
                     id: 'BackgroundReplaceColor3',
                     class: 'btn btn-md BackgroundReplaceColorButton',
                     type: 'button',
-                    style:
-                        'background-color: ' +
-                        $('#main_color').val() +
-                        '; width:33%',
+                    style: 'background-color: ' + $('#main_color').val() + '; width:33%',
                 }).html('&nbsp;');
 
                 $div.append($button1).append($button2).append($button3);
@@ -88,18 +81,12 @@ class Effects_backgroundReplace_class {
                     'input',
                     function () {
                         var theColor = theInput.value;
-                        $('#BackgroundReplaceColor3').css(
-                            'background-color',
-                            theColor,
-                        );
+                        $('#BackgroundReplaceColor3').css('background-color', theColor);
                     },
                     false,
                 );
 
-                const _canvas = this.Base_layers.convert_layer_to_canvas(
-                    null,
-                    true,
-                );
+                const _canvas = this.Base_layers.convert_layer_to_canvas(null, true);
                 // Get Replacement with Gray Background
                 $button1.click(function () {
                     GetNewReplacement(_canvas, '#757575');
@@ -147,19 +134,13 @@ class Effects_backgroundReplace_class {
 
                                 NewImage.src = data;
                                 NewImage.onload = function () {
-                                    var canvas =
-                                        document.createElement('canvas');
+                                    var canvas = document.createElement('canvas');
                                     var context = canvas.getContext('2d');
                                     canvas.width = NewImage.width;
                                     canvas.height = NewImage.height;
 
                                     context.drawImage(NewImage, 0, 0, w, h);
-                                    var myData = context.getImageData(
-                                        0,
-                                        0,
-                                        NewImage.width,
-                                        NewImage.height,
-                                    );
+                                    var myData = context.getImageData(0, 0, NewImage.width, NewImage.height);
 
                                     canvas_preview.putImageData(myData, 0, 0);
 
@@ -195,9 +176,7 @@ class Effects_backgroundReplace_class {
         this.Base_layers.convert_layer_to_canvas(null, true);
 
         //change data
-        const NewImage = document.getElementById(
-            'backgroundReplaceImageHolder',
-        );
+        const NewImage = document.getElementById('backgroundReplaceImageHolder');
         if (!NewImage) {
             warn("'#backgroundReplaceImageHolder' is not defined.");
             return;
@@ -209,12 +188,7 @@ class Effects_backgroundReplace_class {
         canvas.height = NewImage.height;
 
         context.drawImage(NewImage, 0, 0);
-        const data = context.getImageData(
-            0,
-            0,
-            NewImage.width,
-            NewImage.height,
-        );
+        const data = context.getImageData(0, 0, NewImage.width, NewImage.height);
 
         ctx.putImageData(data, 0, 0);
 

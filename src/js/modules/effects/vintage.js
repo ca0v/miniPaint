@@ -16,9 +16,7 @@ class Effects_vintage_class {
         var _this = this;
 
         if (config.layer.type != 'image') {
-            alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.',
-            );
+            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
             return;
         }
 
@@ -28,9 +26,7 @@ class Effects_vintage_class {
             title: 'Vintage',
             preview: true,
             effects: true,
-            params: [
-                { name: 'level', title: 'Level:', value: 50, range: [0, 100] },
-            ],
+            params: [{ name: 'level', title: 'Level:', value: 50, range: [0, 100] }],
             on_change: function (params, canvas_preview, w, h, canvas_) {
                 _this.change(canvas_, params);
             },
@@ -50,9 +46,7 @@ class Effects_vintage_class {
         this.change(canvas, params);
 
         //save
-        return app.State.do_action(
-            new app.Actions.Update_layer_image_action(canvas),
-        );
+        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
     }
 
     change(canvas, params) {

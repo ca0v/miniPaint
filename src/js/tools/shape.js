@@ -69,8 +69,7 @@ class Shape_class extends Base_tools_class {
                 '" class="effectsPreview" data-key="' +
                 data[i].key +
                 '"></canvas>';
-            html +=
-                '<div class="preview-item-title">' + data[i].title + '</div>';
+            html += '<div class="preview-item-title">' + data[i].title + '</div>';
             html += '</div>';
         }
         for (var i = 0; i < 4; i++) {
@@ -109,14 +108,7 @@ class Shape_class extends Base_tools_class {
 
             if (typeof data[i].object[function_name] == 'undefined') continue;
 
-            data[i].object[function_name](
-                ctx,
-                20,
-                20,
-                this.preview_width - 40,
-                this.preview_height - 40,
-                null,
-            );
+            data[i].object[function_name](ctx, 20, 20, this.preview_width - 40, this.preview_height - 40, null);
         }
     }
 

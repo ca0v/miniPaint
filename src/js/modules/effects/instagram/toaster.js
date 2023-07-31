@@ -17,9 +17,7 @@ class Effects_toaster_class {
 
     toaster() {
         if (config.layer.type != 'image') {
-            alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.',
-            );
+            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
             return;
         }
 
@@ -33,9 +31,7 @@ class Effects_toaster_class {
         ctx.drawImage(data, 0, 0);
 
         //save
-        return app.State.do_action(
-            new app.Actions.Update_layer_image_action(canvas),
-        );
+        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
     }
 
     change(canvas, width, height) {
@@ -48,14 +44,7 @@ class Effects_toaster_class {
 
         //merge
         ctx2.globalCompositeOperation = 'screen';
-        var gradient = ctx2.createRadialGradient(
-            width / 2,
-            height / 2,
-            0,
-            width / 2,
-            height / 2,
-            width * 0.6,
-        );
+        var gradient = ctx2.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, width * 0.6);
         gradient.addColorStop(0, '#804e0f');
         gradient.addColorStop(1, '#3b003b');
         ctx2.fillStyle = gradient;
@@ -75,11 +64,7 @@ class Effects_toaster_class {
         var ctx = canvas.getContext('2d');
 
         //modify
-        var data = this.change(
-            canvas_thumb,
-            canvas_thumb.width,
-            canvas_thumb.height,
-        );
+        var data = this.change(canvas_thumb, canvas_thumb.width, canvas_thumb.height);
 
         //draw
         ctx.drawImage(data, 0, 0);

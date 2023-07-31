@@ -95,12 +95,7 @@ class Effects_borders_class {
         var y_new = -height / 2;
 
         ctx.beginPath();
-        ctx.rect(
-            x_new - size * 0.5,
-            y_new - size * 0.5,
-            width + size,
-            height + size,
-        );
+        ctx.rect(x_new - size * 0.5, y_new - size * 0.5, width + size, height + size);
         ctx.stroke();
 
         ctx.restore();
@@ -109,12 +104,7 @@ class Effects_borders_class {
     add_borders(params, filter_id) {
         //apply effect
         return app.State.do_action(
-            new app.Actions.Add_layer_filter_action(
-                config.layer.id,
-                'borders',
-                params,
-                filter_id,
-            ),
+            new app.Actions.Add_layer_filter_action(config.layer.id, 'borders', params, filter_id),
         );
     }
 }

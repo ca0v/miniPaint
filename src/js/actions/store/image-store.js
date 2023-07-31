@@ -30,20 +30,14 @@ export default {
                         // Delete database from a previous page load, if no other tabs have notified that they're open in a while
                         let shouldDeleteDatabase = true;
                         try {
-                            let lastDatabaseTabPing =
-                                localStorage.getItem('history_usage_ping');
+                            let lastDatabaseTabPing = localStorage.getItem('history_usage_ping');
                             shouldDeleteDatabase =
                                 !lastDatabaseTabPing ||
-                                parseInt(lastDatabaseTabPing, 10) <
-                                    new Date().getTime() -
-                                        assumeTabIsClosedTimeout;
+                                parseInt(lastDatabaseTabPing, 10) < new Date().getTime() - assumeTabIsClosedTimeout;
                         } catch (error) {}
                         if (shouldDeleteDatabase) {
                             await new Promise((resolve, reject) => {
-                                let deleteRequest =
-                                    window.indexedDB.deleteDatabase(
-                                        'undoHistoryImageStore',
-                                    );
+                                let deleteRequest = window.indexedDB.deleteDatabase('undoHistoryImageStore');
                                 deleteRequest.onerror = () => {
                                     reject(deleteRequest.error);
                                 };
@@ -54,10 +48,7 @@ export default {
                         }
                         // Initialize database
                         await new Promise((resolve, reject) => {
-                            let openRequest = window.indexedDB.open(
-                                'undoHistoryImageStore',
-                                1,
-                            );
+                            let openRequest = window.indexedDB.open('undoHistoryImageStore', 1);
                             openRequest.onupgradeneeded = function (event) {
                                 database = openRequest.result;
                                 switch (event.oldVersion) {
@@ -84,15 +75,9 @@ export default {
                             await this.delete_all();
                         } catch (error) {}
                         // Ping localStorage for as long as this browser tab is open
-                        localStorage.setItem(
-                            'history_usage_ping',
-                            new Date().getTime() + '',
-                        );
+                        localStorage.setItem('history_usage_ping', new Date().getTime() + '');
                         setInterval(() => {
-                            localStorage.setItem(
-                                'history_usage_ping',
-                                new Date().getTime() + '',
-                            );
+                            localStorage.setItem('history_usage_ping', new Date().getTime() + '');
                         }, tabPingInterval);
                     }
                 } catch (error) {
@@ -211,17 +196,15 @@ export default {
                     for (let image of allImages) {
                         if (image.tabUuid === tabUuid) {
                             try {
-                                await new Promise(
-                                    (deleteResolve, deleteReject) => {
-                                        const request = images.delete(image.id);
-                                        request.onsuccess = function () {
-                                            deleteResolve();
-                                        };
-                                        request.onerror = function () {
-                                            deleteReject(request.error);
-                                        };
-                                    },
-                                );
+                                await new Promise((deleteResolve, deleteReject) => {
+                                    const request = images.delete(image.id);
+                                    request.onsuccess = function () {
+                                        deleteResolve();
+                                    };
+                                    request.onerror = function () {
+                                        deleteReject(request.error);
+                                    };
+                                });
                             } catch (error) {
                                 errorOccurred = true;
                                 // Should eventually be deleted when database is deleted due to timeout

@@ -16,9 +16,7 @@ class Tools_colorToAlpha_class {
         var _this = this;
 
         if (config.layer.type != 'image') {
-            alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.',
-            );
+            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
             return;
         }
 
@@ -56,9 +54,7 @@ class Tools_colorToAlpha_class {
         ctx.putImageData(data, 0, 0);
 
         //save
-        return app.State.do_action(
-            new app.Actions.Update_layer_image_action(canvas),
-        );
+        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
     }
 
     change(data, color) {
@@ -78,17 +74,12 @@ class Tools_colorToAlpha_class {
             //combining 2 layers in future will change colors, so make changes to get same colors in final image
             //color_result = color_1 * (alpha_1 / 255) * (1 - A2 / 255) + color_2 * (alpha_2 / 255)
             //color_2 = (color_result - color_1 * (alpha_1 / 255) * (1 - A2 / 255)) / (alpha_2 / 255)
-            imgData[i] = Math.ceil(
-                (imgData[i] - back_color.r * (1 - imgData[i + 3] / 255)) /
-                    (imgData[i + 3] / 255),
-            );
+            imgData[i] = Math.ceil((imgData[i] - back_color.r * (1 - imgData[i + 3] / 255)) / (imgData[i + 3] / 255));
             imgData[i + 1] = Math.ceil(
-                (imgData[i + 1] - back_color.g * (1 - imgData[i + 3] / 255)) /
-                    (imgData[i + 3] / 255),
+                (imgData[i + 1] - back_color.g * (1 - imgData[i + 3] / 255)) / (imgData[i + 3] / 255),
             );
             imgData[i + 2] = Math.ceil(
-                (imgData[i + 2] - back_color.b * (1 - imgData[i + 3] / 255)) /
-                    (imgData[i + 3] / 255),
+                (imgData[i + 2] - back_color.b * (1 - imgData[i + 3] / 255)) / (imgData[i + 3] / 255),
             );
         }
         return data;

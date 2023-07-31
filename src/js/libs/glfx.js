@@ -27,10 +27,7 @@ var fx = (function () {
     }
     function B(b, d) {
         var c = a.UNSIGNED_BYTE;
-        if (
-            a.getExtension('OES_texture_float') &&
-            a.getExtension('OES_texture_float_linear')
-        ) {
+        if (a.getExtension('OES_texture_float') && a.getExtension('OES_texture_float_linear')) {
             var e = new r(100, 100, a.RGBA, a.FLOAT);
             try {
                 e.drawTo(function () {
@@ -55,9 +52,7 @@ var fx = (function () {
         this._.isInitialized = !0;
     }
     function C(a, d, c) {
-        (this._.isInitialized &&
-            a._.width == this.width &&
-            a._.height == this.height) ||
+        (this._.isInitialized && a._.width == this.width && a._.height == this.height) ||
             B.call(this, d ? d : a._.width, c ? c : a._.height);
         a._.use();
         this._.texture.drawTo(function () {
@@ -83,12 +78,7 @@ var fx = (function () {
         return this;
     }
     function F() {
-        var b = new r(
-            this._.texture.width,
-            this._.texture.height,
-            a.RGBA,
-            a.UNSIGNED_BYTE,
-        );
+        var b = new r(this._.texture.width, this._.texture.height, a.RGBA, a.UNSIGNED_BYTE);
         this._.texture.use();
         b.drawTo(function () {
             h.getDefaultShader().drawRect();
@@ -120,17 +110,7 @@ var fx = (function () {
         var q = m * k - f * h,
             f = (g * k - f * l) / q,
             m = (m * l - g * h) / q;
-        return [
-            c - a + f * c,
-            e - d + f * e,
-            f,
-            n - a + m * n,
-            p - d + m * p,
-            m,
-            a,
-            d,
-            1,
-        ];
+        return [c - a + f * c, e - d + f * e, f, n - a + m * n, p - d + m * p, m, a, d, 1];
     }
     function y(a) {
         var d = a[0],
@@ -142,13 +122,7 @@ var fx = (function () {
             p = a[6],
             m = a[7];
         a = a[8];
-        var f =
-            d * l * a -
-            d * n * m -
-            c * g * a +
-            c * n * p +
-            e * g * m -
-            e * l * p;
+        var f = d * l * a - d * n * m - c * g * a + c * n * p + e * g * m - e * l * p;
         return [
             (l * a - n * m) / f,
             (e * m - c * a) / f,
@@ -170,8 +144,7 @@ var fx = (function () {
         a.sort(function (a, b) {
             return a[0] - b[0];
         });
-        for (var c = 0; c < d; c++)
-            this.xa.push(a[c][0]), this.ya.push(a[c][1]);
+        for (var c = 0; c < d; c++) this.xa.push(a[c][0]), this.ya.push(a[c][1]);
         this.u[0] = 0;
         this.y2[0] = 0;
         for (c = 1; c < d - 1; ++c) {
@@ -181,17 +154,14 @@ var fx = (function () {
             this.y2[c] = (e - 1) / g;
             this.u[c] =
                 ((6 *
-                    ((this.ya[c + 1] - this.ya[c]) /
-                        (this.xa[c + 1] - this.xa[c]) -
-                        (this.ya[c] - this.ya[c - 1]) /
-                            (this.xa[c] - this.xa[c - 1]))) /
+                    ((this.ya[c + 1] - this.ya[c]) / (this.xa[c + 1] - this.xa[c]) -
+                        (this.ya[c] - this.ya[c - 1]) / (this.xa[c] - this.xa[c - 1]))) /
                     a -
                     e * this.u[c - 1]) /
                 g;
         }
         this.y2[d - 1] = 0;
-        for (c = d - 2; 0 <= c; --c)
-            this.y2[c] = this.y2[c] * this.y2[c + 1] + this.u[c];
+        for (c = d - 2; 0 <= c; --c) this.y2[c] = this.y2[c] * this.y2[c + 1] + this.u[c];
     }
     function u(a, d) {
         return new h(
@@ -217,15 +187,13 @@ var fx = (function () {
     }
     function t(a) {
         a = new z(a);
-        for (var d = [], c = 0; 256 > c; c++)
-            d.push(q(0, Math.floor(256 * a.interpolate(c / 255)), 255));
+        for (var d = [], c = 0; 256 > c; c++) d.push(q(0, Math.floor(256 * a.interpolate(c / 255)), 255));
         return d;
     }
     function I(b, d, c) {
         b = t(b);
         1 == arguments.length ? (d = c = b) : ((d = t(d)), (c = t(c)));
-        for (var e = [], g = 0; 256 > g; g++)
-            e.splice(e.length, 0, b[g], d[g], c[g], 255);
+        for (var e = [], g = 0; 256 > g; g++) e.splice(e.length, 0, b[g], d[g], c[g], 255);
         this._.extraTexture.initFromBytes(256, 1, e);
         this._.extraTexture.use(1);
         a.curves =
@@ -335,16 +303,8 @@ var fx = (function () {
             'uniform sampler2D texture0;uniform sampler2D texture1;uniform vec2 delta0;uniform vec2 delta1;uniform float power;varying vec2 texCoord;' +
             s +
             'vec4 sample(vec2 delta){float offset=random(vec3(delta,151.7182),0.0);vec4 color=vec4(0.0);float total=0.0;for(float t=0.0;t<=30.0;t++){float percent=(t+offset)/30.0;color+=texture2D(texture0,texCoord+delta*percent);total+=1.0;}return color/total;}';
-        a.lensBlur0 =
-            a.lensBlur0 ||
-            new h(null, e + 'void main(){gl_FragColor=sample(delta0);}');
-        a.lensBlur1 =
-            a.lensBlur1 ||
-            new h(
-                null,
-                e +
-                    'void main(){gl_FragColor=(sample(delta0)+sample(delta1))*0.5;}',
-            );
+        a.lensBlur0 = a.lensBlur0 || new h(null, e + 'void main(){gl_FragColor=sample(delta0);}');
+        a.lensBlur1 = a.lensBlur1 || new h(null, e + 'void main(){gl_FragColor=(sample(delta0)+sample(delta1))*0.5;}');
         a.lensBlur2 =
             a.lensBlur2 ||
             new h(
@@ -354,28 +314,13 @@ var fx = (function () {
             ).textures({ texture1: 1 });
         for (var e = [], g = 0; 3 > g; g++) {
             var l = c + (2 * g * Math.PI) / 3;
-            e.push([
-                (b * Math.sin(l)) / this.width,
-                (b * Math.cos(l)) / this.height,
-            ]);
+            e.push([(b * Math.sin(l)) / this.width, (b * Math.cos(l)) / this.height]);
         }
         b = Math.pow(10, q(-1, d, 1));
         f.call(this, a.lensBlurPrePass, { power: b });
         this._.extraTexture.ensureFormat(this._.texture);
-        f.call(
-            this,
-            a.lensBlur0,
-            { delta0: e[0] },
-            this._.texture,
-            this._.extraTexture,
-        );
-        f.call(
-            this,
-            a.lensBlur1,
-            { delta0: e[1], delta1: e[2] },
-            this._.extraTexture,
-            this._.extraTexture,
-        );
+        f.call(this, a.lensBlur0, { delta0: e[0] }, this._.texture, this._.extraTexture);
+        f.call(this, a.lensBlur1, { delta0: e[1], delta1: e[2] }, this._.extraTexture, this._.extraTexture);
         f.call(this, a.lensBlur0, { delta0: e[1] });
         this._.extraTexture.use(1);
         f.call(this, a.lensBlur2, { power: 1 / b, delta0: e[2] });
@@ -592,25 +537,9 @@ var fx = (function () {
             b.texParameteri(b.TEXTURE_2D, b.TEXTURE_MIN_FILTER, b.NEAREST);
             b.texParameteri(b.TEXTURE_2D, b.TEXTURE_WRAP_S, b.CLAMP_TO_EDGE);
             b.texParameteri(b.TEXTURE_2D, b.TEXTURE_WRAP_T, b.CLAMP_TO_EDGE);
-            b.texImage2D(
-                b.TEXTURE_2D,
-                0,
-                b.RGBA,
-                1,
-                1,
-                0,
-                b.RGBA,
-                b.UNSIGNED_BYTE,
-                null,
-            );
+            b.texImage2D(b.TEXTURE_2D, 0, b.RGBA, 1, 1, 0, b.RGBA, b.UNSIGNED_BYTE, null);
             b.bindFramebuffer(b.FRAMEBUFFER, c);
-            b.framebufferTexture2D(
-                b.FRAMEBUFFER,
-                b.COLOR_ATTACHMENT0,
-                b.TEXTURE_2D,
-                e,
-                0,
-            );
+            b.framebufferTexture2D(b.FRAMEBUFFER, b.COLOR_ATTACHMENT0, b.TEXTURE_2D, e, 0);
             c = b.createTexture();
             b.bindTexture(b.TEXTURE_2D, c);
             b.texParameteri(b.TEXTURE_2D, b.TEXTURE_MAG_FILTER, b.LINEAR);
@@ -626,21 +555,13 @@ var fx = (function () {
                 0,
                 b.RGBA,
                 b.FLOAT,
-                new Float32Array([
-                    2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                ]),
+                new Float32Array([2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
             );
             var e = b.createProgram(),
                 d = b.createShader(b.VERTEX_SHADER),
                 g = b.createShader(b.FRAGMENT_SHADER);
-            b.shaderSource(
-                d,
-                'attribute vec2 vertex;void main(){gl_Position=vec4(vertex,0.0,1.0);}',
-            );
-            b.shaderSource(
-                g,
-                'uniform sampler2D texture;void main(){gl_FragColor=texture2D(texture,vec2(0.5));}',
-            );
+            b.shaderSource(d, 'attribute vec2 vertex;void main(){gl_Position=vec4(vertex,0.0,1.0);}');
+            b.shaderSource(g, 'uniform sampler2D texture;void main(){gl_FragColor=texture2D(texture,vec2(0.5));}');
             b.compileShader(d);
             b.compileShader(g);
             b.attachShader(e, d);
@@ -648,11 +569,7 @@ var fx = (function () {
             b.linkProgram(e);
             d = b.createBuffer();
             b.bindBuffer(b.ARRAY_BUFFER, d);
-            b.bufferData(
-                b.ARRAY_BUFFER,
-                new Float32Array([0, 0]),
-                b.STREAM_DRAW,
-            );
+            b.bufferData(b.ARRAY_BUFFER, new Float32Array([0, 0]), b.STREAM_DRAW);
             b.enableVertexAttribArray(0);
             b.vertexAttribPointer(0, 2, b.FLOAT, !1, 0, 0);
             d = new Uint8Array(4);
@@ -667,39 +584,25 @@ var fx = (function () {
         function c(a) {
             'OES_texture_float_linear' === a
                 ? (void 0 === this.$OES_texture_float_linear$ &&
-                      Object.defineProperty(
-                          this,
-                          '$OES_texture_float_linear$',
-                          {
-                              enumerable: !1,
-                              configurable: !1,
-                              writable: !1,
-                              value: new d(),
-                          },
-                      ),
+                      Object.defineProperty(this, '$OES_texture_float_linear$', {
+                          enumerable: !1,
+                          configurable: !1,
+                          writable: !1,
+                          value: new d(),
+                      }),
                   (a = this.$OES_texture_float_linear$))
                 : (a = n.call(this, a));
             return a;
         }
         function e() {
             var a = f.call(this);
-            -1 === a.indexOf('OES_texture_float_linear') &&
-                a.push('OES_texture_float_linear');
+            -1 === a.indexOf('OES_texture_float_linear') && a.push('OES_texture_float_linear');
             return a;
         }
         try {
-            var g = document
-                .createElement('canvas')
-                .getContext('experimental-webgl');
+            var g = document.createElement('canvas').getContext('experimental-webgl');
         } catch (l) {}
-        if (
-            g &&
-            -1 ===
-                g
-                    .getSupportedExtensions()
-                    .indexOf('OES_texture_float_linear') &&
-            a(g)
-        ) {
+        if (g && -1 === g.getSupportedExtensions().indexOf('OES_texture_float_linear') && a(g)) {
             var n = WebGLRenderingContext.prototype.getExtension,
                 f = WebGLRenderingContext.prototype.getSupportedExtensions;
             WebGLRenderingContext.prototype.getExtension = c;
@@ -758,8 +661,7 @@ var fx = (function () {
             var e = a.createShader(b);
             a.shaderSource(e, c);
             a.compileShader(e);
-            if (!a.getShaderParameter(e, a.COMPILE_STATUS))
-                throw 'compile error: ' + a.getShaderInfoLog(e);
+            if (!a.getShaderParameter(e, a.COMPILE_STATUS)) throw 'compile error: ' + a.getShaderInfoLog(e);
             return e;
         }
         function d(d, l) {
@@ -789,10 +691,7 @@ var fx = (function () {
                     var c = a.getUniformLocation(this.program, e);
                     if (null !== c) {
                         var d = b[e];
-                        if (
-                            '[object Array]' ==
-                            Object.prototype.toString.call(d)
-                        )
+                        if ('[object Array]' == Object.prototype.toString.call(d))
                             switch (d.length) {
                                 case 1:
                                     a.uniform1fv(c, new Float32Array(d));
@@ -807,38 +706,18 @@ var fx = (function () {
                                     a.uniform4fv(c, new Float32Array(d));
                                     break;
                                 case 9:
-                                    a.uniformMatrix3fv(
-                                        c,
-                                        !1,
-                                        new Float32Array(d),
-                                    );
+                                    a.uniformMatrix3fv(c, !1, new Float32Array(d));
                                     break;
                                 case 16:
-                                    a.uniformMatrix4fv(
-                                        c,
-                                        !1,
-                                        new Float32Array(d),
-                                    );
+                                    a.uniformMatrix4fv(c, !1, new Float32Array(d));
                                     break;
                                 default:
-                                    throw (
-                                        'dont\'t know how to load uniform "' +
-                                        e +
-                                        '" of length ' +
-                                        d.length
-                                    );
+                                    throw 'dont\'t know how to load uniform "' + e + '" of length ' + d.length;
                             }
-                        else if (
-                            '[object Number]' ==
-                            Object.prototype.toString.call(d)
-                        )
-                            a.uniform1f(c, d);
+                        else if ('[object Number]' == Object.prototype.toString.call(d)) a.uniform1f(c, d);
                         else
                             throw (
-                                'attempted to set uniform "' +
-                                e +
-                                '" to invalid value ' +
-                                (d || 'undefined').toString()
+                                'attempted to set uniform "' + e + '" to invalid value ' + (d || 'undefined').toString()
                             );
                     }
                 }
@@ -846,9 +725,7 @@ var fx = (function () {
         };
         d.prototype.textures = function (b) {
             a.useProgram(this.program);
-            for (var c in b)
-                b.hasOwnProperty(c) &&
-                    a.uniform1i(a.getUniformLocation(this.program, c), b[c]);
+            for (var c in b) b.hasOwnProperty(c) && a.uniform1i(a.getUniformLocation(this.program, c), b[c]);
             return this;
         };
         d.prototype.drawRect = function (b, c, e, d) {
@@ -859,30 +736,16 @@ var fx = (function () {
             d = void 0 !== d ? (d - f[1]) / f[3] : 1;
             null == a.vertexBuffer && (a.vertexBuffer = a.createBuffer());
             a.bindBuffer(a.ARRAY_BUFFER, a.vertexBuffer);
-            a.bufferData(
-                a.ARRAY_BUFFER,
-                new Float32Array([b, c, b, d, e, c, e, d]),
-                a.STATIC_DRAW,
-            );
+            a.bufferData(a.ARRAY_BUFFER, new Float32Array([b, c, b, d, e, c, e, d]), a.STATIC_DRAW);
             null == a.texCoordBuffer &&
                 ((a.texCoordBuffer = a.createBuffer()),
                 a.bindBuffer(a.ARRAY_BUFFER, a.texCoordBuffer),
-                a.bufferData(
-                    a.ARRAY_BUFFER,
-                    new Float32Array([0, 0, 0, 1, 1, 0, 1, 1]),
-                    a.STATIC_DRAW,
-                ));
+                a.bufferData(a.ARRAY_BUFFER, new Float32Array([0, 0, 0, 1, 1, 0, 1, 1]), a.STATIC_DRAW));
             null == this.vertexAttribute &&
-                ((this.vertexAttribute = a.getAttribLocation(
-                    this.program,
-                    'vertex',
-                )),
+                ((this.vertexAttribute = a.getAttribLocation(this.program, 'vertex')),
                 a.enableVertexAttribArray(this.vertexAttribute));
             null == this.texCoordAttribute &&
-                ((this.texCoordAttribute = a.getAttribLocation(
-                    this.program,
-                    '_texCoord',
-                )),
+                ((this.texCoordAttribute = a.getAttribLocation(this.program, '_texCoord')),
                 a.enableVertexAttribArray(this.texCoordAttribute));
             a.useProgram(this.program);
             a.bindBuffer(a.ARRAY_BUFFER, a.vertexBuffer);
@@ -908,10 +771,7 @@ var fx = (function () {
         return (
             g * this.ya[d] +
             a * this.ya[c] +
-            (((g * g * g - g) * this.y2[d] + (a * a * a - a) * this.y2[c]) *
-                e *
-                e) /
-                6
+            (((g * g * g - g) * this.y2[d] + (a * a * a - a) * this.y2[c]) * e * e) / 6
         );
     };
     var r = (function () {
@@ -925,29 +785,9 @@ var fx = (function () {
                 a.bindTexture(a.TEXTURE_2D, this.id);
                 a.texParameteri(a.TEXTURE_2D, a.TEXTURE_MAG_FILTER, a.LINEAR);
                 a.texParameteri(a.TEXTURE_2D, a.TEXTURE_MIN_FILTER, a.LINEAR);
-                a.texParameteri(
-                    a.TEXTURE_2D,
-                    a.TEXTURE_WRAP_S,
-                    a.CLAMP_TO_EDGE,
-                );
-                a.texParameteri(
-                    a.TEXTURE_2D,
-                    a.TEXTURE_WRAP_T,
-                    a.CLAMP_TO_EDGE,
-                );
-                b &&
-                    c &&
-                    a.texImage2D(
-                        a.TEXTURE_2D,
-                        0,
-                        this.format,
-                        b,
-                        c,
-                        0,
-                        this.format,
-                        this.type,
-                        null,
-                    );
+                a.texParameteri(a.TEXTURE_2D, a.TEXTURE_WRAP_S, a.CLAMP_TO_EDGE);
+                a.texParameteri(a.TEXTURE_2D, a.TEXTURE_WRAP_T, a.CLAMP_TO_EDGE);
+                b && c && a.texImage2D(a.TEXTURE_2D, 0, this.format, b, c, 0, this.format, this.type, null);
             }
             function d(a) {
                 null == c && (c = document.createElement('canvas'));
@@ -966,14 +806,7 @@ var fx = (function () {
                 this.width = b.width || b.videoWidth;
                 this.height = b.height || b.videoHeight;
                 a.bindTexture(a.TEXTURE_2D, this.id);
-                a.texImage2D(
-                    a.TEXTURE_2D,
-                    0,
-                    this.format,
-                    this.format,
-                    this.type,
-                    b,
-                );
+                a.texImage2D(a.TEXTURE_2D, 0, this.format, this.format, this.type, b);
             };
             b.prototype.initFromBytes = function (b, c, d) {
                 this.width = b;
@@ -981,17 +814,7 @@ var fx = (function () {
                 this.format = a.RGBA;
                 this.type = a.UNSIGNED_BYTE;
                 a.bindTexture(a.TEXTURE_2D, this.id);
-                a.texImage2D(
-                    a.TEXTURE_2D,
-                    0,
-                    a.RGBA,
-                    b,
-                    c,
-                    0,
-                    a.RGBA,
-                    this.type,
-                    new Uint8Array(d),
-                );
+                a.texImage2D(a.TEXTURE_2D, 0, a.RGBA, b, c, 0, a.RGBA, this.type, new Uint8Array(d));
             };
             b.prototype.destroy = function () {
                 a.deleteTexture(this.id);
@@ -1013,43 +836,19 @@ var fx = (function () {
                     d = h.format;
                     f = h.type;
                 }
-                if (
-                    b != this.width ||
-                    c != this.height ||
-                    d != this.format ||
-                    f != this.type
-                )
+                if (b != this.width || c != this.height || d != this.format || f != this.type)
                     (this.width = b),
                         (this.height = c),
                         (this.format = d),
                         (this.type = f),
                         a.bindTexture(a.TEXTURE_2D, this.id),
-                        a.texImage2D(
-                            a.TEXTURE_2D,
-                            0,
-                            this.format,
-                            b,
-                            c,
-                            0,
-                            this.format,
-                            this.type,
-                            null,
-                        );
+                        a.texImage2D(a.TEXTURE_2D, 0, this.format, b, c, 0, this.format, this.type, null);
             };
             b.prototype.drawTo = function (b) {
                 a.framebuffer = a.framebuffer || a.createFramebuffer();
                 a.bindFramebuffer(a.FRAMEBUFFER, a.framebuffer);
-                a.framebufferTexture2D(
-                    a.FRAMEBUFFER,
-                    a.COLOR_ATTACHMENT0,
-                    a.TEXTURE_2D,
-                    this.id,
-                    0,
-                );
-                if (
-                    a.checkFramebufferStatus(a.FRAMEBUFFER) !==
-                    a.FRAMEBUFFER_COMPLETE
-                )
+                a.framebufferTexture2D(a.FRAMEBUFFER, a.COLOR_ATTACHMENT0, a.TEXTURE_2D, this.id, 0);
+                if (a.checkFramebufferStatus(a.FRAMEBUFFER) !== a.FRAMEBUFFER_COMPLETE)
                     throw Error('incomplete framebuffer');
                 a.viewport(0, 0, this.width, this.height);
                 b();
@@ -1061,14 +860,7 @@ var fx = (function () {
                 this.format = a.RGBA;
                 this.type = a.UNSIGNED_BYTE;
                 a.bindTexture(a.TEXTURE_2D, this.id);
-                a.texImage2D(
-                    a.TEXTURE_2D,
-                    0,
-                    a.RGBA,
-                    a.RGBA,
-                    a.UNSIGNED_BYTE,
-                    c,
-                );
+                a.texImage2D(a.TEXTURE_2D, 0, a.RGBA, a.RGBA, a.UNSIGNED_BYTE, c);
                 return this;
             };
             b.prototype.toImage = function (b) {
@@ -1078,15 +870,7 @@ var fx = (function () {
                     k = new Uint8Array(f),
                     n = d(this),
                     p = n.createImageData(this.width, this.height);
-                a.readPixels(
-                    0,
-                    0,
-                    this.width,
-                    this.height,
-                    a.RGBA,
-                    a.UNSIGNED_BYTE,
-                    k,
-                );
+                a.readPixels(0, 0, this.width, this.height, a.RGBA, a.UNSIGNED_BYTE, k);
                 for (var m = 0; m < f; m++) p.data[m] = k[m];
                 n.putImageData(p, 0, 0);
                 b.src = c.toDataURL();
@@ -1108,8 +892,7 @@ var fx = (function () {
             };
             return b;
         })(),
-        s =
-            'float random(vec3 scale,float seed){return fract(sin(dot(gl_FragCoord.xyz+seed,scale))*43758.5453+seed);}';
+        s = 'float random(vec3 scale,float seed){return fract(sin(dot(gl_FragCoord.xyz+seed,scale))*43758.5453+seed);}';
     return v;
 })();
 

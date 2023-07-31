@@ -8,9 +8,7 @@ class Layer_visibility_class {
     }
 
     toggle() {
-        app.State.do_action(
-            new app.Actions.Toggle_layer_visibility_action(config.layer.id),
-        );
+        app.State.do_action(new app.Actions.Toggle_layer_visibility_action(config.layer.id));
     }
 }
 

@@ -16,9 +16,7 @@ class Effects_nightVision_class {
 
     night_vision() {
         if (config.layer.type != 'image') {
-            alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.',
-            );
+            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
             return;
         }
 
@@ -32,9 +30,7 @@ class Effects_nightVision_class {
         ctx.drawImage(data, 0, 0);
 
         //save
-        return app.State.do_action(
-            new app.Actions.Update_layer_image_action(canvas),
-        );
+        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
     }
 
     change(canvas, width, height) {
@@ -53,17 +49,7 @@ class Effects_nightVision_class {
         // green overlay
         var img = ctx2.getImageData(0, 0, width, height);
         //RGB corrections
-        var img = this.ImageFilters.ColorTransformFilter(
-            img,
-            1,
-            1,
-            1,
-            1,
-            0,
-            100,
-            0,
-            1,
-        );
+        var img = this.ImageFilters.ColorTransformFilter(img, 1, 1, 1, 1, 0, 100, 0, 1);
         //hue/saturation/luminance
         var img = this.ImageFilters.HSLAdjustment(img, 0, 0, -50);
         ctx2.putImageData(img, 0, 0);
@@ -82,11 +68,7 @@ class Effects_nightVision_class {
 
         //modify
         var params = {};
-        var data = this.change(
-            canvas_thumb,
-            canvas_thumb.width,
-            canvas_thumb.height,
-        );
+        var data = this.change(canvas_thumb, canvas_thumb.width, canvas_thumb.height);
 
         //draw
         ctx.drawImage(data, 0, 0);

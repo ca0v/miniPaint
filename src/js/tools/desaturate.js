@@ -40,15 +40,11 @@ class Desaturate_class extends Base_tools_class {
             return;
         }
         if (config.layer.type != 'image') {
-            alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.',
-            );
+            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
             return;
         }
         if (config.layer.rotate || 0 > 0) {
-            alertify.error(
-                'Erase on rotate object is disabled. Please rasterize first.',
-            );
+            alertify.error('Erase on rotate object is disabled. Please rasterize first.');
             return;
         }
         this.started = true;
@@ -62,12 +58,7 @@ class Desaturate_class extends Base_tools_class {
         this.tmpCanvasCtx.drawImage(config.layer.link, 0, 0);
 
         //do desaturate
-        this.desaturate_general(
-            'click',
-            mouse,
-            params.size,
-            params.anti_aliasing,
-        );
+        this.desaturate_general('click', mouse, params.size, params.anti_aliasing);
 
         //register tmp canvas for faster redraw
         config.layer.link_canvas = this.tmpCanvas;
@@ -86,12 +77,7 @@ class Desaturate_class extends Base_tools_class {
         }
 
         //do desaturate
-        this.desaturate_general(
-            'move',
-            mouse,
-            params.size,
-            params.anti_aliasing,
-        );
+        this.desaturate_general('move', mouse, params.size, params.anti_aliasing);
 
         //draw draft preview
         config.need_render = true;
@@ -104,11 +90,9 @@ class Desaturate_class extends Base_tools_class {
         delete config.layer.link_canvas;
 
         app.State.do_action(
-            new app.Actions.Bundle_action(
-                'desaturate_tool',
-                'Desaturate Tool',
-                [new app.Actions.Update_layer_image_action(this.tmpCanvas)],
-            ),
+            new app.Actions.Bundle_action('desaturate_tool', 'Desaturate Tool', [
+                new app.Actions.Update_layer_image_action(this.tmpCanvas),
+            ]),
         );
 
         //decrease memory
@@ -141,15 +125,7 @@ class Desaturate_class extends Base_tools_class {
 
         var imageData = ctx.getImageData(center_x, center_y, size_w, size_h);
         var filtered = ImageFilters.GrayScale(imageData); //add effect
-        this.Helper.image_round(
-            this.tmpCanvasCtx,
-            mouse_x,
-            mouse_y,
-            size_w,
-            size_h,
-            filtered,
-            anti_aliasing,
-        );
+        this.Helper.image_round(this.tmpCanvasCtx, mouse_x, mouse_y, size_w, size_h, filtered, anti_aliasing);
     }
 }
 export default Desaturate_class;

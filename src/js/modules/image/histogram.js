@@ -27,8 +27,7 @@ class Image_histogram_class {
                 {
                     title: 'Histogram:',
                     function: function () {
-                        var html =
-                            '<canvas style="position:relative;" id="c_h" width="256" height="100"></canvas>';
+                        var html = '<canvas style="position:relative;" id="c_h" width="256" height="100"></canvas>';
                         return html;
                     },
                 },
@@ -60,9 +59,7 @@ class Image_histogram_class {
 
         for (var i = 0; i < imgData.length; i += 4) {
             //collect grey
-            grey = Math.round(
-                (imgData[i] + imgData[i + 1] + imgData[i + 2]) / 3,
-            );
+            grey = Math.round((imgData[i] + imgData[i + 1] + imgData[i + 2]) / 3);
             sum = sum + imgData[i] + imgData[i + 1] + imgData[i + 2];
             if (hist_data[0][grey] == undefined) hist_data[0][grey] = 1;
             else hist_data[0][grey]++;
@@ -70,8 +67,7 @@ class Image_histogram_class {
             //collect colors
             for (var c = 0; c < 3; c++) {
                 if (c + 1 != channel) continue;
-                if (hist_data[c + 1][imgData[i + c]] == undefined)
-                    hist_data[c + 1][imgData[i + c]] = 1;
+                if (hist_data[c + 1][imgData[i + c]] == undefined) hist_data[c + 1][imgData[i + c]] = 1;
                 else hist_data[c + 1][imgData[i + c]]++;
             }
         }
@@ -89,29 +85,19 @@ class Image_histogram_class {
                 if (hist_data[h][i] == 0) continue;
                 c.beginPath();
 
-                if (h == 0)
-                    c.strokeStyle = 'rgba(64, 64, 64, ' + opacity * 2 + ')';
-                else if (h == 1)
-                    c.strokeStyle = 'rgba(255, 0, 0, ' + opacity + ')';
-                else if (h == 2)
-                    c.strokeStyle = 'rgba(0, 255, 0, ' + opacity + ')';
-                else if (h == 3)
-                    c.strokeStyle = 'rgba(0, 0, 255, ' + opacity + ')';
+                if (h == 0) c.strokeStyle = 'rgba(64, 64, 64, ' + opacity * 2 + ')';
+                else if (h == 1) c.strokeStyle = 'rgba(255, 0, 0, ' + opacity + ')';
+                else if (h == 2) c.strokeStyle = 'rgba(0, 255, 0, ' + opacity + ')';
+                else if (h == 3) c.strokeStyle = 'rgba(0, 0, 255, ' + opacity + ')';
 
                 c.lineWidth = 1;
                 c.moveTo(i + 0.5, 100 + 0.5);
-                c.lineTo(
-                    i + 0.5,
-                    100 -
-                        Math.round((hist_data[h][i] * 255 * 100) / total / 6) +
-                        0.5,
-                );
+                c.lineTo(i + 0.5, 100 - Math.round((hist_data[h][i] * 255 * 100) / total / 6) + 0.5);
                 c.stroke();
             }
         }
 
-        document.getElementById('pop_data_totalpixel').innerHTML =
-            this.Helper.number_format(total, 0);
+        document.getElementById('pop_data_totalpixel').innerHTML = this.Helper.number_format(total, 0);
         var average;
         if (total > 0) average = Math.round((sum * 10) / total / 3) / 10;
         else average = '-';

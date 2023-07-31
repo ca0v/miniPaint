@@ -38,8 +38,7 @@ class Pick_color_class extends Base_tools_class {
         });
         document.addEventListener('mouseup', function (event) {
             var mouse = _this.get_mouse_info(event);
-            if (config.TOOL.name != _this.name || mouse.click_valid == false)
-                return;
+            if (config.TOOL.name != _this.name || mouse.click_valid == false) return;
             _this.copy_color_to_clipboard();
         });
 
@@ -76,11 +75,7 @@ class Pick_color_class extends Base_tools_class {
         //get canvas from layer
         if (params.global == false) {
             //active layer
-            var canvas = this.Base_layers.convert_layer_to_canvas(
-                config.layer.id,
-                null,
-                false,
-            );
+            var canvas = this.Base_layers.convert_layer_to_canvas(config.layer.id, null, false);
             var ctx = canvas.getContext('2d');
         } else {
             //global

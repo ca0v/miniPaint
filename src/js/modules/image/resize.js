@@ -40,11 +40,7 @@ class Image_resize_class {
                 var code = event.keyCode;
                 if (this.Helper.is_input(event.target)) return;
 
-                if (
-                    code == 82 &&
-                    event.ctrlKey != true &&
-                    event.metaKey != true
-                ) {
+                if (code == 82 && event.ctrlKey != true && event.metaKey != true) {
                     //R - resize
                     this.resize();
                     event.preventDefault();
@@ -61,11 +57,7 @@ class Image_resize_class {
 
         //convert units
         var width = this.Helper.get_user_unit(config.WIDTH, units, resolution);
-        var height = this.Helper.get_user_unit(
-            config.HEIGHT,
-            units,
-            resolution,
-        );
+        var height = this.Helper.get_user_unit(config.HEIGHT, units, resolution);
 
         var settings = {
             title: 'Resize',
@@ -139,9 +131,7 @@ class Image_resize_class {
             var skips = 0;
             for (var i in config.layers) {
                 try {
-                    actions = actions.concat(
-                        await this.resize_layer(config.layers[i], params),
-                    );
+                    actions = actions.concat(await this.resize_layer(config.layers[i], params));
                 } catch (error) {
                     skips++;
                 }
@@ -152,17 +142,9 @@ class Image_resize_class {
             actions = actions.concat(this.resize_gui(params));
         } else {
             //only active
-            actions = actions.concat(
-                await this.resize_layer(config.layer, params),
-            );
+            actions = actions.concat(await this.resize_layer(config.layer, params));
         }
-        return app.State.do_action(
-            new app.Actions.Bundle_action(
-                'resize_layers',
-                'Resize Layers',
-                actions,
-            ),
-        );
+        return app.State.do_action(new app.Actions.Bundle_action('resize_layers', 'Resize Layers', actions));
     }
 
     /**
@@ -215,14 +197,8 @@ class Image_resize_class {
             canvas_height = Math.round(canvas_width / canvas_ratio);
         }
 
-        let new_x =
-            params.layers == 'All'
-                ? Math.round((layer.x * width) / config.WIDTH)
-                : layer.x;
-        let new_y =
-            params.layers == 'All'
-                ? Math.round((layer.y * height) / config.HEIGHT)
-                : layer.y;
+        let new_x = params.layers == 'All' ? Math.round((layer.x * width) / config.WIDTH) : layer.x;
+        let new_y = params.layers == 'All' ? Math.round((layer.y * height) / config.HEIGHT) : layer.y;
         let xratio = width / config.WIDTH;
         let yratio = height / config.HEIGHT;
 
@@ -231,9 +207,7 @@ class Image_resize_class {
             let data = JSON.parse(JSON.stringify(layer.data));
             for (let line of data) {
                 for (let span of line) {
-                    span.meta.size = Math.ceil(
-                        (span.meta.size || textMetaDefaults.size) * xratio,
-                    );
+                    span.meta.size = Math.ceil((span.meta.size || textMetaDefaults.size) * xratio);
                     span.meta.stroke_size = parseFloat(
                         (
                             0.1 *
@@ -246,10 +220,7 @@ class Image_resize_class {
                             )
                         ).toFixed(1),
                     );
-                    span.meta.kerning = Math.ceil(
-                        (span.meta.kerning || textMetaDefaults.kerning) *
-                            xratio,
-                    );
+                    span.meta.kerning = Math.ceil((span.meta.kerning || textMetaDefaults.kerning) * xratio);
                 }
             }
 
@@ -266,11 +237,7 @@ class Image_resize_class {
         }
 
         //is vector
-        else if (
-            layer.is_vector == true &&
-            layer.width != null &&
-            layer.height != null
-        ) {
+        else if (layer.is_vector == true && layer.width != null && layer.height != null) {
             // Return actions
             return [
                 new app.Actions.Update_layer_action(layer.id, {
@@ -285,28 +252,17 @@ class Image_resize_class {
         //only images supported at this point
         else if (layer.type != 'image') {
             //error - no support
-            alertify.error(
-                'Layer must be vector or image (convert it to raster).',
-            );
+            alertify.error('Layer must be vector or image (convert it to raster).');
             throw new Error('Layer is not compatible with resize');
         }
 
         //get canvas from layer
-        var canvas = this.Base_layers.convert_layer_to_canvas(
-            layer.id,
-            true,
-            false,
-        );
+        var canvas = this.Base_layers.convert_layer_to_canvas(layer.id, true, false);
         var ctx = canvas.getContext('2d');
 
         //validate
-        if (
-            mode == 'Hermite' &&
-            (width > canvas.width || height > canvas.height)
-        ) {
-            alertify.warning(
-                'Scaling up is not supported in Hermite, using Lanczos.',
-            );
+        if (mode == 'Hermite' && (width > canvas.width || height > canvas.height)) {
+            alertify.warning('Scaling up is not supported in Hermite, using Lanczos.');
             mode = 'Lanczos';
         }
 

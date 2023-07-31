@@ -34,10 +34,7 @@ export class Insert_layer_action extends Base_action {
             id: app.Layers.auto_increment,
             parent_id: 0,
             name:
-                config.TOOL.name.charAt(0).toUpperCase() +
-                config.TOOL.name.slice(1) +
-                ' #' +
-                app.Layers.auto_increment,
+                config.TOOL.name.charAt(0).toUpperCase() + config.TOOL.name.slice(1) + ' #' + app.Layers.auto_increment,
             type: null,
             link: null,
             x: 0,
@@ -73,10 +70,7 @@ export class Insert_layer_action extends Base_action {
         // Prepare image
         let image_load_promise;
         if (layer.type == 'image') {
-            if (
-                layer.name.toLowerCase().indexOf('.svg') ==
-                layer.name.length - 4
-            ) {
+            if (layer.name.toLowerCase().indexOf('.svg') == layer.name.length - 4) {
                 // We have svg
                 layer.is_vector = true;
             }
@@ -89,32 +83,21 @@ export class Insert_layer_action extends Base_action {
             ) {
                 // Remove first empty layer
 
-                this.delete_layer_action = new app.Actions.Delete_layer_action(
-                    config.layer.id,
-                    true,
-                );
+                this.delete_layer_action = new app.Actions.Delete_layer_action(config.layer.id, true);
                 await this.delete_layer_action.do();
             }
 
             if (layer.link == null) {
                 if (typeof layer.data == 'object') {
                     // Load actual image
-                    if (layer.width == 0 || layer.width === null)
-                        layer.width = layer.data.width;
-                    if (layer.height == 0 || layer.height === null)
-                        layer.height = layer.data.height;
+                    if (layer.width == 0 || layer.width === null) layer.width = layer.data.width;
+                    if (layer.height == 0 || layer.height === null) layer.height = layer.data.height;
                     layer.link = layer.data.cloneNode(true);
                     layer.link.onload = function () {
                         config.need_render = true;
                     };
                     layer.data = null;
-                    autoresize_as = [
-                        layer.width,
-                        layer.height,
-                        null,
-                        true,
-                        true,
-                    ];
+                    autoresize_as = [layer.width, layer.height, null, true, true];
                     //need_autoresize = true;
                 } else if (typeof layer.data == 'string') {
                     image_load_promise = new Promise((resolve, reject) => {
@@ -122,23 +105,13 @@ export class Insert_layer_action extends Base_action {
                         layer.link = new Image();
                         layer.link.onload = () => {
                             // Update dimensions
-                            if (layer.width == 0 || layer.width === null)
-                                layer.width = layer.link.width;
-                            if (layer.height == 0 || layer.height === null)
-                                layer.height = layer.link.height;
-                            if (layer.width_original == null)
-                                layer.width_original = layer.width;
-                            if (layer.height_original == null)
-                                layer.height_original = layer.height;
+                            if (layer.width == 0 || layer.width === null) layer.width = layer.link.width;
+                            if (layer.height == 0 || layer.height === null) layer.height = layer.link.height;
+                            if (layer.width_original == null) layer.width_original = layer.width;
+                            if (layer.height_original == null) layer.height_original = layer.height;
                             // Free data
                             layer.data = null;
-                            autoresize_as = [
-                                layer.width,
-                                layer.height,
-                                layer.id,
-                                this.can_automate,
-                                true,
-                            ];
+                            autoresize_as = [layer.width, layer.height, layer.id, this.can_automate, true];
                             config.need_render = true;
                             resolve();
                         };
@@ -165,10 +138,7 @@ export class Insert_layer_action extends Base_action {
             this.can_automate !== false
         ) {
             // Update existing layer, because it's empty
-            this.update_layer_action = new app.Actions.Update_layer_action(
-                config.layer.id,
-                layer,
-            );
+            this.update_layer_action = new app.Actions.Update_layer_action(config.layer.id, layer);
             await this.update_layer_action.do();
         } else {
             // Create new layer
@@ -183,16 +153,14 @@ export class Insert_layer_action extends Base_action {
             this.inserted_layer_id = layer.id;
         }
 
-        if (layer.id >= app.Layers.auto_increment)
-            app.Layers.auto_increment = layer.id + 1;
+        if (layer.id >= app.Layers.auto_increment) app.Layers.auto_increment = layer.id + 1;
 
         if (image_load_promise) {
             await image_load_promise;
         }
 
         if (autoresize_as) {
-            this.autoresize_canvas_action =
-                new app.Actions.Autoresize_canvas_action(...autoresize_as);
+            this.autoresize_canvas_action = new app.Actions.Autoresize_canvas_action(...autoresize_as);
             try {
                 await this.autoresize_canvas_action.do();
             } catch (error) {

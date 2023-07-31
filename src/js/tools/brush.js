@@ -60,12 +60,7 @@ class Brush_class extends Base_tools_class {
     pointerdown(e) {
         // Devices that don't actually support pen pressure can give 0.5 as a false reading.
         // It is highly unlikely a real pen will read exactly 0.5 at the start of a stroke.
-        if (
-            e.pressure &&
-            e.pressure !== 0 &&
-            e.pressure !== 0.5 &&
-            e.pressure <= 1
-        ) {
+        if (e.pressure && e.pressure !== 0 && e.pressure !== 0.5 && e.pressure <= 1) {
             this.pressure_supported = true;
             this.pointer_pressure = e.pressure;
         } else {
@@ -147,10 +142,7 @@ class Brush_class extends Base_tools_class {
             for (var j = 0; i < this.event_links.length; j++) {
                 if (this.event_links[j].identifier == identifier) {
                     //found link
-                    _this.mousemove_action(
-                        events[i],
-                        this.event_links[j].index,
-                    );
+                    _this.mousemove_action(events[i], this.event_links[j].index);
                     break;
                 }
             }
@@ -214,11 +206,9 @@ class Brush_class extends Base_tools_class {
                 color: config.COLOR,
             };
             app.State.do_action(
-                new app.Actions.Bundle_action(
-                    'new_brush_layer',
-                    'New Brush Layer',
-                    [new app.Actions.Insert_layer_action(this.layer)],
-                ),
+                new app.Actions.Bundle_action('new_brush_layer', 'New Brush Layer', [
+                    new app.Actions.Insert_layer_action(this.layer),
+                ]),
             );
             this.params_hash = params_hash;
 
@@ -234,15 +224,11 @@ class Brush_class extends Base_tools_class {
             const new_data = JSON.parse(JSON.stringify(config.layer.data));
             new_data.push([]);
             app.State.do_action(
-                new app.Actions.Bundle_action(
-                    'update_brush_layer',
-                    'Update Brush Layer',
-                    [
-                        new app.Actions.Update_layer_action(config.layer.id, {
-                            data: new_data,
-                        }),
-                    ],
-                ),
+                new app.Actions.Bundle_action('update_brush_layer', 'Update Brush Layer', [
+                    new app.Actions.Update_layer_action(config.layer.id, {
+                        data: new_data,
+                    }),
+                ]),
             );
         }
 
@@ -265,9 +251,7 @@ class Brush_class extends Base_tools_class {
             if (this.pressure_supported) {
                 new_size = size * this.pointer_pressure * 2;
             } else {
-                new_size =
-                    size +
-                    (size / this.max_speed) * mouse.speed_average * this.power;
+                new_size = size + (size / this.max_speed) * mouse.speed_average * this.power;
                 new_size = Math.max(new_size, size / 4);
                 new_size = Math.round(new_size);
             }
@@ -277,11 +261,7 @@ class Brush_class extends Base_tools_class {
         var mouse_x = mouse_coords.x;
         var mouse_y = mouse_coords.y;
 
-        current_group.push([
-            mouse_x - config.layer.x,
-            mouse_y - config.layer.y,
-            new_size,
-        ]);
+        current_group.push([mouse_x - config.layer.x, mouse_y - config.layer.y, new_size]);
         this.Base_layers.render();
     }
 
@@ -311,9 +291,7 @@ class Brush_class extends Base_tools_class {
             if (this.pressure_supported) {
                 new_size = size * this.pointer_pressure * 2;
             } else {
-                new_size =
-                    size +
-                    (size / this.max_speed) * mouse.speed_average * this.power;
+                new_size = size + (size / this.max_speed) * mouse.speed_average * this.power;
                 new_size = Math.max(new_size, size / 4);
                 new_size = Math.round(new_size);
             }
@@ -323,11 +301,7 @@ class Brush_class extends Base_tools_class {
         var mouse_x = mouse_coords.x;
         var mouse_y = mouse_coords.y;
 
-        current_group.push([
-            mouse_x - config.layer.x,
-            mouse_y - config.layer.y,
-            new_size,
-        ]);
+        current_group.push([mouse_x - config.layer.x, mouse_y - config.layer.y, new_size]);
         config.layer.status = 'draft';
         this.Base_layers.render();
     }
@@ -387,28 +361,15 @@ class Brush_class extends Base_tools_class {
 
                             ctx.lineWidth = group_data[i][2];
 
-                            if (
-                                group_data[i - 1] == null &&
-                                group_data[i + 1] == null
-                            ) {
+                            if (group_data[i - 1] == null && group_data[i + 1] == null) {
                                 //exception - point
-                                ctx.arc(
-                                    group_data[i][0],
-                                    group_data[i][1],
-                                    size / 2,
-                                    0,
-                                    2 * Math.PI,
-                                    false,
-                                );
+                                ctx.arc(group_data[i][0], group_data[i][1], size / 2, 0, 2 * Math.PI, false);
                                 ctx.fill();
                             } else if (group_data[i - 1] != null) {
                                 //lines
                                 ctx.lineWidth = group_data[i][2];
                                 ctx.beginPath();
-                                ctx.moveTo(
-                                    group_data[i - 1][0],
-                                    group_data[i - 1][1],
-                                );
+                                ctx.moveTo(group_data[i - 1][0], group_data[i - 1][1]);
                                 ctx.lineTo(group_data[i][0], group_data[i][1]);
                                 ctx.stroke();
                             }
@@ -417,14 +378,7 @@ class Brush_class extends Base_tools_class {
                     if (group_data[1] == null) {
                         //point
                         ctx.beginPath();
-                        ctx.arc(
-                            group_data[0][0],
-                            group_data[0][1],
-                            size / 2,
-                            0,
-                            2 * Math.PI,
-                            false,
-                        );
+                        ctx.arc(group_data[0][0], group_data[0][1], size / 2, 0, 2 * Math.PI, false);
                         ctx.fill();
                     }
                 }
@@ -503,12 +457,7 @@ class Brush_class extends Base_tools_class {
         }
 
         // For the last 2 points
-        ctx.quadraticCurveTo(
-            temp_data[i][0],
-            temp_data[i][1],
-            temp_data[i + 1][0],
-            temp_data[i + 1][1],
-        );
+        ctx.quadraticCurveTo(temp_data[i][0], temp_data[i][1], temp_data[i + 1][0], temp_data[i + 1][1]);
         ctx.stroke();
     }
 
@@ -525,11 +474,7 @@ class Brush_class extends Base_tools_class {
                     data.push([]);
                     group_index++;
                 } else {
-                    data[group_index].push([
-                        legacy[i][0],
-                        legacy[i][1],
-                        legacy[i][2],
-                    ]);
+                    data[group_index].push([legacy[i][0], legacy[i][1], legacy[i][2]]);
                 }
             }
         }

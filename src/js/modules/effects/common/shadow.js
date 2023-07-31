@@ -56,25 +56,14 @@ class Effects_brightness_class extends Effects_common_class {
 
         //adapt size to real canvas dimensions
         if (type == 'preview') {
-            var diff =
-                this.POP.width_mini /
-                this.POP.height_mini /
-                (config.WIDTH / config.HEIGHT);
+            var diff = this.POP.width_mini / this.POP.height_mini / (config.WIDTH / config.HEIGHT);
 
             params.x = params.x * (this.POP.width_mini / config.WIDTH);
             params.y = params.y * (this.POP.height_mini / config.HEIGHT);
             params.value = params.value * diff;
         }
 
-        return (
-            params.x +
-            'px ' +
-            params.y +
-            'px ' +
-            params.value +
-            'px ' +
-            params.color
-        );
+        return params.x + 'px ' + params.y + 'px ' + params.value + 'px ' + params.color;
     }
 
     demo(canvas_id, canvas_thumb) {
@@ -82,11 +71,7 @@ class Effects_brightness_class extends Effects_common_class {
         var ctx = canvas.getContext('2d');
 
         //draw
-        var size = this.convert_value(
-            null,
-            { x: 5, y: 5, value: 5, color: '#000000' },
-            'preview',
-        );
+        var size = this.convert_value(null, { x: 5, y: 5, value: 5, color: '#000000' }, 'preview');
         ctx.filter = 'drop-shadow(' + size + ')';
         ctx.drawImage(
             canvas_thumb,

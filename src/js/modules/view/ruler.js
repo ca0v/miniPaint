@@ -40,11 +40,7 @@ class View_ruler_class {
                 var code = event.code;
                 if (this.Helper.is_input(event.target)) return;
 
-                if (
-                    event.code == 'KeyU' &&
-                    event.ctrlKey != true &&
-                    event.metaKey != true
-                ) {
+                if (event.code == 'KeyU' && event.ctrlKey != true && event.metaKey != true) {
                     _this.ruler();
                     event.preventDefault();
                 }
@@ -70,9 +66,7 @@ class View_ruler_class {
         } else {
             //deactivate
             config.ruler_active = false;
-            document
-                .getElementById('middle_area')
-                .classList.remove('has-ruler');
+            document.getElementById('middle_area').classList.remove('has-ruler');
             ruler_left.style.display = 'none';
             ruler_top.style.display = 'none';
         }
@@ -125,23 +119,11 @@ class View_ruler_class {
         var step_big = step * 10;
 
         //calc begin/end point
-        var begin_x = Math.max(
-            0,
-            ruler_top.width / 2 - (config.WIDTH * config.ZOOM) / 2,
-        );
-        var begin_y = Math.max(
-            0,
-            ruler_left.height / 2 - (config.HEIGHT * config.ZOOM) / 2,
-        );
+        var begin_x = Math.max(0, ruler_top.width / 2 - (config.WIDTH * config.ZOOM) / 2);
+        var begin_y = Math.max(0, ruler_left.height / 2 - (config.HEIGHT * config.ZOOM) / 2);
 
-        var end_x = Math.min(
-            ruler_top.width,
-            ruler_top.width / 2 + (config.WIDTH * config.ZOOM) / 2,
-        );
-        var end_y = Math.min(
-            ruler_left.height,
-            ruler_left.height / 2 + (config.HEIGHT * config.ZOOM) / 2,
-        );
+        var end_x = Math.min(ruler_top.width, ruler_top.width / 2 + (config.WIDTH * config.ZOOM) / 2);
+        var end_y = Math.min(ruler_left.height, ruler_left.height / 2 + (config.HEIGHT * config.ZOOM) / 2);
 
         //left
         ctx_left.strokeStyle = color;
@@ -163,11 +145,7 @@ class View_ruler_class {
             ctx_left.lineTo(size, i + 0.5);
 
             var global_pos = this.Base_layers.get_world_coords(0, i - begin_y);
-            var value = this.Helper.get_user_unit(
-                global_pos.y,
-                units,
-                resolution,
-            );
+            var value = this.Helper.get_user_unit(global_pos.y, units, resolution);
 
             if (units == 'inches') {
                 //more decimals value
@@ -207,11 +185,7 @@ class View_ruler_class {
             ctx_top.lineTo(i + 0.5, size);
 
             var global_pos = this.Base_layers.get_world_coords(i - begin_x, 0);
-            var value = this.Helper.get_user_unit(
-                global_pos.x,
-                units,
-                resolution,
-            );
+            var value = this.Helper.get_user_unit(global_pos.x, units, resolution);
 
             if (units == 'inches') {
                 //more decimals value

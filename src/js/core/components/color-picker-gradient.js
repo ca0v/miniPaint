@@ -59,25 +59,16 @@ var Helper = new Helper_class();
         event.preventDefault();
         const $el = $(event.target.closest('.ui_color_picker_gradient'));
         const { secondaryPick, secondaryPickHandle, hsv } = $el.data();
-        const clientX =
-            event.touches && event.touches.length > 0
-                ? event.touches[0].clientX
-                : event.clientX;
-        const clientY =
-            event.touches && event.touches.length > 0
-                ? event.touches[0].clientY
-                : event.clientY;
-        const mouseDownSecondaryPickRect =
-            secondaryPick.getBoundingClientRect();
+        const clientX = event.touches && event.touches.length > 0 ? event.touches[0].clientX : event.clientX;
+        const clientY = event.touches && event.touches.length > 0 ? event.touches[0].clientY : event.clientY;
+        const mouseDownSecondaryPickRect = secondaryPick.getBoundingClientRect();
 
         const xRatio =
             (clientX - mouseDownSecondaryPickRect.left) /
-            (mouseDownSecondaryPickRect.right -
-                mouseDownSecondaryPickRect.left);
+            (mouseDownSecondaryPickRect.right - mouseDownSecondaryPickRect.left);
         const yRatio =
             (clientY - mouseDownSecondaryPickRect.top) /
-            (mouseDownSecondaryPickRect.bottom -
-                mouseDownSecondaryPickRect.top);
+            (mouseDownSecondaryPickRect.bottom - mouseDownSecondaryPickRect.top);
 
         set_hsv($el, {
             h: hsv.h,
@@ -105,22 +96,14 @@ var Helper = new Helper_class();
     const generate_on_mouse_move_window = ($el) => {
         return (event) => {
             const { hsv, mouseDownSecondaryPickRect } = $el.data();
-            const clientX =
-                event.touches && event.touches.length > 0
-                    ? event.touches[0].clientX
-                    : event.clientX;
-            const clientY =
-                event.touches && event.touches.length > 0
-                    ? event.touches[0].clientY
-                    : event.clientY;
+            const clientX = event.touches && event.touches.length > 0 ? event.touches[0].clientX : event.clientX;
+            const clientY = event.touches && event.touches.length > 0 ? event.touches[0].clientY : event.clientY;
             const xRatio =
                 (clientX - mouseDownSecondaryPickRect.left) /
-                (mouseDownSecondaryPickRect.right -
-                    mouseDownSecondaryPickRect.left);
+                (mouseDownSecondaryPickRect.right - mouseDownSecondaryPickRect.left);
             const yRatio =
                 (clientY - mouseDownSecondaryPickRect.top) /
-                (mouseDownSecondaryPickRect.bottom -
-                    mouseDownSecondaryPickRect.top);
+                (mouseDownSecondaryPickRect.bottom - mouseDownSecondaryPickRect.top);
             set_hsv($el, {
                 h: hsv.h,
                 s: xRatio,
@@ -133,10 +116,7 @@ var Helper = new Helper_class();
     const generate_on_mouse_up_window = ($el) => {
         return (event) => {
             const $window = $(window);
-            $window.off(
-                'mousemove touchmove',
-                $el.data('mouseMoveWindowHandler'),
-            );
+            $window.off('mousemove touchmove', $el.data('mouseMoveWindowHandler'));
             $window.off('mouseup touchend', $el.data('mouseUpWindowHandler'));
         };
     };
@@ -160,19 +140,11 @@ var Helper = new Helper_class();
             let el = this[i];
 
             // Constructor
-            if (
-                Object.prototype.toString.call(behavior) !== '[object String]'
-            ) {
+            if (Object.prototype.toString.call(behavior) !== '[object String]') {
                 const definition = behavior || {};
 
-                const id =
-                    definition.id != null
-                        ? definition.id
-                        : el.getAttribute('id');
-                const label =
-                    definition.label != null
-                        ? definition.label
-                        : el.getAttribute('aria-label');
+                const id = definition.id != null ? definition.id : el.getAttribute('id');
+                const label = definition.label != null ? definition.label : el.getAttribute('aria-label');
                 const hsv = definition.hsv || { h: 0, s: 0, v: 0 };
 
                 $(el).after(template);
@@ -221,10 +193,7 @@ var Helper = new Helper_class();
                 set_hsv($el, hsv);
 
                 $(secondaryPick).on('keydown', on_key_down_secondary_pick);
-                $(secondaryPick).on(
-                    'mousedown touchstart',
-                    on_mouse_down_secondary_pick,
-                );
+                $(secondaryPick).on('mousedown touchstart', on_mouse_down_secondary_pick);
                 $(secondaryPick).on('touchmove', on_touch_move_secondary_pick);
             }
             // Behaviors
@@ -232,12 +201,7 @@ var Helper = new Helper_class();
                 const $el = $(el);
                 const hsv = $el.data('hsv');
                 const newHsv = args[0];
-                if (
-                    newHsv &&
-                    (hsv.h !== newHsv.h ||
-                        hsv.s !== newHsv.s ||
-                        hsv.v !== newHsv.v)
-                ) {
+                if (newHsv && (hsv.h !== newHsv.h || hsv.s !== newHsv.s || hsv.v !== newHsv.v)) {
                     set_hsv($(el), newHsv);
                 }
             } else if (behavior === 'get_hsv') {

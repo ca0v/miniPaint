@@ -17,11 +17,9 @@ class Edit_undo_class {
     events() {
         var _this = this;
 
-        document
-            .querySelector('#undo_button')
-            .addEventListener('click', function (event) {
-                _this.Base_state.undo();
-            });
+        document.querySelector('#undo_button').addEventListener('click', function (event) {
+            _this.Base_state.undo();
+        });
     }
 
     undo() {

@@ -71,10 +71,7 @@ class Base_state_class {
             const freed_actions = this.action_history
                 .slice(this.action_history_index, this.action_history.length)
                 .reverse();
-            this.action_history = this.action_history.slice(
-                0,
-                this.action_history_index,
-            );
+            this.action_history = this.action_history.slice(0, this.action_history_index);
             for (let freed_action of freed_actions) {
                 try {
                     await freed_action.free();
@@ -90,12 +87,11 @@ class Base_state_class {
                 options.merge_with_history = [options.merge_with_history];
             }
             if (options.merge_with_history.includes(last_action.action_id)) {
-                this.action_history[this.action_history.length - 1] =
-                    new app.Actions.Bundle_action(
-                        last_action.action_id,
-                        last_action.action_description,
-                        [last_action, action],
-                    );
+                this.action_history[this.action_history.length - 1] = new app.Actions.Bundle_action(
+                    last_action.action_id,
+                    last_action.action_description,
+                    [last_action, action],
+                );
             }
         } else {
             this.action_history.push(action);
@@ -113,10 +109,7 @@ class Base_state_class {
 
         // Chrome arbitrary method to determine memory usage, but most people use Chrome so...
         if (window.performance && window.performance.memory) {
-            if (
-                window.performance.memory.usedJSHeapSize >
-                window.performance.memory.jsHeapSizeLimit * 0.8
-            ) {
+            if (window.performance.memory.usedJSHeapSize > window.performance.memory.jsHeapSizeLimit * 0.8) {
                 this.free(window.performance.memory.jsHeapSizeLimit * 0.2);
             }
         }
@@ -178,10 +171,7 @@ class Base_state_class {
             } catch (error) {
                 has_error = true;
             }
-            if (
-                total_memory_freed >= memory_size &&
-                total_database_freed >= database_size
-            ) {
+            if (total_memory_freed >= memory_size && total_database_freed >= database_size) {
                 free_complete = true;
                 break;
             }
@@ -197,10 +187,7 @@ class Base_state_class {
                 } catch (error) {
                     has_error = true;
                 }
-                if (
-                    total_memory_freed >= memory_size &&
-                    total_database_freed >= database_size
-                ) {
+                if (total_memory_freed >= memory_size && total_database_freed >= database_size) {
                     free_complete = true;
                     break;
                 }
@@ -218,8 +205,7 @@ class Base_state_class {
     }
 
     save() {
-        const message =
-            'window.State.save() is removed. Use State.do_action() to manage undo history instead.';
+        const message = 'window.State.save() is removed. Use State.do_action() to manage undo history instead.';
         console.warn(message);
         alertify.error(message);
     }

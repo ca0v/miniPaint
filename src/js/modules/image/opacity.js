@@ -42,15 +42,11 @@ class Image_opacity_class {
         if (value > 100) value = 100;
         if (is_final) {
             app.State.do_action(
-                new app.Actions.Bundle_action(
-                    'change_opacity',
-                    'Change Opacity',
-                    [
-                        new app.Actions.Update_layer_action(config.layer.id, {
-                            opacity: value,
-                        }),
-                    ],
-                ),
+                new app.Actions.Bundle_action('change_opacity', 'Change Opacity', [
+                    new app.Actions.Update_layer_action(config.layer.id, {
+                        opacity: value,
+                    }),
+                ]),
             );
         } else {
             config.layer.opacity = value;

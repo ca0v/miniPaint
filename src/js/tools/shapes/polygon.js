@@ -109,11 +109,9 @@ class Polygon_class extends Base_tools_class {
                 status: 'draft',
             };
             app.State.do_action(
-                new app.Actions.Bundle_action(
-                    'new_polygon_layer',
-                    'New Polygon Layer',
-                    [new app.Actions.Insert_layer_action(this.layer)],
-                ),
+                new app.Actions.Bundle_action('new_polygon_layer', 'New Polygon Layer', [
+                    new app.Actions.Insert_layer_action(this.layer),
+                ]),
             );
             this.params_hash = params_hash;
         } else {
@@ -137,12 +135,7 @@ class Polygon_class extends Base_tools_class {
         }
 
         //apply snap
-        var snap_info = this.calc_snap_position(
-            e,
-            mouse_x,
-            mouse_y,
-            config.layer.id,
-        );
+        var snap_info = this.calc_snap_position(e, mouse_x, mouse_y, config.layer.id);
         if (snap_info != null) {
             if (snap_info.x != null) {
                 mouse_x = snap_info.x;
@@ -171,12 +164,7 @@ class Polygon_class extends Base_tools_class {
         var mouse_y = Math.round(mouse.y);
 
         //apply snap
-        var snap_info = this.calc_snap_position(
-            e,
-            mouse_x,
-            mouse_y,
-            config.layer.id,
-        );
+        var snap_info = this.calc_snap_position(e, mouse_x, mouse_y, config.layer.id);
         if (snap_info != null) {
             if (snap_info.x != null) {
                 mouse_x = snap_info.x;
@@ -264,14 +252,7 @@ class Polygon_class extends Base_tools_class {
         //draw with rotation support
         ctx.translate(layer.x + layer.width / 2, layer.y + layer.height / 2);
         ctx.rotate((layer.rotate * Math.PI) / 180);
-        this.draw_polygon(
-            ctx,
-            -layer.width / 2,
-            -layer.height / 2,
-            layer.width,
-            layer.height,
-            layer.data,
-        );
+        this.draw_polygon(ctx, -layer.width / 2, -layer.height / 2, layer.width, layer.height, layer.data);
 
         ctx.restore();
     }
@@ -322,11 +303,7 @@ class Polygon_class extends Base_tools_class {
             return;
         }
 
-        if (
-            event_type == 'mousemove' &&
-            this.mouse_lock == 'move_point' &&
-            mouse.is_drag
-        ) {
+        if (event_type == 'mousemove' && this.mouse_lock == 'move_point' && mouse.is_drag) {
             mainWrapper.style.cursor = 'move';
 
             if (e.buttons == 1 || typeof e.buttons == 'undefined') {
@@ -356,15 +333,11 @@ class Polygon_class extends Base_tools_class {
 
             //save state
             app.State.do_action(
-                new app.Actions.Bundle_action(
-                    'change_layer_details',
-                    'Change Layer Details',
-                    [
-                        new app.Actions.Update_layer_action(config.layer.id, {
-                            data: bezier,
-                        }),
-                    ],
-                ),
+                new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
+                    new app.Actions.Update_layer_action(config.layer.id, {
+                        data: bezier,
+                    }),
+                ]),
             );
 
             config.need_render = true;
@@ -377,10 +350,7 @@ class Polygon_class extends Base_tools_class {
         if (!this.mouse_lock) {
             for (let current_drag_type in this.selected_obj_positions) {
                 const position = this.selected_obj_positions[current_drag_type];
-                if (
-                    position &&
-                    this.ctx.isPointInPath(position, mouse.x, mouse.y)
-                ) {
+                if (position && this.ctx.isPointInPath(position, mouse.x, mouse.y)) {
                     // match
                     if (event_type == 'mousedown') {
                         if (e.buttons == 1 || typeof e.buttons == 'undefined') {
@@ -388,9 +358,7 @@ class Polygon_class extends Base_tools_class {
                             this.selected_object_drag_type = current_drag_type;
                         }
                         config.mouse_lock = true;
-                        this.old_data = JSON.parse(
-                            JSON.stringify(config.layer.data),
-                        );
+                        this.old_data = JSON.parse(JSON.stringify(config.layer.data));
                     }
                     if (event_type == 'mousemove') {
                         mainWrapper.style.cursor = 'move';

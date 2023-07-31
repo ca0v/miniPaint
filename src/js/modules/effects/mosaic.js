@@ -15,9 +15,7 @@ class Effects_mosaic_class {
         var _this = this;
 
         if (config.layer.type != 'image') {
-            alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.',
-            );
+            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
             return;
         }
 
@@ -25,9 +23,7 @@ class Effects_mosaic_class {
             title: 'Mosaic',
             preview: true,
             effects: true,
-            params: [
-                { name: 'size', title: 'Size:', value: 10, range: [1, 100] },
-            ],
+            params: [{ name: 'size', title: 'Size:', value: 10, range: [1, 100] }],
             on_change: function (params, canvas_preview, w, h) {
                 var img = canvas_preview.getImageData(0, 0, w, h);
                 var data = _this.change(img, params);
@@ -51,9 +47,7 @@ class Effects_mosaic_class {
         ctx.putImageData(data, 0, 0);
 
         //save
-        return app.State.do_action(
-            new app.Actions.Update_layer_image_action(canvas),
-        );
+        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
     }
 
     change(data, params) {
@@ -74,12 +68,7 @@ class Effects_mosaic_class {
         ctx.drawImage(canvas_thumb, 0, 0);
 
         //now update
-        var img = ctx.getImageData(
-            0,
-            0,
-            canvas_thumb.width,
-            canvas_thumb.height,
-        );
+        var img = ctx.getImageData(0, 0, canvas_thumb.width, canvas_thumb.height);
         var params = {
             size: 10,
         };

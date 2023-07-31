@@ -46,9 +46,7 @@ class Image_rotate_class {
         var _this = this;
 
         if (config.layer.rotate === null) {
-            alertify.error(
-                'Rotate is not supported on this type of object. Convert to raster?',
-            );
+            alertify.error('Rotate is not supported on this type of object. Convert to raster?');
             return;
         }
 
@@ -159,9 +157,7 @@ class Image_rotate_class {
             // bundle_9771.js line 51519 contains custom logic for when the rotate is 0 mod 90, but it's not clear why
             // seems to do the identical logic except it bails when there is more than one layer.
             if (0 === config.layer.rotate % 90 && config.layers.length === 1) {
-                warn(
-                    'custom dataworks logic not implemented, doing default behavior',
-                );
+                warn('custom dataworks logic not implemented, doing default behavior');
             }
         }
         if (new_x > config.WIDTH || new_y > config.HEIGHT) {

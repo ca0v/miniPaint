@@ -93,14 +93,10 @@ ImageFilters.utils = {
         var i = (y * width + x) << 2;
 
         // ARGB
-        return (
-            (src[i + 3] << 24) | (src[i] << 16) | (src[i + 1] << 8) | src[i + 2]
-        );
+        return (src[i + 3] << 24) | (src[i] << 16) | (src[i + 1] << 8) | src[i + 2];
     },
     getPixelByIndex: function (src, i) {
-        return (
-            (src[i + 3] << 24) | (src[i] << 16) | (src[i + 1] << 8) | src[i + 2]
-        );
+        return (src[i + 3] << 24) | (src[i] << 16) | (src[i + 1] << 8) | src[i + 2];
     },
     /**
      * one of the most important functions in this library.
@@ -128,32 +124,16 @@ ImageFilters.utils = {
             i = (fy * width + fx) << 2;
 
             if (wx || wy) {
-                nw =
-                    (src[i + 3] << 24) |
-                    (src[i] << 16) |
-                    (src[i + 1] << 8) |
-                    src[i + 2];
+                nw = (src[i + 3] << 24) | (src[i] << 16) | (src[i + 1] << 8) | src[i + 2];
 
                 i += 4;
-                ne =
-                    (src[i + 3] << 24) |
-                    (src[i] << 16) |
-                    (src[i + 1] << 8) |
-                    src[i + 2];
+                ne = (src[i + 3] << 24) | (src[i] << 16) | (src[i + 1] << 8) | src[i + 2];
 
                 i = i - 8 + (width << 2);
-                sw =
-                    (src[i + 3] << 24) |
-                    (src[i] << 16) |
-                    (src[i + 1] << 8) |
-                    src[i + 2];
+                sw = (src[i + 3] << 24) | (src[i] << 16) | (src[i + 1] << 8) | src[i + 2];
 
                 i += 4;
-                se =
-                    (src[i + 3] << 24) |
-                    (src[i] << 16) |
-                    (src[i + 1] << 8) |
-                    src[i + 2];
+                se = (src[i + 3] << 24) | (src[i] << 16) | (src[i + 1] << 8) | src[i + 2];
             } else {
                 // no interpolation required
                 dst[dstIndex] = src[i];
@@ -188,9 +168,7 @@ ImageFilters.utils = {
         g =
             (((nw >> 8) & 0xff) * cx + ((ne >> 8) & 0xff) * wx) * cy +
             (((sw >> 8) & 0xff) * cx + ((se >> 8) & 0xff) * wx) * wy;
-        b =
-            ((nw & 0xff) * cx + (ne & 0xff) * wx) * cy +
-            ((sw & 0xff) * cx + (se & 0xff) * wx) * wy;
+        b = ((nw & 0xff) * cx + (ne & 0xff) * wx) * cy + ((sw & 0xff) * cx + (se & 0xff) * wx) * wy;
         a =
             (((nw >> 24) & 0xff) * cx + ((ne >> 24) & 0xff) * wx) * cy +
             (((sw >> 24) & 0xff) * cx + ((se >> 24) & 0xff) * wx) * wy;
@@ -296,14 +274,7 @@ ImageFilters.utils = {
 
 ImageFilters.Translate = function (srcImageData, x, y, interpolation) {};
 ImageFilters.Scale = function (srcImageData, scaleX, scaleY, interpolation) {};
-ImageFilters.Rotate = function (
-    srcImageData,
-    originX,
-    originY,
-    angle,
-    resize,
-    interpolation,
-) {};
+ImageFilters.Rotate = function (srcImageData, originX, originY, angle, resize, interpolation) {};
 ImageFilters.Affine = function (srcImageData, matrix, resize, interpolation) {};
 ImageFilters.UnsharpMask = function (srcImageData, level) {};
 
@@ -396,12 +367,9 @@ ImageFilters.ConvolutionFilter = function (
                 }
             }
 
-            dstPixels[index] =
-                (v = r / divisor + bias) > 255 ? 255 : v < 0 ? 0 : v | 0;
-            dstPixels[index + 1] =
-                (v = g / divisor + bias) > 255 ? 255 : v < 0 ? 0 : v | 0;
-            dstPixels[index + 2] =
-                (v = b / divisor + bias) > 255 ? 255 : v < 0 ? 0 : v | 0;
+            dstPixels[index] = (v = r / divisor + bias) > 255 ? 255 : v < 0 ? 0 : v | 0;
+            dstPixels[index + 1] = (v = g / divisor + bias) > 255 ? 255 : v < 0 ? 0 : v | 0;
+            dstPixels[index + 2] = (v = b / divisor + bias) > 255 ? 255 : v < 0 ? 0 : v | 0;
             dstPixels[index + 3] = preserveAlpha
                 ? srcPixels[index + 3]
                 : (v = a / divisor + bias) > 255
@@ -435,10 +403,7 @@ ImageFilters.Binarize = function (srcImageData, threshold) {
     for (var i = 0; i < srcLength; i += 4) {
         var avg = srcPixels[i] + srcPixels[i + 1] + srcPixels[i + 2] / 3;
 
-        dstPixels[i] =
-            dstPixels[i + 1] =
-            dstPixels[i + 2] =
-                avg <= threshold ? 0 : 255;
+        dstPixels[i] = dstPixels[i + 1] = dstPixels[i + 2] = avg <= threshold ? 0 : 255;
         dstPixels[i + 3] = 255;
     }
 
@@ -458,10 +423,8 @@ ImageFilters.BlendAdd = function (srcImageData, blendImageData, dx, dy) {
 
     for (var i = 0; i < srcLength; i += 4) {
         dstPixels[i] = (v = srcPixels[i] + blendPixels[i]) > 255 ? 255 : v;
-        dstPixels[i + 1] =
-            (v = srcPixels[i + 1] + blendPixels[i + 1]) > 255 ? 255 : v;
-        dstPixels[i + 2] =
-            (v = srcPixels[i + 2] + blendPixels[i + 2]) > 255 ? 255 : v;
+        dstPixels[i + 1] = (v = srcPixels[i + 1] + blendPixels[i + 1]) > 255 ? 255 : v;
+        dstPixels[i + 2] = (v = srcPixels[i + 2] + blendPixels[i + 2]) > 255 ? 255 : v;
         dstPixels[i + 3] = 255;
     }
 
@@ -481,10 +444,8 @@ ImageFilters.BlendSubtract = function (srcImageData, blendImageData, dx, dy) {
 
     for (var i = 0; i < srcLength; i += 4) {
         dstPixels[i] = (v = srcPixels[i] - blendPixels[i]) < 0 ? 0 : v;
-        dstPixels[i + 1] =
-            (v = srcPixels[i + 1] - blendPixels[i + 1]) < 0 ? 0 : v;
-        dstPixels[i + 2] =
-            (v = srcPixels[i + 2] - blendPixels[i + 2]) < 0 ? 0 : v;
+        dstPixels[i + 1] = (v = srcPixels[i + 1] - blendPixels[i + 1]) < 0 ? 0 : v;
+        dstPixels[i + 2] = (v = srcPixels[i + 2] - blendPixels[i + 2]) < 0 ? 0 : v;
         dstPixels[i + 3] = 255;
     }
 
@@ -575,13 +536,7 @@ ImageFilters.BoxBlur = (function () {
 
         for (var i = 0; i < quality; i += 1) {
             // only use the srcPixels on the first loop
-            blur(
-                i ? dstPixels : srcPixels,
-                tmpPixels,
-                srcWidth,
-                srcHeight,
-                hRadius,
-            );
+            blur(i ? dstPixels : srcPixels, tmpPixels, srcWidth, srcHeight, hRadius);
             blur(tmpPixels, dstPixels, srcHeight, srcWidth, vRadius);
         }
 
@@ -598,37 +553,28 @@ ImageFilters.GaussianBlur = function (srcImageData, strength) {
     switch (strength) {
         case 2:
             size = 5;
-            matrix = [
-                1, 1, 2, 1, 1, 1, 2, 4, 2, 1, 2, 4, 8, 4, 2, 1, 2, 4, 2, 1, 1,
-                1, 2, 1, 1,
-            ];
+            matrix = [1, 1, 2, 1, 1, 1, 2, 4, 2, 1, 2, 4, 8, 4, 2, 1, 2, 4, 2, 1, 1, 1, 2, 1, 1];
             divisor = 52;
             break;
         case 3:
             size = 7;
             matrix = [
-                1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 4, 2, 2, 1, 2, 2, 4, 8, 4, 2, 2,
-                2, 4, 8, 16, 8, 4, 2, 2, 2, 4, 8, 4, 2, 2, 1, 2, 2, 4, 2, 2, 1,
-                1, 1, 2, 2, 2, 1, 1,
+                1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 4, 2, 2, 1, 2, 2, 4, 8, 4, 2, 2, 2, 4, 8, 16, 8, 4, 2, 2, 2, 4, 8, 4, 2,
+                2, 1, 2, 2, 4, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1,
             ];
             divisor = 140;
             break;
         case 4:
             size = 15;
             matrix = [
-                2, 2, 3, 4, 5, 5, 6, 6, 6, 5, 5, 4, 3, 2, 2, 2, 3, 4, 5, 7, 7,
-                8, 8, 8, 7, 7, 5, 4, 3, 2, 3, 4, 6, 7, 9, 10, 10, 11, 10, 10, 9,
-                7, 6, 4, 3, 4, 5, 7, 9, 10, 12, 13, 13, 13, 12, 10, 9, 7, 5, 4,
-                5, 7, 9, 11, 13, 14, 15, 16, 15, 14, 13, 11, 9, 7, 5, 5, 7, 10,
-                12, 14, 16, 17, 18, 17, 16, 14, 12, 10, 7, 5, 6, 8, 10, 13, 15,
-                17, 19, 19, 19, 17, 15, 13, 10, 8, 6, 6, 8, 11, 13, 16, 18, 19,
-                20, 19, 18, 16, 13, 11, 8, 6, 6, 8, 10, 13, 15, 17, 19, 19, 19,
-                17, 15, 13, 10, 8, 6, 5, 7, 10, 12, 14, 16, 17, 18, 17, 16, 14,
-                12, 10, 7, 5, 5, 7, 9, 11, 13, 14, 15, 16, 15, 14, 13, 11, 9, 7,
-                5, 4, 5, 7, 9, 10, 12, 13, 13, 13, 12, 10, 9, 7, 5, 4, 3, 4, 6,
-                7, 9, 10, 10, 11, 10, 10, 9, 7, 6, 4, 3, 2, 3, 4, 5, 7, 7, 8, 8,
-                8, 7, 7, 5, 4, 3, 2, 2, 2, 3, 4, 5, 5, 6, 6, 6, 5, 5, 4, 3, 2,
-                2,
+                2, 2, 3, 4, 5, 5, 6, 6, 6, 5, 5, 4, 3, 2, 2, 2, 3, 4, 5, 7, 7, 8, 8, 8, 7, 7, 5, 4, 3, 2, 3, 4, 6, 7, 9,
+                10, 10, 11, 10, 10, 9, 7, 6, 4, 3, 4, 5, 7, 9, 10, 12, 13, 13, 13, 12, 10, 9, 7, 5, 4, 5, 7, 9, 11, 13,
+                14, 15, 16, 15, 14, 13, 11, 9, 7, 5, 5, 7, 10, 12, 14, 16, 17, 18, 17, 16, 14, 12, 10, 7, 5, 6, 8, 10,
+                13, 15, 17, 19, 19, 19, 17, 15, 13, 10, 8, 6, 6, 8, 11, 13, 16, 18, 19, 20, 19, 18, 16, 13, 11, 8, 6, 6,
+                8, 10, 13, 15, 17, 19, 19, 19, 17, 15, 13, 10, 8, 6, 5, 7, 10, 12, 14, 16, 17, 18, 17, 16, 14, 12, 10,
+                7, 5, 5, 7, 9, 11, 13, 14, 15, 16, 15, 14, 13, 11, 9, 7, 5, 4, 5, 7, 9, 10, 12, 13, 13, 13, 12, 10, 9,
+                7, 5, 4, 3, 4, 6, 7, 9, 10, 10, 11, 10, 10, 9, 7, 6, 4, 3, 2, 3, 4, 5, 7, 7, 8, 8, 8, 7, 7, 5, 4, 3, 2,
+                2, 2, 3, 4, 5, 5, 6, 6, 6, 5, 5, 4, 3, 2, 2,
             ];
             divisor = 2044;
             break;
@@ -638,15 +584,7 @@ ImageFilters.GaussianBlur = function (srcImageData, strength) {
             divisor = 16;
             break;
     }
-    return this.ConvolutionFilter(
-        srcImageData,
-        size,
-        size,
-        matrix,
-        divisor,
-        0,
-        false,
-    );
+    return this.ConvolutionFilter(srcImageData, size, size, matrix, divisor, 0, false);
 };
 
 /**
@@ -679,42 +617,30 @@ ImageFilters.GaussianBlur = function (srcImageData, strength) {
  */
 ImageFilters.StackBlur = (function () {
     var mul_table = [
-        512, 512, 456, 512, 328, 456, 335, 512, 405, 328, 271, 456, 388, 335,
-        292, 512, 454, 405, 364, 328, 298, 271, 496, 456, 420, 388, 360, 335,
-        312, 292, 273, 512, 482, 454, 428, 405, 383, 364, 345, 328, 312, 298,
-        284, 271, 259, 496, 475, 456, 437, 420, 404, 388, 374, 360, 347, 335,
-        323, 312, 302, 292, 282, 273, 265, 512, 497, 482, 468, 454, 441, 428,
-        417, 405, 394, 383, 373, 364, 354, 345, 337, 328, 320, 312, 305, 298,
-        291, 284, 278, 271, 265, 259, 507, 496, 485, 475, 465, 456, 446, 437,
-        428, 420, 412, 404, 396, 388, 381, 374, 367, 360, 354, 347, 341, 335,
-        329, 323, 318, 312, 307, 302, 297, 292, 287, 282, 278, 273, 269, 265,
-        261, 512, 505, 497, 489, 482, 475, 468, 461, 454, 447, 441, 435, 428,
-        422, 417, 411, 405, 399, 394, 389, 383, 378, 373, 368, 364, 359, 354,
-        350, 345, 341, 337, 332, 328, 324, 320, 316, 312, 309, 305, 301, 298,
-        294, 291, 287, 284, 281, 278, 274, 271, 268, 265, 262, 259, 257, 507,
-        501, 496, 491, 485, 480, 475, 470, 465, 460, 456, 451, 446, 442, 437,
-        433, 428, 424, 420, 416, 412, 408, 404, 400, 396, 392, 388, 385, 381,
-        377, 374, 370, 367, 363, 360, 357, 354, 350, 347, 344, 341, 338, 335,
-        332, 329, 326, 323, 320, 318, 315, 312, 310, 307, 304, 302, 299, 297,
-        294, 292, 289, 287, 285, 282, 280, 278, 275, 273, 271, 269, 267, 265,
-        263, 261, 259,
+        512, 512, 456, 512, 328, 456, 335, 512, 405, 328, 271, 456, 388, 335, 292, 512, 454, 405, 364, 328, 298, 271,
+        496, 456, 420, 388, 360, 335, 312, 292, 273, 512, 482, 454, 428, 405, 383, 364, 345, 328, 312, 298, 284, 271,
+        259, 496, 475, 456, 437, 420, 404, 388, 374, 360, 347, 335, 323, 312, 302, 292, 282, 273, 265, 512, 497, 482,
+        468, 454, 441, 428, 417, 405, 394, 383, 373, 364, 354, 345, 337, 328, 320, 312, 305, 298, 291, 284, 278, 271,
+        265, 259, 507, 496, 485, 475, 465, 456, 446, 437, 428, 420, 412, 404, 396, 388, 381, 374, 367, 360, 354, 347,
+        341, 335, 329, 323, 318, 312, 307, 302, 297, 292, 287, 282, 278, 273, 269, 265, 261, 512, 505, 497, 489, 482,
+        475, 468, 461, 454, 447, 441, 435, 428, 422, 417, 411, 405, 399, 394, 389, 383, 378, 373, 368, 364, 359, 354,
+        350, 345, 341, 337, 332, 328, 324, 320, 316, 312, 309, 305, 301, 298, 294, 291, 287, 284, 281, 278, 274, 271,
+        268, 265, 262, 259, 257, 507, 501, 496, 491, 485, 480, 475, 470, 465, 460, 456, 451, 446, 442, 437, 433, 428,
+        424, 420, 416, 412, 408, 404, 400, 396, 392, 388, 385, 381, 377, 374, 370, 367, 363, 360, 357, 354, 350, 347,
+        344, 341, 338, 335, 332, 329, 326, 323, 320, 318, 315, 312, 310, 307, 304, 302, 299, 297, 294, 292, 289, 287,
+        285, 282, 280, 278, 275, 273, 271, 269, 267, 265, 263, 261, 259,
     ];
 
     var shg_table = [
-        9, 11, 12, 13, 13, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 17, 17, 17,
-        17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19, 19,
-        19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-        20, 20, 20, 20, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 21, 21,
-        21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
-        22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22,
-        22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22,
-        22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-        23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-        23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-        23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
-        24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
-        24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
-        24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+        9, 11, 12, 13, 13, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18,
+        18, 18, 18, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+        20, 20, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+        21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22,
+        22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+        23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+        23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+        24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+        24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
         24, 24, 24,
     ];
 
@@ -783,15 +709,7 @@ ImageFilters.StackBlur = (function () {
         yw = yi = 0;
 
         for (y = 0; y < srcHeight; y += 1) {
-            r_in_sum =
-                g_in_sum =
-                b_in_sum =
-                a_in_sum =
-                r_sum =
-                g_sum =
-                b_sum =
-                a_sum =
-                    0;
+            r_in_sum = g_in_sum = b_in_sum = a_in_sum = r_sum = g_sum = b_sum = a_sum = 0;
 
             r_out_sum = radiusPlus1 * (pr = dstPixels[yi]);
             g_out_sum = radiusPlus1 * (pg = dstPixels[yi + 1]);
@@ -815,8 +733,7 @@ ImageFilters.StackBlur = (function () {
 
             for (i = 1; i < radiusPlus1; i += 1) {
                 p = yi + ((widthMinus1 < i ? widthMinus1 : i) << 2);
-                r_sum +=
-                    (stack.r = pr = dstPixels[p]) * (rbs = radiusPlus1 - i);
+                r_sum += (stack.r = pr = dstPixels[p]) * (rbs = radiusPlus1 - i);
                 g_sum += (stack.g = pg = dstPixels[p + 1]) * rbs;
                 b_sum += (stack.b = pb = dstPixels[p + 2]) * rbs;
                 a_sum += (stack.a = pa = dstPixels[p + 3]) * rbs;
@@ -848,12 +765,7 @@ ImageFilters.StackBlur = (function () {
                 b_out_sum -= stackIn.b;
                 a_out_sum -= stackIn.a;
 
-                p =
-                    (yw +
-                        ((p = x + radius + 1) < widthMinus1
-                            ? p
-                            : widthMinus1)) <<
-                    2;
+                p = (yw + ((p = x + radius + 1) < widthMinus1 ? p : widthMinus1)) << 2;
 
                 r_in_sum += stackIn.r = dstPixels[p];
                 g_in_sum += stackIn.g = dstPixels[p + 1];
@@ -886,15 +798,7 @@ ImageFilters.StackBlur = (function () {
         }
 
         for (x = 0; x < srcWidth; x += 1) {
-            g_in_sum =
-                b_in_sum =
-                a_in_sum =
-                r_in_sum =
-                g_sum =
-                b_sum =
-                a_sum =
-                r_sum =
-                    0;
+            g_in_sum = b_in_sum = a_in_sum = r_in_sum = g_sum = b_sum = a_sum = r_sum = 0;
 
             yi = x << 2;
             r_out_sum = radiusPlus1 * (pr = dstPixels[yi]);
@@ -922,8 +826,7 @@ ImageFilters.StackBlur = (function () {
             for (i = 1; i <= radius; i += 1) {
                 yi = (yp + x) << 2;
 
-                r_sum +=
-                    (stack.r = pr = dstPixels[yi]) * (rbs = radiusPlus1 - i);
+                r_sum += (stack.r = pr = dstPixels[yi]) * (rbs = radiusPlus1 - i);
                 g_sum += (stack.g = pg = dstPixels[yi + 1]) * rbs;
                 b_sum += (stack.b = pb = dstPixels[yi + 2]) * rbs;
                 a_sum += (stack.a = pa = dstPixels[yi + 3]) * rbs;
@@ -961,13 +864,7 @@ ImageFilters.StackBlur = (function () {
                 b_out_sum -= stackIn.b;
                 a_out_sum -= stackIn.a;
 
-                p =
-                    (x +
-                        ((p = y + radiusPlus1) < heightMinus1
-                            ? p
-                            : heightMinus1) *
-                            srcWidth) <<
-                    2;
+                p = (x + ((p = y + radiusPlus1) < heightMinus1 ? p : heightMinus1) * srcWidth) << 2;
 
                 r_sum += r_in_sum += stackIn.r = dstPixels[p];
                 g_sum += g_in_sum += stackIn.g = dstPixels[p + 1];
@@ -1020,11 +917,7 @@ ImageFilters.Brightness = function (srcImageData, brightness) {
  * @param brightness -100 <= n <= 100
  * @param contrast -100 <= n <= 100
  */
-ImageFilters.BrightnessContrastGimp = function (
-    srcImageData,
-    brightness,
-    contrast,
-) {
+ImageFilters.BrightnessContrastGimp = function (srcImageData, brightness, contrast) {
     var srcPixels = srcImageData.data,
         srcWidth = srcImageData.width,
         srcHeight = srcImageData.height,
@@ -1045,11 +938,7 @@ ImageFilters.BrightnessContrastGimp = function (
 
     // get the average color
     for (var avg = 0, i = 0; i < srcLength; i += 4) {
-        avg +=
-            (srcPixels[i] * 19595 +
-                srcPixels[i + 1] * 38470 +
-                srcPixels[i + 2] * 7471) >>
-            16;
+        avg += (srcPixels[i] * 19595 + srcPixels[i + 1] * 38470 + srcPixels[i + 2] * 7471) >> 16;
     }
     avg = avg / (srcLength / 4);
 
@@ -1074,11 +963,7 @@ ImageFilters.BrightnessContrastGimp = function (
  * @param brightness -100 <= n <= 100
  * @param contrast -100 <= n <= 100
  */
-ImageFilters.BrightnessContrastPhotoshop = function (
-    srcImageData,
-    brightness,
-    contrast,
-) {
+ImageFilters.BrightnessContrastPhotoshop = function (srcImageData, brightness, contrast) {
     var srcPixels = srcImageData.data,
         srcWidth = srcImageData.width,
         srcHeight = srcImageData.height,
@@ -1103,19 +988,13 @@ ImageFilters.Channels = function (srcImageData, channel) {
 
     switch (channel) {
         case 2: // green
-            matrix = [
-                0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0,
-            ];
+            matrix = [0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0];
             break;
         case 3: // blue
-            matrix = [
-                0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0,
-            ];
+            matrix = [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0];
             break;
         default: // red
-            matrix = [
-                1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-            ];
+            matrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0];
             break;
     }
 
@@ -1123,10 +1002,7 @@ ImageFilters.Channels = function (srcImageData, channel) {
 };
 
 ImageFilters.Clone = function (srcImageData) {
-    return this.Copy(
-        srcImageData,
-        this.utils.createImageData(srcImageData.width, srcImageData.height),
-    );
+    return this.Copy(srcImageData, this.utils.createImageData(srcImageData.width, srcImageData.height));
 };
 
 /**
@@ -1187,30 +1063,12 @@ ImageFilters.ColorMatrixFilter = function (srcImageData, matrix) {
         b = srcPixels[i + 2];
         a = srcPixels[i + 3];
 
-        dstPixels[i] =
-            (value = r * m0 + g * m1 + b * m2 + a * m3 + m4) > 255
-                ? 255
-                : value < 0
-                ? 0
-                : value | 0;
-        dstPixels[i + 1] =
-            (value = r * m5 + g * m6 + b * m7 + a * m8 + m9) > 255
-                ? 255
-                : value < 0
-                ? 0
-                : value | 0;
+        dstPixels[i] = (value = r * m0 + g * m1 + b * m2 + a * m3 + m4) > 255 ? 255 : value < 0 ? 0 : value | 0;
+        dstPixels[i + 1] = (value = r * m5 + g * m6 + b * m7 + a * m8 + m9) > 255 ? 255 : value < 0 ? 0 : value | 0;
         dstPixels[i + 2] =
-            (value = r * m10 + g * m11 + b * m12 + a * m13 + m14) > 255
-                ? 255
-                : value < 0
-                ? 0
-                : value | 0;
+            (value = r * m10 + g * m11 + b * m12 + a * m13 + m14) > 255 ? 255 : value < 0 ? 0 : value | 0;
         dstPixels[i + 3] =
-            (value = r * m15 + g * m16 + b * m17 + a * m18 + m19) > 255
-                ? 255
-                : value < 0
-                ? 0
-                : value | 0;
+            (value = r * m15 + g * m16 + b * m17 + a * m18 + m19) > 255 ? 255 : value < 0 ? 0 : value | 0;
     }
 
     return dstImageData;
@@ -1236,30 +1094,10 @@ ImageFilters.ColorTransformFilter = function (
 
     var i, v;
     for (i = 0; i < srcLength; i += 4) {
-        dstPixels[i] =
-            (v = srcPixels[i] * redMultiplier + redOffset) > 255
-                ? 255
-                : v < 0
-                ? 0
-                : v;
-        dstPixels[i + 1] =
-            (v = srcPixels[i + 1] * greenMultiplier + greenOffset) > 255
-                ? 255
-                : v < 0
-                ? 0
-                : v;
-        dstPixels[i + 2] =
-            (v = srcPixels[i + 2] * blueMultiplier + blueOffset) > 255
-                ? 255
-                : v < 0
-                ? 0
-                : v;
-        dstPixels[i + 3] =
-            (v = srcPixels[i + 3] * alphaMultiplier + alphaOffset) > 255
-                ? 255
-                : v < 0
-                ? 0
-                : v;
+        dstPixels[i] = (v = srcPixels[i] * redMultiplier + redOffset) > 255 ? 255 : v < 0 ? 0 : v;
+        dstPixels[i + 1] = (v = srcPixels[i + 1] * greenMultiplier + greenOffset) > 255 ? 255 : v < 0 ? 0 : v;
+        dstPixels[i + 2] = (v = srcPixels[i + 2] * blueMultiplier + blueOffset) > 255 ? 255 : v < 0 ? 0 : v;
+        dstPixels[i + 3] = (v = srcPixels[i + 3] * alphaMultiplier + alphaOffset) > 255 ? 255 : v < 0 ? 0 : v;
     }
 
     return dstImageData;
@@ -1296,16 +1134,8 @@ ImageFilters.Crop = function (srcImageData, x, y, width, height) {
         srcIndex,
         dstIndex;
 
-    for (
-        srcRow = srcTop, dstRow = dstTop;
-        srcRow < srcBottom;
-        srcRow += 1, dstRow += 1
-    ) {
-        for (
-            srcCol = srcLeft, dstCol = dstLeft;
-            srcCol < srcRight;
-            srcCol += 1, dstCol += 1
-        ) {
+    for (srcRow = srcTop, dstRow = dstTop; srcRow < srcBottom; srcRow += 1, dstRow += 1) {
+        for (srcCol = srcLeft, dstCol = dstLeft; srcCol < srcRight; srcCol += 1, dstCol += 1) {
             srcIndex = (srcRow * srcWidth + srcCol) << 2;
             dstIndex = (dstRow * width + dstCol) << 2;
             dstPixels[dstIndex] = srcPixels[srcIndex];
@@ -1422,13 +1252,7 @@ ImageFilters.DisplacementMapFilter = function (
                 cy = mapPixels[mapIndex + componentY];
                 ty = y + (((cy - 128) * scaleY) >> 8);
 
-                srcIndex = ImageFilters.utils.getPixelIndex(
-                    (tx + 0.5) | 0,
-                    (ty + 0.5) | 0,
-                    srcWidth,
-                    srcHeight,
-                    mode,
-                );
+                srcIndex = ImageFilters.utils.getPixelIndex((tx + 0.5) | 0, (ty + 0.5) | 0, srcWidth, srcHeight, mode);
                 if (srcIndex === null) {
                     // if mode == ignore and (tx,ty) is out of src bounds
                     // then copy (x,y) to dst
@@ -1538,12 +1362,9 @@ ImageFilters.Dither = function (srcImageData, levels) {
                 nbr_g = dstPixels[index + 1] + A * err_g;
                 nbr_b = dstPixels[index + 2] + A * err_b;
 
-                dstPixels[index] =
-                    nbr_r > 255 ? 255 : nbr_r < 0 ? 0 : nbr_r | 0;
-                dstPixels[index + 1] =
-                    nbr_g > 255 ? 255 : nbr_g < 0 ? 0 : nbr_g | 0;
-                dstPixels[index + 2] =
-                    nbr_b > 255 ? 255 : nbr_b < 0 ? 0 : nbr_b | 0;
+                dstPixels[index] = nbr_r > 255 ? 255 : nbr_r < 0 ? 0 : nbr_r | 0;
+                dstPixels[index + 1] = nbr_g > 255 ? 255 : nbr_g < 0 ? 0 : nbr_g | 0;
+                dstPixels[index + 2] = nbr_b > 255 ? 255 : nbr_b < 0 ? 0 : nbr_b | 0;
             }
 
             // x - 1, y + 1
@@ -1553,12 +1374,9 @@ ImageFilters.Dither = function (srcImageData, levels) {
                 nbr_g = dstPixels[index + 1] + B * err_g;
                 nbr_b = dstPixels[index + 2] + B * err_b;
 
-                dstPixels[index] =
-                    nbr_r > 255 ? 255 : nbr_r < 0 ? 0 : nbr_r | 0;
-                dstPixels[index + 1] =
-                    nbr_g > 255 ? 255 : nbr_g < 0 ? 0 : nbr_g | 0;
-                dstPixels[index + 2] =
-                    nbr_b > 255 ? 255 : nbr_b < 0 ? 0 : nbr_b | 0;
+                dstPixels[index] = nbr_r > 255 ? 255 : nbr_r < 0 ? 0 : nbr_r | 0;
+                dstPixels[index + 1] = nbr_g > 255 ? 255 : nbr_g < 0 ? 0 : nbr_g | 0;
+                dstPixels[index + 2] = nbr_b > 255 ? 255 : nbr_b < 0 ? 0 : nbr_b | 0;
             }
 
             // x, y + 1
@@ -1568,12 +1386,9 @@ ImageFilters.Dither = function (srcImageData, levels) {
                 nbr_g = dstPixels[index + 1] + C * err_g;
                 nbr_b = dstPixels[index + 2] + C * err_b;
 
-                dstPixels[index] =
-                    nbr_r > 255 ? 255 : nbr_r < 0 ? 0 : nbr_r | 0;
-                dstPixels[index + 1] =
-                    nbr_g > 255 ? 255 : nbr_g < 0 ? 0 : nbr_g | 0;
-                dstPixels[index + 2] =
-                    nbr_b > 255 ? 255 : nbr_b < 0 ? 0 : nbr_b | 0;
+                dstPixels[index] = nbr_r > 255 ? 255 : nbr_r < 0 ? 0 : nbr_r | 0;
+                dstPixels[index + 1] = nbr_g > 255 ? 255 : nbr_g < 0 ? 0 : nbr_g | 0;
+                dstPixels[index + 2] = nbr_b > 255 ? 255 : nbr_b < 0 ? 0 : nbr_b | 0;
             }
 
             // x + 1, y + 1
@@ -1583,12 +1398,9 @@ ImageFilters.Dither = function (srcImageData, levels) {
                 nbr_g = dstPixels[index + 1] + D * err_g;
                 nbr_b = dstPixels[index + 2] + D * err_b;
 
-                dstPixels[index] =
-                    nbr_r > 255 ? 255 : nbr_r < 0 ? 0 : nbr_r | 0;
-                dstPixels[index + 1] =
-                    nbr_g > 255 ? 255 : nbr_g < 0 ? 0 : nbr_g | 0;
-                dstPixels[index + 2] =
-                    nbr_b > 255 ? 255 : nbr_b < 0 ? 0 : nbr_b | 0;
+                dstPixels[index] = nbr_r > 255 ? 255 : nbr_r < 0 ? 0 : nbr_r | 0;
+                dstPixels[index + 1] = nbr_g > 255 ? 255 : nbr_g < 0 ? 0 : nbr_g | 0;
+                dstPixels[index + 2] = nbr_b > 255 ? 255 : nbr_b < 0 ? 0 : nbr_b | 0;
             }
         }
     }
@@ -1598,32 +1410,15 @@ ImageFilters.Dither = function (srcImageData, levels) {
 
 ImageFilters.Edge = function (srcImageData) {
     //pretty close to Fireworks 'Find Edges' effect
-    return this.ConvolutionFilter(
-        srcImageData,
-        3,
-        3,
-        [-1, -1, -1, -1, 8, -1, -1, -1, -1],
-    );
+    return this.ConvolutionFilter(srcImageData, 3, 3, [-1, -1, -1, -1, 8, -1, -1, -1, -1]);
 };
 
 ImageFilters.Emboss = function (srcImageData) {
-    return this.ConvolutionFilter(
-        srcImageData,
-        3,
-        3,
-        [-2, -1, 0, -1, 1, 1, 0, 1, 2],
-    );
+    return this.ConvolutionFilter(srcImageData, 3, 3, [-2, -1, 0, -1, 1, 1, 0, 1, 2]);
 };
 
 ImageFilters.Enrich = function (srcImageData) {
-    return this.ConvolutionFilter(
-        srcImageData,
-        3,
-        3,
-        [0, -2, 0, -2, 20, -2, 0, -2, 0],
-        10,
-        -40,
-    );
+    return this.ConvolutionFilter(srcImageData, 3, 3, [0, -2, 0, -2, 20, -2, 0, -2, 0], 10, -40);
 };
 
 ImageFilters.Flip = function (srcImageData, vertical) {
@@ -1680,11 +1475,7 @@ ImageFilters.GrayScale = function (srcImageData) {
         dstPixels = dstImageData.data;
 
     for (var i = 0; i < srcLength; i += 4) {
-        var intensity =
-            (srcPixels[i] * 19595 +
-                srcPixels[i + 1] * 38470 +
-                srcPixels[i + 2] * 7471) >>
-            16;
+        var intensity = (srcPixels[i] * 19595 + srcPixels[i + 1] * 38470 + srcPixels[i + 2] * 7471) >> 16;
         //var intensity = (srcPixels[i] * 0.3086 + srcPixels[i + 1] * 0.6094 + srcPixels[i + 2] * 0.0820) | 0;
         dstPixels[i] = dstPixels[i + 1] = dstPixels[i + 2] = intensity;
         dstPixels[i + 3] = srcPixels[i + 3];
@@ -1698,12 +1489,7 @@ ImageFilters.GrayScale = function (srcImageData) {
  * @param satDelta  -100 <= n <= 100
  * @param lightness -100 <= n <= 100
  */
-ImageFilters.HSLAdjustment = function (
-    srcImageData,
-    hueDelta,
-    satDelta,
-    lightness,
-) {
+ImageFilters.HSLAdjustment = function (srcImageData, hueDelta, satDelta, lightness) {
     var srcPixels = srcImageData.data,
         srcWidth = srcImageData.width,
         srcHeight = srcImageData.height,
@@ -2086,16 +1872,7 @@ ImageFilters.Resize = function (srcImageData, width, height) {
 
     for (y = 0; y < height; y += 1) {
         for (x = 0; x < width; x += 1) {
-            this.utils.copyBilinear(
-                srcPixels,
-                x * xFactor,
-                y * yFactor,
-                srcWidth,
-                srcHeight,
-                dstPixels,
-                dstIndex,
-                0,
-            );
+            this.utils.copyBilinear(srcPixels, x * xFactor, y * yFactor, srcWidth, srcHeight, dstPixels, dstIndex, 0);
             dstIndex += 4;
         }
     }
@@ -2148,24 +1925,9 @@ ImageFilters.Sepia = function (srcImageData) {
         g = srcPixels[i + 1];
         b = srcPixels[i + 2];
 
-        dstPixels[i] =
-            (value = r * 0.393 + g * 0.769 + b * 0.189) > 255
-                ? 255
-                : value < 0
-                ? 0
-                : (value + 0.5) | 0;
-        dstPixels[i + 1] =
-            (value = r * 0.349 + g * 0.686 + b * 0.168) > 255
-                ? 255
-                : value < 0
-                ? 0
-                : (value + 0.5) | 0;
-        dstPixels[i + 2] =
-            (value = r * 0.272 + g * 0.534 + b * 0.131) > 255
-                ? 255
-                : value < 0
-                ? 0
-                : (value + 0.5) | 0;
+        dstPixels[i] = (value = r * 0.393 + g * 0.769 + b * 0.189) > 255 ? 255 : value < 0 ? 0 : (value + 0.5) | 0;
+        dstPixels[i + 1] = (value = r * 0.349 + g * 0.686 + b * 0.168) > 255 ? 255 : value < 0 ? 0 : (value + 0.5) | 0;
+        dstPixels[i + 2] = (value = r * 0.272 + g * 0.534 + b * 0.131) > 255 ? 255 : value < 0 ? 0 : (value + 0.5) | 0;
         dstPixels[i + 3] = srcPixels[i + 3];
     }
 
@@ -2237,15 +1999,7 @@ ImageFilters.Transpose = function (srcImageData) {
  * @param angle(degree)
  * @param smooth
  */
-ImageFilters.Twril = function (
-    srcImageData,
-    centerX,
-    centerY,
-    radius,
-    angle,
-    edge,
-    smooth,
-) {
+ImageFilters.Twril = function (srcImageData, centerX, centerY, radius, angle, edge, smooth) {
     var srcPixels = srcImageData.data,
         srcWidth = srcImageData.width,
         srcHeight = srcImageData.height,
@@ -2298,21 +2052,11 @@ ImageFilters.Twril = function (
                 // copy target pixel
                 if (smooth) {
                     // bilinear
-                    this.utils.copyBilinear(
-                        srcPixels,
-                        tx,
-                        ty,
-                        srcWidth,
-                        srcHeight,
-                        dstPixels,
-                        dstIndex,
-                        edge,
-                    );
+                    this.utils.copyBilinear(srcPixels, tx, ty, srcWidth, srcHeight, dstPixels, dstIndex, edge);
                 } else {
                     // nearest neighbor
                     // round tx, ty
-                    srcIndex =
-                        (((ty + 0.5) | 0) * srcWidth + ((tx + 0.5) | 0)) << 2;
+                    srcIndex = (((ty + 0.5) | 0) * srcWidth + ((tx + 0.5) | 0)) << 2;
                     dstPixels[dstIndex] = srcPixels[srcIndex];
                     dstPixels[dstIndex + 1] = srcPixels[srcIndex + 1];
                     dstPixels[dstIndex + 2] = srcPixels[srcIndex + 2];

@@ -61,15 +61,7 @@ class Right_Triangle_class extends Base_tools_class {
         //draw with rotation support
         ctx.translate(layer.x + layer.width / 2, layer.y + layer.height / 2);
         ctx.rotate((layer.rotate * Math.PI) / 180);
-        this.draw_shape(
-            ctx,
-            -layer.width / 2,
-            -layer.height / 2,
-            layer.width,
-            layer.height,
-            this.coords,
-            false,
-        );
+        this.draw_shape(ctx, -layer.width / 2, -layer.height / 2, layer.width, layer.height, this.coords, false);
 
         ctx.restore();
     }

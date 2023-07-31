@@ -88,17 +88,7 @@ class Vintage_class {
         var param_green = 0;
         var param_blue = 0;
         var imageData = context.getImageData(0, 0, W, H);
-        var filtered = ImageFilters.ColorTransformFilter(
-            imageData,
-            1,
-            1,
-            1,
-            1,
-            level_red,
-            param_green,
-            param_blue,
-            1,
-        );
+        var filtered = ImageFilters.ColorTransformFilter(imageData, 1, 1, 1, 1, level_red, param_green, param_blue, 1);
         context.putImageData(filtered, 0, 0);
     }
 
@@ -110,11 +100,7 @@ class Vintage_class {
         var H = canvas.height;
 
         var imageData = context.getImageData(0, 0, W, H);
-        var filtered = ImageFilters.BrightnessContrastPhotoshop(
-            imageData,
-            0,
-            -level,
-        );
+        var filtered = ImageFilters.BrightnessContrastPhotoshop(imageData, 0, -level);
         context.putImageData(filtered, 0, 0);
     }
 
@@ -210,11 +196,9 @@ class Vintage_class {
 
                 if (imgData[x] - delta < 0) imgData[x] = -(imgData[x] - delta);
                 else imgData[x] = imgData[x] - delta;
-                if (imgData[x + 1] - delta < 0)
-                    imgData[x + 1] = -(imgData[x + 1] - delta);
+                if (imgData[x + 1] - delta < 0) imgData[x + 1] = -(imgData[x + 1] - delta);
                 else imgData[x + 1] = imgData[x + 1] - delta;
-                if (imgData[x + 2] - delta < 0)
-                    imgData[x + 2] = -(imgData[x + 2] - delta);
+                if (imgData[x + 2] - delta < 0) imgData[x + 2] = -(imgData[x + 2] - delta);
                 else imgData[x + 2] = imgData[x + 2] - delta;
             }
         }
@@ -236,16 +220,7 @@ class Vintage_class {
             var size = 2;
             var x = this.getRandomInt(0, W);
             var y = this.getRandomInt(0, H);
-            context.fillStyle =
-                'rgba(' +
-                color +
-                ', ' +
-                color +
-                ', ' +
-                color +
-                ', ' +
-                power / 255 +
-                ')';
+            context.fillStyle = 'rgba(' + color + ', ' + color + ', ' + color + ', ' + power / 255 + ')';
             context.fillRect(x, y, size, size);
         }
     }
@@ -301,8 +276,7 @@ class Vintage_class {
             var radius = this.getRandomInt(5, 10);
             var start_nr = this.getRandomInt(0, 20) / 10;
             var start_angle = Math.PI * start_nr;
-            var end_angle =
-                Math.PI * (start_nr + this.getRandomInt(7, 15) / 10);
+            var end_angle = Math.PI * (start_nr + this.getRandomInt(7, 15) / 10);
             context.beginPath();
             context.arc(x, y, radius, start_angle, end_angle);
             context.stroke();

@@ -16,9 +16,7 @@ class Effects_dotScreen_class {
         var _this = this;
 
         if (config.layer.type != 'image') {
-            alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.',
-            );
+            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
             return;
         }
 
@@ -26,9 +24,7 @@ class Effects_dotScreen_class {
             title: 'Dot Screen',
             preview: true,
             effects: true,
-            params: [
-                { name: 'size', title: 'Size:', value: '3', range: [1, 20] },
-            ],
+            params: [{ name: 'size', title: 'Size:', value: '3', range: [1, 20] }],
             on_change: function (params, canvas_preview, w, h, canvas_) {
                 var data = _this.change(canvas_, params);
                 canvas_preview.clearRect(0, 0, canvas_.width, canvas_.height);
@@ -52,9 +48,7 @@ class Effects_dotScreen_class {
         ctx.drawImage(data, 0, 0);
 
         //save
-        return app.State.do_action(
-            new app.Actions.Update_layer_image_action(canvas),
-        );
+        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
     }
 
     change(canvas, params) {
@@ -68,12 +62,7 @@ class Effects_dotScreen_class {
         var texture = this.fx_filter.texture(canvas);
         this.fx_filter
             .draw(texture)
-            .dotScreen(
-                Math.round(canvas.width / 2),
-                Math.round(canvas.height / 2),
-                0,
-                size,
-            )
+            .dotScreen(Math.round(canvas.width / 2), Math.round(canvas.height / 2), 0, size)
             .update();
 
         return this.fx_filter;

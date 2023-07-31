@@ -34,10 +34,7 @@ class Base_search_class {
                 }
 
                 var code = event.key;
-                if (
-                    code == 'F3' ||
-                    ((event.ctrlKey == true || event.metaKey) && code == 'f')
-                ) {
+                if (code == 'F3' || ((event.ctrlKey == true || event.metaKey) && code == 'f')) {
                     //open
                     this.search();
                     event.preventDefault();
@@ -102,36 +99,24 @@ class Base_search_class {
                 var k = e.key;
 
                 if (k == 'ArrowUp') {
-                    var target = document.querySelector(
-                        '.search-result.active',
-                    );
-                    var index = Array.from(target.parentNode.children).indexOf(
-                        target,
-                    );
+                    var target = document.querySelector('.search-result.active');
+                    var index = Array.from(target.parentNode.children).indexOf(target);
                     if (index > 0) {
                         index--;
                     }
                     target.classList.remove('active');
-                    var target2 = document.querySelector(
-                        '#global_search_results',
-                    ).childNodes[index];
+                    var target2 = document.querySelector('#global_search_results').childNodes[index];
                     target2.classList.add('active');
                     e.preventDefault();
                 } else if (k == 'ArrowDown') {
-                    var target = document.querySelector(
-                        '.search-result.active',
-                    );
-                    var index = Array.from(target.parentNode.children).indexOf(
-                        target,
-                    );
+                    var target = document.querySelector('.search-result.active');
+                    var index = Array.from(target.parentNode.children).indexOf(target);
                     var total = target.parentNode.childElementCount;
                     if (index < total - 1) {
                         index++;
                     }
                     target.classList.remove('active');
-                    var target2 = document.querySelector(
-                        '#global_search_results',
-                    ).childNodes[index];
+                    var target2 = document.querySelector('#global_search_results').childNodes[index];
                     target2.classList.add('active');
                     e.preventDefault();
                 }

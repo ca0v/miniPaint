@@ -42,19 +42,13 @@ class Tools_translate_class {
             });
             config.LANG = lang_code;
         } else {
-            alertify.error(
-                'Translate error, can not find dictionary: ' + lang_code,
-            );
+            alertify.error('Translate error, can not find dictionary: ' + lang_code);
         }
     }
 
     load_translations() {
         var _this = this;
-        var modules_context = require.context(
-            './../../languages/',
-            true,
-            /\.json$/,
-        );
+        var modules_context = require.context('./../../languages/', true, /\.json$/);
         modules_context.keys().forEach(function (key) {
             if (key.indexOf('Base' + '/') < 0 && key.indexOf('empty') < 0) {
                 var moduleKey = key.replace('./', '').replace('.json', '');

@@ -16,9 +16,7 @@ class Effects_backAndWhite_class {
         var _this = this;
 
         if (config.layer.type != 'image') {
-            alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.',
-            );
+            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
             return;
         }
 
@@ -27,12 +25,7 @@ class Effects_backAndWhite_class {
         var ctx = canvas.getContext('2d');
 
         //calc default level
-        var default_level = this.thresholding(
-            ctx,
-            canvas.width,
-            canvas.height,
-            true,
-        );
+        var default_level = this.thresholding(ctx, canvas.width, canvas.height, true);
 
         var settings = {
             title: 'Black and White',
@@ -75,9 +68,7 @@ class Effects_backAndWhite_class {
         ctx.putImageData(data, 0, 0);
 
         //save
-        return app.State.do_action(
-            new app.Actions.Update_layer_image_action(canvas),
-        );
+        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
     }
 
     change(data, params) {
@@ -95,11 +86,7 @@ class Effects_backAndWhite_class {
             //no differing
             for (var i = 0; i < imgData.length; i += 4) {
                 if (imgData[i + 3] == 0) continue; //transparent
-                grey = Math.round(
-                    0.2126 * imgData[i] +
-                        0.7152 * imgData[i + 1] +
-                        0.0722 * imgData[i + 2],
-                );
+                grey = Math.round(0.2126 * imgData[i] + 0.7152 * imgData[i + 1] + 0.0722 * imgData[i + 2]);
                 if (grey <= params.level) c = 0;
                 else c = 255;
                 imgData[i] = c;
@@ -115,11 +102,7 @@ class Effects_backAndWhite_class {
                     var k = j * (W * 4) + i * 4;
                     if (imgData[k + 3] == 0) continue; //transparent
 
-                    grey = Math.round(
-                        0.2126 * imgData[k] +
-                            0.7152 * imgData[k + 1] +
-                            0.0722 * imgData[k + 2],
-                    );
+                    grey = Math.round(0.2126 * imgData[k] + 0.7152 * imgData[k + 1] + 0.0722 * imgData[k + 2]);
                     grey = grey + imgData2[k]; //add data shft from previous iterations
                     c = Math.floor(grey / 256);
                     if (c == 1) c = 255;
@@ -156,11 +139,7 @@ class Effects_backAndWhite_class {
         var grey;
         for (var i = 0; i <= 255; i++) hist_data[i] = 0;
         for (var i = 0; i < imgData.length; i += 4) {
-            grey = Math.round(
-                0.2126 * imgData[i] +
-                    0.7152 * imgData[i + 1] +
-                    0.0722 * imgData[i + 2],
-            );
+            grey = Math.round(0.2126 * imgData[i] + 0.7152 * imgData[i + 1] + 0.0722 * imgData[i + 2]);
             hist_data[grey]++;
         }
         var level = this.otsu(hist_data, W * H);
@@ -168,11 +147,7 @@ class Effects_backAndWhite_class {
         var c;
         for (var i = 0; i < imgData.length; i += 4) {
             if (imgData[i + 3] == 0) continue; //transparent
-            grey = Math.round(
-                0.2126 * imgData[i] +
-                    0.7152 * imgData[i + 1] +
-                    0.0722 * imgData[i + 2],
-            );
+            grey = Math.round(0.2126 * imgData[i] + 0.7152 * imgData[i + 1] + 0.0722 * imgData[i + 2]);
             if (grey < level) c = 0;
             else c = 255;
             imgData[i] = c;
@@ -215,18 +190,8 @@ class Effects_backAndWhite_class {
         ctx.drawImage(canvas_thumb, 0, 0);
 
         //now update
-        var img = ctx.getImageData(
-            0,
-            0,
-            canvas_thumb.width,
-            canvas_thumb.height,
-        );
-        var default_level = this.thresholding(
-            ctx,
-            canvas_thumb.width,
-            canvas_thumb.height,
-            true,
-        );
+        var img = ctx.getImageData(0, 0, canvas_thumb.width, canvas_thumb.height);
+        var default_level = this.thresholding(ctx, canvas_thumb.width, canvas_thumb.height, true);
         var params = {
             level: default_level,
             dithering: false,

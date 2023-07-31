@@ -14,9 +14,7 @@ class Tools_colorZoom_class {
         var _this = this;
 
         if (config.layer.type != 'image') {
-            alertify.error(
-                'This layer must contain an image. Please convert it to raster to apply this tool.',
-            );
+            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
             return;
         }
 
@@ -55,9 +53,7 @@ class Tools_colorZoom_class {
         ctx.putImageData(data, 0, 0);
 
         //save
-        return app.State.do_action(
-            new app.Actions.Update_layer_image_action(canvas),
-        );
+        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
     }
 
     change(data, zoom, center) {
@@ -66,17 +62,12 @@ class Tools_colorZoom_class {
         for (var i = 0; i < imgData.length; i += 4) {
             if (imgData[i + 3] == 0) continue; //transparent
 
-            grey = Math.round(
-                0.2126 * imgData[i] +
-                    0.7152 * imgData[i + 1] +
-                    0.0722 * imgData[i + 2],
-            );
+            grey = Math.round(0.2126 * imgData[i] + 0.7152 * imgData[i + 1] + 0.0722 * imgData[i + 2]);
 
             for (var j = 0; j < 3; j++) {
                 var k = i + j;
                 if (grey > center) imgData[k] += (imgData[k] - center) * zoom;
-                else if (grey < center)
-                    imgData[k] -= (center - imgData[k]) * zoom;
+                else if (grey < center) imgData[k] -= (center - imgData[k]) * zoom;
                 if (imgData[k] < 0) imgData[k] = 0;
                 if (imgData[k] > 255) imgData[k] = 255;
             }

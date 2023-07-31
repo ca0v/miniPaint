@@ -57,11 +57,9 @@ class Ellipse_class extends Base_tools_class {
             this.layer.rotate = null;
         }
         app.State.do_action(
-            new app.Actions.Bundle_action(
-                'new_ellipse_layer',
-                'New Ellipse Layer',
-                [new app.Actions.Insert_layer_action(this.layer)],
-            ),
+            new app.Actions.Bundle_action('new_ellipse_layer', 'New Ellipse Layer', [
+                new app.Actions.Insert_layer_action(this.layer),
+            ]),
         );
     }
 
@@ -80,12 +78,7 @@ class Ellipse_class extends Base_tools_class {
         var click_y = Math.round(this.mouse_click.y);
 
         //apply snap
-        var snap_info = this.calc_snap_position(
-            e,
-            mouse_x,
-            mouse_y,
-            config.layer.id,
-        );
+        var snap_info = this.calc_snap_position(e, mouse_x, mouse_y, config.layer.id);
         if (snap_info != null) {
             if (snap_info.x != null) {
                 mouse_x = snap_info.x;
@@ -138,12 +131,7 @@ class Ellipse_class extends Base_tools_class {
         var click_y = Math.round(this.mouse_click.y);
 
         //apply snap
-        var snap_info = this.calc_snap_position(
-            e,
-            mouse_x,
-            mouse_y,
-            config.layer.id,
-        );
+        var snap_info = this.calc_snap_position(e, mouse_x, mouse_y, config.layer.id);
         if (snap_info != null) {
             if (snap_info.x != null) {
                 mouse_x = snap_info.x;
@@ -227,15 +215,7 @@ class Ellipse_class extends Base_tools_class {
 
         ctx.translate(layer.x + layer.width / 2, layer.y + layer.height / 2);
         ctx.rotate((layer.rotate * Math.PI) / 180);
-        this.ellipse(
-            ctx,
-            -layer.width / 2,
-            -layer.height / 2,
-            layer.width,
-            layer.height,
-            params.border,
-            params.fill,
-        );
+        this.ellipse(ctx, -layer.width / 2, -layer.height / 2, layer.width, layer.height, params.border, params.fill);
 
         ctx.restore();
     }
