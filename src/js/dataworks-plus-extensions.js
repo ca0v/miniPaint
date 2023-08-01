@@ -355,6 +355,23 @@ function hasQueryString(name) {
     return urlParams.has(name);
 }
 
+function getQueryString(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+}
+
+function isUndefined(value) {
+    return typeof value === 'undefined';
+}
+
+function readSystemValue(name, defaultValue) {
+    let result = $(`#${name}`).val();
+    if (!isUndefined(result)) return result;
+
+    if (hasQueryString(name)) return getQueryString(name);
+    return defaultValue;
+}
+
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -368,10 +385,11 @@ export function tweakConfig(config) {
 
     // wait for the ux to render before reading settings from dom
     sleep(250).then(() => {
-        config.MIN_WIDTH = parseInt($('#minWidth').val() || '0');
-        config.MIN_HEIGHT = parseInt($('#minHeight').val() || '0');
-        config.REQUIRE_DIMENSIONS = '1' === $('#requireDimensions').val();
-        config.REQUIRE_CROP = '1' === $('#minHeight').val();
+        config.MIN_WIDTH = parseInt(readSystemValue('minWidth', '0'));
+        config.MIN_HEIGHT = parseInt(readSystemValue('minHeight', '0'));
+        config.REQUIRE_DIMENSIONS = '1' === readSystemValue('requireDimensions', '0');
+        config.REQUIRE_CROP = '1' === readSystemValue('requireCrop', '0');
+        debugger;
     });
     config.COLOR = '#757575';
     config.RATIO = 1.25;
