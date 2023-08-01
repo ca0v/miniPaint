@@ -204,71 +204,66 @@ class Crop_class extends Base_tools_class {
         }
 
         if (USE_DATAWORKS) {
-            let minWidth = 0;
-            // dataworks
-            // This is to check the minimum width. (from the server variables)
-            // If the selection is to small, destroy it.
-            if (!document.querySelector('#minWidth')) {
+            let skip = false;
+            if (!config.MIN_WIDTH) {
                 log('dataworks is not checking the minimum width because #minWidth is not loaded');
-            } else if (!document.querySelector('#requireDimensions')) {
-                log(`dataworks is not checking the minimum width because "#requireDimensions" is not loaded`);
-            } else if ($('#requireDimensions').val() == 1) {
-                log('dataworks is checking the minimum width');
+            } else if (config.REQUIRE_DIMENSIONS) {
                 if (config.layers.length != 1) {
                     log(
                         'dataworks is not tampering with the selection because there is not exactly one layer selected',
                     );
-                } else {
-                    minWidth = $('#minWidth').val();
+                    skip = true;
                 }
             }
 
-            if (this.selection.width > config.WIDTH) {
-                log(`dataworks is limiting width to ${config.WIDTH}`);
-                this.selection.width = config.WIDTH;
-            }
+            if (!skip) {
+                if (this.selection.width > config.WIDTH) {
+                    log(`dataworks is limiting width to ${config.WIDTH}`);
+                    this.selection.width = config.WIDTH;
+                }
 
-            if (this.selection.height > config.HEIGHT) {
-                log(`dataworks is limiting height to ${config.HEIGHT}`);
-                this.selection.height = config.HEIGHT;
-            }
+                if (this.selection.height > config.HEIGHT) {
+                    log(`dataworks is limiting height to ${config.HEIGHT}`);
+                    this.selection.height = config.HEIGHT;
+                }
 
-            {
-                const desiredWidth = this.selection.height / config.RATIO;
-                const dw = desiredWidth - this.selection.width;
-                log(`dataworks is adjusting width by ${dw} to enforce ratio ${config.RATIO}`);
-                this.selection.width += dw;
-            }
+                {
+                    const desiredWidth = this.selection.height / config.RATIO;
+                    const dw = desiredWidth - this.selection.width;
+                    log(`dataworks is adjusting width by ${dw} to enforce ratio ${config.RATIO}`);
+                    this.selection.width += dw;
+                }
 
-            if (minWidth) {
-                if (this.selection.width < minWidth) {
-                    const dw = minWidth - this.selection.width;
-                    if (dw) {
-                        log(`dataworks is adjusting width by ${dw} to enforce minimum width ${minWidth}`);
-                        this.selection.width += dw;
+                if (config.MIN_WIDTH) {
+                    if (this.selection.width < config.MIN_WIDTH) {
+                        const dw = config.MIN_WIDTH - this.selection.width;
+                        if (dw) {
+                            log(`dataworks is adjusting width by ${dw} to enforce minimum width ${config.MIN_WIDTH}`);
+                            this.selection.width += dw;
+                        }
+                        // adjust height to honor aspect ratio
+                        const dh = this.selection.width * config.RATIO - this.selection.height;
+                        if (dh) {
+                            log(`dataworks is adjusting height by ${dh} to enforce ratio ${config.RATIO}`);
+                            this.selection.height += dh;
+                        }
                     }
-                    // adjust height to honor aspect ratio
-                    const dh = this.selection.width * config.RATIO - this.selection.height;
-                    if (dh) {
-                        log(`dataworks is adjusting height by ${dh} to enforce ratio ${config.RATIO}`);
-                        this.selection.height += dh;
+                }
+
+                if (this.selection.x + this.selection.width > config.WIDTH) {
+                    const dx = config.WIDTH - (this.selection.width + this.selection.x);
+                    if (dx < 0) {
+                        log(`dataworks is adjusting horizontal position by ${dx}`);
+                        this.selection.x += dx;
                     }
                 }
-            }
 
-            if (this.selection.x + this.selection.width > config.WIDTH) {
-                const dx = config.WIDTH - (this.selection.width + this.selection.x);
-                if (dx < 0) {
-                    log(`dataworks is adjusting horizontal position by ${dx}`);
-                    this.selection.x += dx;
-                }
-            }
-
-            if (this.selection.y + this.selection.height > config.HEIGHT) {
-                const dy = config.HEIGHT - (this.selection.height + this.selection.y);
-                if (dy < 0) {
-                    log(`dataworks is adjusting vertical position by ${dy}`);
-                    this.selection.y += dy;
+                if (this.selection.y + this.selection.height > config.HEIGHT) {
+                    const dy = config.HEIGHT - (this.selection.height + this.selection.y);
+                    if (dy < 0) {
+                        log(`dataworks is adjusting vertical position by ${dy}`);
+                        this.selection.y += dy;
+                    }
                 }
             }
         }

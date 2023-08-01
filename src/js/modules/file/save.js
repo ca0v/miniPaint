@@ -1,4 +1,4 @@
-import { warn, injectPopupSaveCopyHandler } from '../../dataworks-plus-extensions.js';
+import { warn } from '../../dataworks-plus-extensions.js';
 
 import app from './../../app.js';
 import config from './../../config.js';
@@ -47,8 +47,6 @@ class File_save_class {
         };
 
         this.default_extension = 'PNG';
-
-        injectPopupSaveCopyHandler({ save: this });
     }
 
     set_events() {
@@ -786,8 +784,8 @@ class File_save_class {
             return false;
         }
 
-        if (config.REQUIRE_CROP?.value == '1') {
-            if (config.ASPECT == true) {
+        if (config.REQUIRE_CROP) {
+            if (config.ASPECT) {
                 const img = this.prepareCavasForServerSave();
                 $('#PMEditedPhoto').val(img);
                 goSaveAndBack();

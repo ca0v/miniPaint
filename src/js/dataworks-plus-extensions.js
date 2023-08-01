@@ -1,7 +1,5 @@
 import config from './config.js';
-
 import alertify from '../../node_modules/alertifyjs/build/alertify.min.js';
-import { parse } from 'uuid';
 
 export const enableDrawCenters = false;
 
@@ -13,6 +11,9 @@ export function reportError(message) {
     alertify.confirm(message);
 }
 
+/**
+ * If an #ImageLoaded element exists, set the dialog size to match the element size.
+ */
 export function updateDialogSize(dialog) {
     const sizer = document.querySelector('#ImageLoaded');
     if (!sizer) {
@@ -24,6 +25,10 @@ export function updateDialogSize(dialog) {
     dialog.height_mini = sizer.height;
 }
 
+/**
+ * If an #ImageLoaded element exists, set the WIDTH and HEIGHT to match that element.
+ * The config WIDTH and HEIGHT are used to size the main canvas.
+ */
 export function updateConfigurationSize(config) {
     const sizer = document.querySelector('#ImageLoaded');
     if (!sizer) {
@@ -35,16 +40,12 @@ export function updateConfigurationSize(config) {
     config.HEIGHT = sizer.height;
 }
 
+/**
+ * If the passed object contains a PREVIEW_SIZE, set the "h"
+ */
 export function updatePreviewSize(preview) {
     if (!preview?.PREVIEW_SIZE) {
         warn(`preview.PREVIEW_SIZE not defined`);
-    }
-
-    // this element does not exist...but why are we wanting to modify the preview window size?
-    const sizer = document.querySelector('.canvas_preview_wrapper');
-    if (!sizer) {
-        warn(`'.canvas_preview_wrapper' element not found`);
-        return;
     }
 
     const canvas = document.querySelector('canvas#canvas_preview');
@@ -53,9 +54,7 @@ export function updatePreviewSize(preview) {
         return;
     }
 
-    const { width } = getComputedStyle(sizer);
-    const sizerWidth = parseInt(width);
-    const sizerHeight = sizerWidth * config.RATIO;
+    const sizerHeight = preview.PREVIEW_SIZE.w * config.RATIO;
 
     log(`setting --canvas-preview-height CSS variable to ${sizerHeight}px`);
     document.documentElement.style.setProperty('--canvas-preview-height', sizerHeight + 'px');
@@ -63,33 +62,6 @@ export function updatePreviewSize(preview) {
     log(`setting canvas_preview.height to ${sizerHeight}`);
     canvas.height = sizerHeight;
     preview.PREVIEW_SIZE.h = sizerHeight;
-}
-
-export async function injectPopupSaveCopyHandler(options) {
-    const { save } = options;
-    await sleep(2000);
-    const target = document.getElementById('popup_saveCopy');
-    if (!target) {
-        warn(`popup_saveCopy element not found`);
-        return;
-    }
-    target.onclick = function () {
-        if (config.REQUIRE_CROP?.value == '1') {
-            if (config.ASPECT == true) {
-                var img = save.prepareCavasForServerSave();
-
-                $('#PMEditedPhoto').val(img);
-                goSaveAndBack();
-            } else {
-                reportError('Image requires cropping before being saved.');
-            }
-        } else {
-            var img = save.prepareCavasForServerSave();
-
-            $('#PMEditedPhoto').val(img);
-            goSaveAndBack();
-        }
-    };
 }
 
 export function isLandscape() {
@@ -101,6 +73,9 @@ export function isLandscape() {
     return canvasPreview.width > canvasPreview.height;
 }
 
+/**
+ * Modifies the default layout of the menu
+ */
 export function tweakMenuDefinition(menuDefinition) {
     {
         const fileMenuGroup = findMenuDefinition(menuDefinition, 'File');
@@ -294,52 +269,31 @@ function appendMenuDefinition(children, priorChildItem, childItem) {
     return childItem;
 }
 
-export function tweakMousePosition(state) {
-    const selectActive = $('#select').hasClass('active');
-    if (!selectActive) return;
-
-    const { config, settings, is_drag_type_left, is_drag_type_right, is_drag_type_top, is_drag_type_bottom, dx } =
-        state;
-
-    const dy = dx * config.RATIO;
-
-    const minWidth = $('#minWidth').val();
-    if (!minWidth) {
-        log(`#minWidth not found`);
-        return;
-    }
-
-    if (is_drag_type_left) {
-        const newWidth = settings.data.width - dx;
-        if (newWidth >= minWidth) {
-            log(`left: updating width by ${dx}`);
-            settings.data.x += dx;
-            settings.data.width -= dx;
-            return;
-        }
-    }
-
-    if (is_drag_type_right) {
-        const newWidth = settings.data.width + dx;
-        if (newWidth >= minWidth) {
-            log(`right: updating width by ${dx}`);
-            settings.data.x += dx;
-            settings.data.width += dx;
-            return;
-        }
-    }
-}
-
 export function callIfImageTooSmall(layer, cb) {
-    if (!config.REQUIRE_CROP?.value == '1') return;
-    setTimeout(function () {
-        if (layer.width_original < config.MIN_WIDTH || layer.height_original < config2.MIN_HEIGHT) {
-            $('#errorModalDimensions').modal('show');
-            cb();
+    if (!config.REQUIRE_CROP) return;
+    sleep(1000).then(() => {
+        if (config.MIN_WIDTH) {
+            if (layer.width_original < config.MIN_WIDTH) {
+                warn(`Image width ${layer.width_original} is less than minimum ${config.MIN_WIDTH}`);
+                $('#errorModalDimensions').modal('show');
+                cb();
+                return;
+            }
         }
-    }, 1000);
+        if (config.MIN_HEIGHT) {
+            if (layer.height_original < config.MIN_HEIGHT) {
+                warn(`Image height ${layer.height_original} is less than minimum ${config.MIN_HEIGHT}`);
+                $('#errorModalDimensions').modal('show');
+                cb();
+                return;
+            }
+        }
+    });
 }
 
+/**
+ * Modify the toolbar
+ */
 export function tweakLayout(app) {
     // prevent prompting user when navigating away
     app.GUI.Tools_settings.save_setting('exit_confirm', false);
@@ -356,10 +310,6 @@ export function tweakLayout(app) {
     aliasTool(app, 'grayscale', 'effects/common/grayscale.grayscale');
     aliasTool(app, 'brightness', 'effects/common/brightness.brightness');
     aliasTool(app, 'backgroundReplace', 'effects/backgroundReplace.backgroundReplace');
-}
-
-async function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function aliasTool(app, toolName, menuName) {
@@ -400,14 +350,31 @@ function insertAfterConfig(config, name, tool) {
     config.TOOLS.splice(index + 1, 0, tool);
 }
 
+function hasQueryString(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.has(name);
+}
+
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Modify the system configuration
+ */
 export function tweakConfig(config) {
-    // config tweaker
-    config.MIN_WIDTH = document.getElementById('minWidth');
-    config.MIN_HEIGHT = document.getElementById('minHeight');
+    // if there is a "debug" query string then set the debug flag
+    config.DEBUG = hasQueryString('debug');
+
+    // wait for the ux to render before reading settings from dom
+    sleep(250).then(() => {
+        config.MIN_WIDTH = parseInt($('#minWidth').val() || '0');
+        config.MIN_HEIGHT = parseInt($('#minHeight').val() || '0');
+        config.REQUIRE_DIMENSIONS = '1' === $('#requireDimensions').val();
+        config.REQUIRE_CROP = '1' === $('#minHeight').val();
+    });
     config.COLOR = '#757575';
     config.RATIO = 1.25;
-    config.REQUIRE_CROP = document.getElementById('requireCrop');
-    config.REQUIRE_DIMENSIONS = document.getElementById('requireDimensions');
     config.ASPECT = false;
 
     config.need_render = true;
@@ -470,6 +437,9 @@ export function interceptToolbarItemClick(id) {
     }
 }
 
+/**
+ * Intercept menu activity prevents needing to introduce methods to actual tools
+ */
 export function interceptMenuItem(app, target, object) {
     const [area, name] = target.split('.');
     switch (area) {
@@ -480,64 +450,60 @@ export function interceptMenuItem(app, target, object) {
         case 'beard':
             switch (name) {
                 case 'blond':
-                    blMustache();
+                    executeMethod('blMustache');
                     break;
                 case 'brown':
-                    brMustache();
+                    executeMethod('brMustache');
                     break;
                 case 'black & white':
                 default:
-                    bwMustache();
+                    executeMethod('bwMustache');
                     break;
             }
             return true;
         case 'eyewear':
             switch (name) {
                 case 'black':
-                    eyes();
+                    executeMethod('eyes');
                     break;
                 case 'gold':
-                    geyes();
+                    executeMethod('geyes');
                     break;
                 case 'green':
                 default:
-                    beyes();
+                    executeMethod('beyes');
                     break;
             }
             return true;
         case 'hat':
             switch (name) {
                 case 'brown':
-                    brHats();
+                    executeMethod('brHats');
                     break;
                 case 'black & white':
                 default:
-                    bwHats();
+                    executeMethod('bwHats');
                     break;
             }
             return true;
         case 'moustache':
             switch (name) {
                 case 'blond':
-                    blMustache();
+                    executeMethod('blMustache');
                     break;
                 case 'brown':
-                    brMustache();
+                    executeMethod('brMustache');
                     break;
                 case 'black & white':
                 default:
-                    bwMustache();
+                    executeMethod('bwMustache');
                     break;
             }
             return true;
         case 'edit/restore':
             switch (name) {
                 case 'restore':
-                    if (typeof fnLoadOriginalImage === 'function') {
-                        fnLoadOriginalImage();
-                    } else {
-                        warn(`fnLoadOriginalImage not found`);
-                    }
+                    executeMethod('fnLoadOriginalImage');
                     return true;
                 default:
                     return false;
@@ -548,12 +514,22 @@ export function interceptMenuItem(app, target, object) {
     }
 }
 
+function executeMethod(fnName) {
+    if (typeof window[fnName] === 'function') {
+        window[fnName]();
+        return true;
+    }
+    warn(`function ${fnName} not found`);
+    return false;
+}
+
 export function log(...messages) {
+    if (!config.DEBUG) return;
     console.log(...messages);
 }
 
 export function warn(...messages) {
-    console.warn(...messages);
+    if (config.de) console.warn(...messages);
 }
 
 export function activateTool(toolName) {
