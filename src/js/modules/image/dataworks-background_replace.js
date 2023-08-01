@@ -1,4 +1,5 @@
 import { warn, reportError } from '../../dataworks-plus-extensions.js';
+import app from './../../app.js';
 import config from '../../config.js';
 import Dialog_class from '../../libs/popup.js';
 import Base_layers_class from '../../core/base-layers.js';
@@ -183,12 +184,12 @@ class Effects_backgroundReplace_class {
         }
 
         const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d');
         canvas.width = NewImage.width;
         canvas.height = NewImage.height;
 
-        context.drawImage(NewImage, 0, 0);
-        const data = context.getImageData(0, 0, NewImage.width, NewImage.height);
+        ctx.drawImage(NewImage, 0, 0);
+        const data = ctx.getImageData(0, 0, NewImage.width, NewImage.height);
 
         ctx.putImageData(data, 0, 0);
 
