@@ -389,7 +389,6 @@ export function tweakConfig(config) {
         config.MIN_HEIGHT = parseInt(readSystemValue('minHeight', '0'));
         config.REQUIRE_DIMENSIONS = '1' === readSystemValue('requireDimensions', '0');
         config.REQUIRE_CROP = '1' === readSystemValue('requireCrop', '0');
-        debugger;
     });
     config.COLOR = '#757575';
     config.RATIO = 1.25;
