@@ -253,7 +253,7 @@ class GUI_colors_class {
         };
 
         // Handle toggle for color swatches section
-        this.buttons.toggleColorSwatches.on('click', () => {
+        this.buttons.toggleColorSwatches.on('click', (event) => {
             this.buttons.toggleColorSwatches.attr(
                 'aria-pressed',
                 'true' === this.buttons.toggleColorSwatches.attr('aria-pressed') ? 'false' : 'true',
