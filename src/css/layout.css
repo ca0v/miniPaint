@@ -400,10 +400,6 @@ IMPORTANT: any new icon should also must be added on /service-worker.js + its ve
     padding-bottom: 25px;
 }
 
-#canvas_preview {
-    height: 100%;
-}
-
 /* preview */
 .canvas_preview_wrapper {
     position: relative;

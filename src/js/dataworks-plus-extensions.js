@@ -467,14 +467,14 @@ export function interceptMenuItem(app, target, object) {
         case 'beard':
             switch (name) {
                 case 'blond':
-                    executeMethod('blMustache');
+                    executeMethod('blBeard');
                     break;
                 case 'brown':
-                    executeMethod('brMustache');
+                    executeMethod('brBeard');
                     break;
                 case 'black & white':
                 default:
-                    executeMethod('bwMustache');
+                    executeMethod('bwBeard');
                     break;
             }
             return true;

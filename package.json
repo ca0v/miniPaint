@@ -13,7 +13,9 @@
     "scripts": {
         "server": "webpack serve --mode development --env development --open",
         "dev": "webpack --mode development",
+        "deploy": "copy .\\dist\\bundle.js* \\code\\pmw\\assets\\plugins\\image-editor-v2\\js",
         "build": "webpack --mode production",
+        "go": "npm run dev && npm run deploy",
         "pretty": "prettier --write \"src/**/*.js\""
     },
     "repository": {

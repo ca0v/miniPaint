@@ -77,7 +77,7 @@ class Effects_backgroundReplace_class {
                 });
 
                 const theInput = document.getElementById('main_color');
-                theInput.addEventListener(
+                theInput?.addEventListener(
                     'input',
                     function () {
                         var theColor = theInput.value;
