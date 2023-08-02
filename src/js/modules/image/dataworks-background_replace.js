@@ -70,7 +70,9 @@ class Effects_backgroundReplace_class {
                 }).html('&nbsp;');
 
                 $div.append($button1).append($button2).append($button3);
-                $('#params_content').append($label).append($div);
+                // find the element where the 'data-id' is 'params_content'
+                const target = document.querySelector('[data-id="params_content"]');
+                $(target).append($label).append($div);
 
                 $('.BackgroundReplaceColorButton').click(function () {
                     $('.BackgroundReplaceColorButton').removeClass('selected');
