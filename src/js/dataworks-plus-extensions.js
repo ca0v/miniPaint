@@ -400,9 +400,10 @@ export function tweakConfig(config) {
         removeFromConfig(config, name);
     });
 
+    // modify the title of "Crop" action to "Apply Crop"
     const crop = modifyFromConfig(config, 'crop');
-    crop.crop = undefined;
-    crop.apply_Crop = true;
+    delete crop.attributes.crop;
+    crop.attributes['Apply Crop'] = true;
 
     removeFromConfig(config, crop.name);
     insertAfterConfig(config, 'select', crop);
