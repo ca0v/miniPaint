@@ -1,5 +1,6 @@
 import config from './config.js';
 import alertify from '../../node_modules/alertifyjs/build/alertify.min.js';
+import Tools_translate_class from './modules/tools/translate.js';
 
 export const enableDrawCenters = false;
 
@@ -7,8 +8,13 @@ export function setAspect(config) {
     config.ASPECT = (config.HEIGHT / config.WIDTH).toFixed(2) == config.RATIO;
 }
 
-export function reportError(message) {
-    alertify.confirm(message);
+export async function reportError(message) {
+    const Tools_translate = new Tools_translate_class();
+    const translations = Tools_translate.translations[message];
+    if (translations) {
+        message = translations[config.LANG] || message;
+    }
+    alertify.error(message);
 }
 
 /**
