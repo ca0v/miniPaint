@@ -2,12 +2,38 @@ import config from './config.js';
 import alertify from '../../node_modules/alertifyjs/build/alertify.min.js';
 import Tools_translate_class from './modules/tools/translate.js';
 
+function hijackAlertify() {
+    const error = alertify.error;
+    const success = alertify.success;
+
+    alertify.error = function (message) {
+        message = translate(message);
+        error.call(this, message);
+    };
+
+    alertify.success = function (message) {
+        message = translate(message);
+        success.call(this, message);
+    };
+}
+hijackAlertify();
+
 export const enableDrawCenters = false;
+
+function translate(message) {
+    const Tools_translate = new Tools_translate_class();
+    const translations = Tools_translate.translations[message];
+    if (translations) {
+        message = translations[config.LANG] || message;
+    }
+    return message;
+}
 
 export function setAspect(config) {
     config.ASPECT = (config.HEIGHT / config.WIDTH).toFixed(2) == config.RATIO;
 }
 
+// this can now be deprecated and alertify.error used instead
 export async function reportError(message) {
     const Tools_translate = new Tools_translate_class();
     const translations = Tools_translate.translations[message];
