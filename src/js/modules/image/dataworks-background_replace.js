@@ -6,6 +6,11 @@ import Base_layers_class from '../../core/base-layers.js';
 
 var instance = null;
 
+function getBackgroundColorFromColorPicker() {
+    const input = document.getElementById('color_hex');
+    return input.value;
+}
+
 class Effects_backgroundReplace_class {
     constructor() {
         //singleton
@@ -66,7 +71,7 @@ class Effects_backgroundReplace_class {
                     id: 'BackgroundReplaceColor3',
                     class: 'btn btn-md BackgroundReplaceColorButton',
                     type: 'button',
-                    style: 'background-color: ' + $('#main_color').val() + '; width:33%',
+                    style: `background-color: ${getBackgroundColorFromColorPicker()}; width: 33%`,
                 }).html('&nbsp;');
 
                 $div.append($button1).append($button2).append($button3);
@@ -79,7 +84,7 @@ class Effects_backgroundReplace_class {
                     $(this).addClass('selected');
                 });
 
-                const theInput = document.getElementById('main_color');
+                const theInput = document.getElementById('color_hex');
                 theInput?.addEventListener(
                     'input',
                     function () {
@@ -100,7 +105,7 @@ class Effects_backgroundReplace_class {
                 });
                 // Get Replacement with Chosen Background
                 $button3.click(function () {
-                    GetNewReplacement(_canvas, $('#main_color').val());
+                    GetNewReplacement(_canvas, getBackgroundColorFromColorPicker());
                 });
 
                 // Get Default Replacement with Gray Background
