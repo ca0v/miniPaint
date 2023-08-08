@@ -396,8 +396,8 @@ function isUndefined(value) {
 
 function readSystemValue(name, defaultValue) {
     let result = $(`#${name}`).val();
+    if (hasQueryString('debug') && hasQueryString(name)) return getQueryString(name);
     if (!isUndefined(result)) return result;
-
     if (hasQueryString(name)) return getQueryString(name);
     return defaultValue;
 }

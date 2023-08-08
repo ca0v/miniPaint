@@ -217,14 +217,16 @@ class Crop_class extends Base_tools_class {
             }
 
             if (!skip) {
-                if (this.selection.width > config.WIDTH) {
-                    log(`dataworks is limiting width to ${config.WIDTH}`);
-                    this.selection.width = config.WIDTH;
-                }
+                if (config.REQUIRE_DIMENSIONS) {
+                    if (this.selection.width > config.WIDTH) {
+                        log(`dataworks is limiting width to ${config.WIDTH}`);
+                        this.selection.width = config.WIDTH;
+                    }
 
-                if (this.selection.height > config.HEIGHT) {
-                    log(`dataworks is limiting height to ${config.HEIGHT}`);
-                    this.selection.height = config.HEIGHT;
+                    if (this.selection.height > config.HEIGHT) {
+                        log(`dataworks is limiting height to ${config.HEIGHT}`);
+                        this.selection.height = config.HEIGHT;
+                    }
                 }
 
                 {
@@ -234,7 +236,7 @@ class Crop_class extends Base_tools_class {
                     this.selection.width += dw;
                 }
 
-                if (config.MIN_WIDTH) {
+                if (config.REQUIRE_DIMENSIONS && config.MIN_WIDTH) {
                     if (this.selection.width < config.MIN_WIDTH) {
                         const dw = config.MIN_WIDTH - this.selection.width;
                         if (dw) {
