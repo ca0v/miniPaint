@@ -50,7 +50,9 @@ export class Activate_tool_action extends Base_action {
 
             //check module
             if (app.GUI.GUI_tools.tools_modules[key] == undefined) {
-                alertify.error('Tools class not found: ' + key);
+                // do not show user because the background replace tool is not a default tool
+                // I tried getting it to register via gui-tools.js:load_plugins but had no luck (see require.context)
+                console.error('Tools class not found: ' + key);
                 return;
             }
 
