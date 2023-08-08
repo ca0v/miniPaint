@@ -61,7 +61,7 @@ export class Insert_layer_action extends Base_action {
         // Build data
         for (let i in this.settings) {
             if (typeof layer[i] == 'undefined' && !i.startsWith('_')) {
-                reportError('Error: wrong key: ' + i);
+                alertify.error('Error: wrong key: ' + i);
                 continue;
             }
             layer[i] = this.settings[i];
@@ -123,7 +123,7 @@ export class Insert_layer_action extends Base_action {
                         layer.link.crossOrigin = 'Anonymous';
                     });
                 } else {
-                    reportError('Error: can not load image.');
+                    alertify.error('Error: can not load image.');
                 }
             }
         }

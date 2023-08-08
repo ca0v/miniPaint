@@ -107,7 +107,7 @@ class File_open_class {
             };
         };
         img.onerror = function (ex) {
-            reportError('Image Not Found.');
+            alertify.error('Image Not Found.');
         };
         img.src = objectPath;
     }

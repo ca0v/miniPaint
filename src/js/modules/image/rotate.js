@@ -1,4 +1,4 @@
-import { warn, onFinishRotate, reportError } from '../../dataworks-plus-extensions.js';
+import { warn, onFinishRotate } from '../../dataworks-plus-extensions.js';
 import config from './../../config.js';
 import Dialog_class from './../../libs/popup.js';
 import Base_layers_class from './../../core/base-layers.js';
@@ -46,7 +46,7 @@ class Image_rotate_class {
         var _this = this;
 
         if (config.layer.rotate === null) {
-            reportError('Rotate is not supported on this type of object. Convert to raster?');
+            alertify.error('Rotate is not supported on this type of object. Convert to raster?');
             return;
         }
 

@@ -4,7 +4,6 @@ import Base_tools_class from './../core/base-tools.js';
 import Base_layers_class from './../core/base-layers.js';
 import Layer_raster_class from './../modules/layer/raster.js';
 import alertify from './../../../node_modules/alertifyjs/build/alertify.min.js';
-import { reportError } from '../dataworks-plus-extensions.js';
 
 class Clone_class extends Base_tools_class {
     constructor(ctx) {
@@ -207,7 +206,7 @@ class Clone_class extends Base_tools_class {
                 return;
             }
             if (previous_layer.type != 'image') {
-                reportError('Previous layer must be image, convert it to raster to apply this tool.');
+                alertify.error('Previous layer must be image, convert it to raster to apply this tool.');
                 return;
             }
         }
