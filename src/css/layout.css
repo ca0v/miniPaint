@@ -570,7 +570,7 @@ IMPORTANT: any new icon should also must be added on /service-worker.js + its ve
 }
 .block.details .row {
     clear: both;
-    margin-bottom: 4px;
+    margin: 4px; /* overcome bootstrap .row */
     min-height: 23px;
 }
 .block.details input[type='number'] {
