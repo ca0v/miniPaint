@@ -60,6 +60,9 @@ window.addEventListener(
         window.FileOpen = File_open;
         window.FileSave = File_save;
 
+        // prevent prompting user when navigating away
+        app.GUI.Tools_settings.save_setting('exit_confirm', false);
+
         // Render all
         GUI.init();
         Layers.init();

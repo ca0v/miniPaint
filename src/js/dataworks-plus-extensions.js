@@ -301,8 +301,6 @@ export function callIfImageTooSmall(layer, cb) {
  * Modify the toolbar
  */
 export function tweakLayout(app) {
-    // prevent prompting user when navigating away
-    app.GUI.Tools_settings.save_setting('exit_confirm', false);
     const tools_container = document.getElementById('tools_container');
     const toolbarItems = Array.from(tools_container.querySelectorAll('span.item'));
     toolbarItems.forEach((item) => {
