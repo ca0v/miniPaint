@@ -315,7 +315,7 @@ export function tweakLayout(app) {
     aliasTool(app, 'rotate', 'image/rotate.rotate');
     aliasTool(app, 'grayscale', 'effects/common/grayscale.grayscale');
     aliasTool(app, 'brightness', 'effects/common/brightness.brightness');
-    aliasTool(app, 'backgroundReplace', 'effects/backgroundReplace.backgroundReplace');
+    aliasTool(app, 'backgroundReplace', 'image/dataworks-background_replace.backgroundReplace');
 }
 
 function aliasTool(app, toolName, menuName) {
