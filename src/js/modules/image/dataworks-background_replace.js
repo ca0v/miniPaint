@@ -6,21 +6,15 @@ import Base_layers_class from '../../core/base-layers.js';
 
 var instance = null;
 
-const COLORS_TO_REMEMBER = 3;
+const COLORS_TO_REMEMBER = 16; // max custom colors stored and rendered on color picker
+const COLORS_TO_RENDER = 5; // max colors rendered on background replace dialog
 const DEFAULT_COLOR = '#757575';
 const ALTERNATIVE_COLORS = ['#72d6ef'];
 
 function injectCustomColorsIntoColorPicker(colorPicker) {
-    const datalist = document.createElement('datalist');
-    datalist.id = 'customColors';
-    const colors = readSetting('CUSTOM_COLORS', ['#ff0000', '#00ff00', '#0000ff']);
-    colors.forEach((color) => {
-        const option = document.createElement('option');
-        option.value = color;
-        datalist.appendChild(option);
-    });
-    colorPicker.appendChild(datalist);
-    colorPicker.setAttribute('list', datalist.id);
+    const colors = readSetting('CUSTOM_COLORS', [DEFAULT_COLOR, ...ALTERNATIVE_COLORS]);
+    updateColorPicker(colorPicker, colors);
+
     colorPicker.addEventListener(
         'change',
         () => {
@@ -29,23 +23,35 @@ function injectCustomColorsIntoColorPicker(colorPicker) {
             if (!colors.includes(theColor)) {
                 colors.push(theColor);
                 while (colors.length > COLORS_TO_REMEMBER) {
-                    const colorToRemove = colors.shift();
-                    if (colorToRemove) {
-                        log(`Remove color ${colorToRemove}`);
-                        const optionToRemove = datalist.querySelector(`option[value="${colorToRemove}"]`);
-                        if (optionToRemove) {
-                            datalist.removeChild(optionToRemove);
-                        }
-                    }
+                    colors.shift(); // remove oldest color
                 }
-                writeSetting('CUSTOM_COLORS', colors);
-                const option = document.createElement('option');
-                option.value = theColor;
-                datalist.append(option);
+            } else {
+                const index = colors.indexOf(theColor);
+                if (index < 0) throw `Color ${theColor} not found in ${colors}`;
+                colors.splice(index, 1);
+                colors.push(theColor); // this is now newest color
             }
+            writeSetting('CUSTOM_COLORS', colors);
+            updateColorPicker(colorPicker, colors);
         },
         false,
     );
+}
+
+function updateColorPicker(colorPicker, colors) {
+    let datalist = colorPicker.querySelector('datalist');
+    if (!datalist) {
+        datalist = document.createElement('datalist');
+        datalist.id = 'customColors';
+        colorPicker.appendChild(datalist);
+        colorPicker.setAttribute('list', datalist.id);
+    }
+    datalist.innerHTML = '';
+    colors.forEach((color) => {
+        const option = document.createElement('option');
+        option.value = color;
+        datalist.appendChild(option);
+    });
 }
 
 function readSetting(key, defaultValue) {
@@ -69,8 +75,17 @@ function rgbToHex(rgb) {
 }
 
 function getCustomColors() {
-    const colors = [...ALTERNATIVE_COLORS, ...readSetting('CUSTOM_COLORS', [])];
+    const colors = [DEFAULT_COLOR, ...ALTERNATIVE_COLORS];
     const distinct = [...new Set(colors)];
+    const customColors = readSetting('CUSTOM_COLORS', []);
+    const colorsToAdd = [];
+    while (distinct.length + colorsToAdd.length < COLORS_TO_RENDER && customColors.length) {
+        const color = customColors.pop();
+        if (!distinct.includes(color)) {
+            colorsToAdd.push(color);
+        }
+    }
+    distinct.push(...colorsToAdd.reverse());
     return distinct;
 }
 
@@ -148,13 +163,6 @@ class Effects_backgroundReplace_class {
                     }
                 </style>
                 <div class="flex">
-                    <button class="btn btn-md BackgroundReplaceColorButton selected" type="button" style="background-color:${DEFAULT_COLOR}"></button>
-                    ${getCustomColors()
-                        .map(
-                            (color) =>
-                                `<button class="btn btn-md BackgroundReplaceColorButton" type="button" style="background-color:${color}"></button>`,
-                        )
-                        .join('')}
                     <label class="color-picker" title="Open a color picker to select a custom color.">Add a color <input class="color-picker" type="color" value="${getInitialColorForColorPicker()}"/></label>
                 </div>
                 <label>Auto Replace? <input class="auto-replace" type="checkbox" checked/></label>
@@ -166,30 +174,13 @@ class Effects_backgroundReplace_class {
                 const target = document.querySelector('[data-id="params_content"]');
                 $(target).append($label).append($div);
 
-                $('.BackgroundReplaceColorButton').on('click', (e) => {
-                    replaceBackground(e.target, { canvas_preview, w, h });
-                });
-
                 const colorPicker = target.querySelector('input.color-picker');
                 if (colorPicker) {
-                    colorPicker.addEventListener(
-                        'change',
-                        () => {
-                            const theColor = colorPicker.value;
-                            const button = $.parseHTML(
-                                `<button class="btn btn-md BackgroundReplaceColorButton" type="button" style="background-color:${theColor}"></button>`,
-                            )[0];
-                            button.addEventListener('click', (e) =>
-                                replaceBackground(e.target, { canvas_preview, w, h }),
-                            );
-                            const flex = target.querySelector('.flex');
-                            // insert before the label
-                            const colorPickerLabel = flex.querySelector('label.color-picker');
-                            flex.insertBefore(button, colorPickerLabel);
-                        },
-                        false,
-                    );
                     injectCustomColorsIntoColorPicker(colorPicker);
+                    createColorPickerButtons(target, { canvas_preview, w, h });
+                    colorPicker.addEventListener('change', () => {
+                        createColorPickerButtons(target, { canvas_preview, w, h });
+                    });
                 }
 
                 const autoReplace = target.querySelector('.auto-replace');
@@ -216,6 +207,22 @@ class Effects_backgroundReplace_class {
             },
         };
         this.POP.show(settings);
+
+        function createColorPickerButtons(target, options) {
+            const flex = target.querySelector('.flex');
+            // remove all the button elements
+            flex.querySelectorAll('button').forEach((button) => button.remove());
+            const colors = getCustomColors();
+            colors.forEach((color) => {
+                const button = $.parseHTML(
+                    `<button class="btn btn-md BackgroundReplaceColorButton" type="button" style="background-color:${color}"></button>`,
+                )[0];
+                flex.insertBefore(button, flex.querySelector('label.color-picker'));
+                button.addEventListener('click', (e) => {
+                    replaceBackground(e.target, options);
+                });
+            });
+        }
     }
 
     save_changes(params) {
