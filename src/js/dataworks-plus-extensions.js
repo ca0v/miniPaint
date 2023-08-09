@@ -427,7 +427,7 @@ export function tweakConfig(config) {
     config.need_render = true;
 
     'selection,shape,media,text,clone,blur,sharpen,desaturate,bulge_pinch,animation'.split(',').forEach((name) => {
-        removeFromConfig(config, name);
+        modifyFromConfig(config, name).visible = false;
     });
 
     // modify the title of "Crop" action to "Apply Crop"
@@ -480,7 +480,7 @@ export function interceptToolbarItemClick(id) {
         case 'rotate':
             return true;
         default:
-            log(`no intercept for ${id}`);
+            log(`interceptToolbarItemClick: no intercept for ${id}`);
             return false;
     }
 }
@@ -557,7 +557,7 @@ export function interceptMenuItem(app, target, object) {
                     return false;
             }
         default:
-            log(`no intercept for ${target}`);
+            log(`interceptMenuItem: no intercept for ${target}`);
             return false;
     }
 }
