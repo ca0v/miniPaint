@@ -100,6 +100,87 @@ function getInitialColorForColorPicker() {
     return DEFAULT_COLOR;
 }
 
+function replaceBackground(target, options) {
+    $('.BackgroundReplaceColorButton').removeClass('selected');
+    $(target).addClass('selected');
+    const backgroundColor = $(target).css('background-color');
+    // convert rgb to hex
+    const hexColor = rgbToHex(backgroundColor);
+    log('hexColor', hexColor);
+
+    GetNewReplacement(hexColor, options);
+}
+
+function GetNewReplacement(colorInput, options) {
+    const { canvas_preview, w, h } = options;
+    const baseLayers = new Base_layers_class();
+    const canvas = baseLayers.convert_layer_to_canvas(null, true);
+
+    if (typeof Swal == 'undefined') {
+        warn('Swal is not defined.');
+        return;
+    }
+    Swal.fire({
+        title: 'Processing...',
+        text: 'Please wait',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        },
+    });
+
+    const NewImage = document.getElementById('backgroundReplaceImageHolder');
+    if (!NewImage) {
+        warn("'#backgroundReplaceImageHolder' is not defined.");
+        return;
+    }
+
+    var dataURL = canvas.toDataURL('image/jpeg');
+
+    if (dataURL != null) {
+        $.ajax({
+            type: 'POST',
+            url: '../DWPService.asmx/GetBackgroundReplaceImageV2',
+            data: {
+                imgBase64: dataURL,
+                backgroundcolor: colorInput,
+            },
+            dataType: 'text',
+            success: function (data, status) {
+                // Remove XML Tags from response
+                data = data.replace(/<.*>/gm, '');
+
+                NewImage.src = data;
+                NewImage.onload = function () {
+                    var canvas = document.createElement('canvas');
+                    var context = canvas.getContext('2d');
+                    canvas.width = NewImage.width;
+                    canvas.height = NewImage.height;
+
+                    context.drawImage(NewImage, 0, 0, w, h);
+                    var myData = context.getImageData(0, 0, NewImage.width, NewImage.height);
+
+                    canvas_preview.putImageData(myData, 0, 0);
+
+                    Swal.close();
+                };
+            },
+            error: function (e) {
+                Swal.close();
+
+                reportError('Error Retrieving Image.');
+                return;
+            },
+        });
+    } else {
+        // Error
+        Swal.close();
+
+        reportError('Error Sending Image.');
+        return;
+    }
+}
+
 class Effects_backgroundReplace_class {
     constructor() {
         //singleton
@@ -253,84 +334,3 @@ class Effects_backgroundReplace_class {
 }
 
 export default Effects_backgroundReplace_class;
-
-function replaceBackground(target, options) {
-    $('.BackgroundReplaceColorButton').removeClass('selected');
-    $(target).addClass('selected');
-    const backgroundColor = $(target).css('background-color');
-    // convert rgb to hex
-    const hexColor = rgbToHex(backgroundColor);
-    log('hexColor', hexColor);
-
-    GetNewReplacement(hexColor, options);
-}
-
-function GetNewReplacement(colorInput, options) {
-    const { canvas_preview, w, h } = options;
-    const baseLayers = new Base_layers_class();
-    const canvas = baseLayers.convert_layer_to_canvas(null, true);
-
-    if (typeof Swal == 'undefined') {
-        warn('Swal is not defined.');
-        return;
-    }
-    Swal.fire({
-        title: 'Processing...',
-        text: 'Please wait',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        },
-    });
-
-    const NewImage = document.getElementById('backgroundReplaceImageHolder');
-    if (!NewImage) {
-        warn("'#backgroundReplaceImageHolder' is not defined.");
-        return;
-    }
-
-    var dataURL = canvas.toDataURL('image/jpeg');
-
-    if (dataURL != null) {
-        $.ajax({
-            type: 'POST',
-            url: '../DWPService.asmx/GetBackgroundReplaceImageV2',
-            data: {
-                imgBase64: dataURL,
-                backgroundcolor: colorInput,
-            },
-            dataType: 'text',
-            success: function (data, status) {
-                // Remove XML Tags from response
-                data = data.replace(/<.*>/gm, '');
-
-                NewImage.src = data;
-                NewImage.onload = function () {
-                    var canvas = document.createElement('canvas');
-                    var context = canvas.getContext('2d');
-                    canvas.width = NewImage.width;
-                    canvas.height = NewImage.height;
-
-                    context.drawImage(NewImage, 0, 0, w, h);
-                    var myData = context.getImageData(0, 0, NewImage.width, NewImage.height);
-
-                    canvas_preview.putImageData(myData, 0, 0);
-
-                    Swal.close();
-                };
-            },
-            error: function (e) {
-                Swal.close();
-
-                reportError('Error Retrieving Image.');
-                return;
-            },
-        });
-    } else {
-        // Error
-        Swal.close();
-
-        reportError('Error Sending Image.');
-        return;
-    }
-}
