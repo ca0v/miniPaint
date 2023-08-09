@@ -789,7 +789,6 @@ class File_save_class {
         }
 
         if (config.REQUIRE_CROP) {
-            debugger;
             if (aspectRatioIsValid()) {
                 const img = this.prepareCavasForServerSave();
                 $('#PMEditedPhoto').val(img);

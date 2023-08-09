@@ -1,10 +1,30 @@
-import { warn, reportError } from '../../dataworks-plus-extensions.js';
+import { warn, reportError, log } from '../../dataworks-plus-extensions.js';
 import app from './../../app.js';
 import config from '../../config.js';
 import Dialog_class from '../../libs/popup.js';
 import Base_layers_class from '../../core/base-layers.js';
 
 var instance = null;
+
+function readSetting(key, defaultValue) {
+    const value = localStorage.getItem(key);
+    if (value == null) {
+        return defaultValue;
+    }
+    return JSON.parse(value);
+}
+
+function writeSetting(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+}
+
+function rgbToHex(rgb) {
+    const [r, g, b] = rgb.match(/\d+/g);
+    const hexR = parseInt(r).toString(16);
+    const hexG = parseInt(g).toString(16);
+    const hexB = parseInt(b).toString(16);
+    return `#${hexR}${hexG}${hexB}`;
+}
 
 function getBackgroundColorFromColorPicker() {
     const input = document.getElementById('color_hex');
@@ -38,15 +58,6 @@ class Effects_backgroundReplace_class {
                 if (typeof swal == 'undefined') {
                     warn('Swal is not defined.');
                 }
-                swal?.fire({
-                    title: 'Processing...',
-                    text: 'Please wait',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        swal.showLoading();
-                    },
-                });
-
                 const NewImage = document.getElementById('backgroundReplaceImageHolder');
 
                 const $label = $('<label>').text('Select a background color: ');
@@ -58,6 +69,7 @@ class Effects_backgroundReplace_class {
                     .flex {
                         display: flex;
                         gap: 0.25rem;
+                        flex: 1;
                     }
                     .flex > * {
                         width: 8rem;
@@ -66,53 +78,78 @@ class Effects_backgroundReplace_class {
                     .flex > label {
                         no-wrap: true;
                     }
+                    .flex .color-picker {
+                        width: 3rem;
+                        height: 3rem;
+                        border: none;
+                        display: none;
+                    }
+                    .flex > label {
+                        white-space: nowrap;                  
+                        margin: 0;
+                        display: flex;
+                    }
                 </style>
                 <div class="flex">
                     <button class="btn btn-md BackgroundReplaceColorButton selected" type="button" style="background-color:#757575"></button>
                     <button class="btn btn-md BackgroundReplaceColorButton selected" type="button" style="background-color:#72d6ef"></button>
-                    <button class="btn btn-md BackgroundReplaceColorButton selected" type="button" style="background-color:${getBackgroundColorFromColorPicker()}"></button>
-                    <label>Picker<input type="color" id="color_hex" value="${getBackgroundColorFromColorPicker()}" style="width: 2rem; height: 2rem; padding: 0; margin: 0;"/></label>
+                    <button class="btn btn-md BackgroundReplaceColorButton selected color-picker-target" type="button" style="background-color:${getBackgroundColorFromColorPicker()}"></button>
+                    <label>Pick a color <input class="color-picker" type="color" value="${getBackgroundColorFromColorPicker()}"/></label>
                 </div>
+                <label>Auto Replace? <input class="auto-replace" type="checkbox" checked/></label>
                 `;
 
-                const $buttons = $.parseHTML(template);
+                $div.append($.parseHTML(template));
 
-                $div.append($buttons);
                 // find the element where the 'data-id' is 'params_content'
                 const target = document.querySelector('[data-id="params_content"]');
                 $(target).append($label).append($div);
 
-                $('.BackgroundReplaceColorButton').click(function () {
-                    $('.BackgroundReplaceColorButton').removeClass('selected');
-                    $(this).addClass('selected');
-                });
-
-                const theInput = document.getElementById('color_hex');
-                theInput?.addEventListener(
-                    'input',
-                    function () {
-                        var theColor = theInput.value;
-                        $('#BackgroundReplaceColor3').css('background-color', theColor);
-                    },
-                    false,
-                );
-
                 const _canvas = this.Base_layers.convert_layer_to_canvas(null, true);
-                // Get Replacement with Gray Background
-                $button1.click(function () {
-                    GetNewReplacement(_canvas, '#757575');
-                });
-                // Get Replacement with Blue Background
-                $button2.click(function () {
-                    GetNewReplacement(_canvas, '#72d6ef');
-                });
-                // Get Replacement with Chosen Background
-                $button3.click(function () {
-                    GetNewReplacement(_canvas, getBackgroundColorFromColorPicker());
+
+                $('.BackgroundReplaceColorButton').on('click', (e) => {
+                    const target = e.target;
+                    $('.BackgroundReplaceColorButton').removeClass('selected');
+                    $(target).addClass('selected');
+                    const backgroundColor = $(target).css('background-color');
+                    // convert rgb to hex
+                    const hexColor = rgbToHex(backgroundColor);
+                    log('hexColor', hexColor);
+                    GetNewReplacement(_canvas, hexColor);
                 });
 
-                // Get Default Replacement with Gray Background
-                GetNewReplacement(_canvas, '#757575');
+                const colorPickerTarget = target.querySelector('.color-picker-target');
+                if (colorPickerTarget) {
+                    const colorPicker = target.querySelector('.color-picker');
+                    if (colorPicker) {
+                        colorPicker.addEventListener(
+                            'input',
+                            () => {
+                                const theColor = colorPicker.value;
+                                $(colorPickerTarget).css('background-color', theColor);
+                            },
+                            false,
+                        );
+                    }
+                }
+
+                const autoReplace = target.querySelector('.auto-replace');
+                if (autoReplace) {
+                    autoReplace.checked = readSetting('AUTO_REPLACE_BACKGROUND', true);
+                    autoReplace.addEventListener(
+                        'change',
+                        () => {
+                            const isChecked = autoReplace.checked;
+                            writeSetting('AUTO_REPLACE_BACKGROUND', isChecked);
+                        },
+                        false,
+                    );
+                }
+
+                if (readSetting('AUTO_REPLACE_BACKGROUND', true)) {
+                    // Get Default Replacement with Gray Background
+                    alert("GetNewReplacement(_canvas, '#757575');");
+                }
 
                 function GetNewReplacement(canvas, colorInput) {
                     if (typeof Swal == 'undefined') {
