@@ -27,23 +27,23 @@ class Effects_backgroundReplace_class {
         const _this = this;
         if (config.layer.type != 'image') {
             reportError('Please merge layers to apply this tool. Layers -> Merge Down.');
-            return;
+            //return;
         }
 
         const settings = {
             title: 'Background Replace',
             preview: true,
-            on_change: function on_change(params, canvas_preview, w, h) {
-                if (typeof Swal == 'undefined') {
+            on_change: (params, canvas_preview, w, h) => {
+                let swal = window['Swal'];
+                if (typeof swal == 'undefined') {
                     warn('Swal is not defined.');
-                    return;
                 }
-                Swal.fire({
+                swal?.fire({
                     title: 'Processing...',
                     text: 'Please wait',
                     allowOutsideClick: false,
                     didOpen: () => {
-                        Swal.showLoading();
+                        swal.showLoading();
                     },
                 });
 
@@ -53,28 +53,31 @@ class Effects_backgroundReplace_class {
 
                 const $div = $('<div>');
 
-                const $button1 = $('<button>', {
-                    id: 'BackgroundReplaceColor1',
-                    class: 'btn btn-md BackgroundReplaceColorButton selected',
-                    type: 'button',
-                    style: 'background-color: #757575; width: 33%',
-                }).html('&nbsp;');
+                const template = `
+                <style>
+                    .flex {
+                        display: flex;
+                        gap: 0.25rem;
+                    }
+                    .flex > * {
+                        width: 8rem;
+                        height: 2rem;
+                    }
+                    .flex > label {
+                        no-wrap: true;
+                    }
+                </style>
+                <div class="flex">
+                    <button class="btn btn-md BackgroundReplaceColorButton selected" type="button" style="background-color:#757575"></button>
+                    <button class="btn btn-md BackgroundReplaceColorButton selected" type="button" style="background-color:#72d6ef"></button>
+                    <button class="btn btn-md BackgroundReplaceColorButton selected" type="button" style="background-color:${getBackgroundColorFromColorPicker()}"></button>
+                    <label>Picker<input type="color" id="color_hex" value="${getBackgroundColorFromColorPicker()}" style="width: 2rem; height: 2rem; padding: 0; margin: 0;"/></label>
+                </div>
+                `;
 
-                const $button2 = $('<button>', {
-                    id: 'BackgroundReplaceColor2',
-                    class: 'btn btn-md BackgroundReplaceColorButton',
-                    type: 'button',
-                    style: 'background-color: #72d6ef; width: 33%',
-                }).html('&nbsp;');
+                const $buttons = $.parseHTML(template);
 
-                const $button3 = $('<button>', {
-                    id: 'BackgroundReplaceColor3',
-                    class: 'btn btn-md BackgroundReplaceColorButton',
-                    type: 'button',
-                    style: `background-color: ${getBackgroundColorFromColorPicker()}; width: 33%`,
-                }).html('&nbsp;');
-
-                $div.append($button1).append($button2).append($button3);
+                $div.append($buttons);
                 // find the element where the 'data-id' is 'params_content'
                 const target = document.querySelector('[data-id="params_content"]');
                 $(target).append($label).append($div);

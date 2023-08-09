@@ -12,6 +12,10 @@ import GIF from './../../../../node_modules/gif.js.optimized/';
 import CanvasToTIFF from './../../libs/canvastotiff.js';
 import Tools_settings_class from '../tools/settings';
 
+function aspectRatioIsValid() {
+    return 0 === Math.floor(config.HEIGHT - config.WIDTH * config.RATIO);
+}
+
 var instance = null;
 
 /**
@@ -785,7 +789,8 @@ class File_save_class {
         }
 
         if (config.REQUIRE_CROP) {
-            if (config.ASPECT) {
+            debugger;
+            if (aspectRatioIsValid()) {
                 const img = this.prepareCavasForServerSave();
                 $('#PMEditedPhoto').val(img);
                 goSaveAndBack();

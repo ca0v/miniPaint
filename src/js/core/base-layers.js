@@ -14,8 +14,6 @@ import zoomView from './../libs/zoomView.js';
 import Helper_class from './../libs/helpers.js';
 import alertify from './../../../node_modules/alertifyjs/build/alertify.min.js';
 
-import { setAspect } from '../dataworks-plus-extensions.js';
-
 var instance = null;
 
 $.obj = null;
@@ -94,8 +92,6 @@ class Base_layers_class {
             },
         };
         this.Base_selection = new Base_selection_class(this.ctx, sel_config, 'main');
-
-        setAspect(config);
 
         this.render(true);
     }

@@ -29,10 +29,6 @@ function translate(message) {
     return message;
 }
 
-export function setAspect(config) {
-    config.ASPECT = (config.HEIGHT / config.WIDTH).toFixed(2) == config.RATIO;
-}
-
 // this can now be deprecated and alertify.error used instead
 export async function reportError(message) {
     const Tools_translate = new Tools_translate_class();
@@ -422,8 +418,6 @@ export function tweakConfig(config) {
     });
     config.COLOR = '#757575';
     config.RATIO = 1.25;
-    config.ASPECT = false;
-
     config.need_render = true;
 
     'selection,shape,media,text,clone,blur,sharpen,desaturate,bulge_pinch,animation'.split(',').forEach((name) => {
@@ -577,7 +571,7 @@ export function log(...messages) {
 }
 
 export function warn(...messages) {
-    if (config.de) console.warn(...messages);
+    if (config.DEBUG) console.warn(...messages);
 }
 
 export function activateTool(toolName) {
