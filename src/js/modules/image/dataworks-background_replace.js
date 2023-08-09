@@ -8,6 +8,7 @@ import { data } from 'jquery';
 var instance = null;
 
 const COLORS_TO_REMEMBER = 3;
+const DEFAULT_COLOR = '#757575';
 
 function injectCustomColorsIntoColorPicker(colorPicker) {
     const datalist = document.createElement('datalist');
@@ -67,9 +68,15 @@ function rgbToHex(rgb) {
     return `#${hexR}${hexG}${hexB}`;
 }
 
-function getBackgroundColorFromColorPicker() {
+function getInitialColorForColorPicker() {
+    const colors = readSetting('CUSTOM_COLORS', []);
+    if (colors.length) {
+        return colors[0];
+    }
     const input = document.getElementById('color_hex');
-    return input.value;
+    if (input) return input.value;
+
+    return DEFAULT_COLOR;
 }
 
 class Effects_backgroundReplace_class {
@@ -134,10 +141,10 @@ class Effects_backgroundReplace_class {
                     }
                 </style>
                 <div class="flex">
-                    <button class="btn btn-md BackgroundReplaceColorButton selected" type="button" style="background-color:#757575"></button>
+                    <button class="btn btn-md BackgroundReplaceColorButton selected" type="button" style="background-color:${DEFAULT_COLOR}"></button>
                     <button class="btn btn-md BackgroundReplaceColorButton selected" type="button" style="background-color:#72d6ef"></button>
-                    <button class="btn btn-md BackgroundReplaceColorButton selected color-picker-target" type="button" style="background-color:${getBackgroundColorFromColorPicker()}"></button>
-                    <label class="color-picker" title="Open a color picker to select a custom color.">Pick a color <input class="color-picker" type="color" value="${getBackgroundColorFromColorPicker()}"/></label>
+                    <button class="btn btn-md BackgroundReplaceColorButton selected color-picker-target" type="button" style="background-color:${getInitialColorForColorPicker()}"></button>
+                    <label class="color-picker" title="Open a color picker to select a custom color.">Pick a color <input class="color-picker" type="color" value="${getInitialColorForColorPicker()}"/></label>
                 </div>
                 <label>Auto Replace? <input class="auto-replace" type="checkbox" checked/></label>
                 `;
@@ -192,7 +199,7 @@ class Effects_backgroundReplace_class {
 
                 if (readSetting('AUTO_REPLACE_BACKGROUND', true)) {
                     // Get Default Replacement with Gray Background
-                    GetNewReplacement(_canvas, '#757575');
+                    GetNewReplacement(_canvas, DEFAULT_COLOR);
                 }
 
                 function GetNewReplacement(canvas, colorInput) {
