@@ -3,8 +3,49 @@ import app from './../../app.js';
 import config from '../../config.js';
 import Dialog_class from '../../libs/popup.js';
 import Base_layers_class from '../../core/base-layers.js';
+import { data } from 'jquery';
 
 var instance = null;
+
+const COLORS_TO_REMEMBER = 3;
+
+function injectCustomColorsIntoColorPicker(colorPicker) {
+    const datalist = document.createElement('datalist');
+    datalist.id = 'customColors';
+    const colors = readSetting('CUSTOM_COLORS', ['#ff0000', '#00ff00', '#0000ff']);
+    colors.forEach((color) => {
+        const option = document.createElement('option');
+        option.value = color;
+        datalist.appendChild(option);
+    });
+    colorPicker.appendChild(datalist);
+    colorPicker.setAttribute('list', datalist.id);
+    colorPicker.addEventListener(
+        'change',
+        () => {
+            const theColor = colorPicker.value;
+            const colors = readSetting('CUSTOM_COLORS', []);
+            if (!colors.includes(theColor)) {
+                colors.unshift(theColor);
+                while (colors.length > COLORS_TO_REMEMBER) {
+                    const colorToRemove = colors.pop();
+                    if (colorToRemove) {
+                        log(`Remove color ${colorToRemove}`);
+                        const optionToRemove = datalist.querySelector(`option[value="${colorToRemove}"]`);
+                        if (optionToRemove) {
+                            datalist.removeChild(optionToRemove);
+                        }
+                    }
+                }
+                writeSetting('CUSTOM_COLORS', colors);
+                const option = document.createElement('option');
+                option.innerText = theColor;
+                datalist.insertBefore(option, datalist.firstChild);
+            }
+        },
+        false,
+    );
+}
 
 function readSetting(key, defaultValue) {
     const value = localStorage.getItem(key);
@@ -132,6 +173,7 @@ class Effects_backgroundReplace_class {
                             },
                             false,
                         );
+                        injectCustomColorsIntoColorPicker(colorPicker);
                     }
                 }
 
