@@ -72,29 +72,31 @@ class Effects_backgroundReplace_class {
                         flex: 1;
                     }
                     .flex > * {
-                        width: 8rem;
-                        height: 2rem;
+                        width: 10rem;
+                        height: 3rem;
                     }
                     .flex > label {
                         no-wrap: true;
                     }
-                    .flex .color-picker {
-                        width: 3rem;
-                        height: 3rem;
-                        border: none;
+                    .flex input.color-picker {
                         display: none;
                     }
-                    .flex > label {
+                    .flex > label.color-picker {
                         white-space: nowrap;                  
                         margin: 0;
                         display: flex;
+                        border: 3px solid transparent;
+                        padding: 0.5rem;
+                    }
+                    .flex > label.color-picker:hover {
+                        border-color: black;
                     }
                 </style>
                 <div class="flex">
                     <button class="btn btn-md BackgroundReplaceColorButton selected" type="button" style="background-color:#757575"></button>
                     <button class="btn btn-md BackgroundReplaceColorButton selected" type="button" style="background-color:#72d6ef"></button>
                     <button class="btn btn-md BackgroundReplaceColorButton selected color-picker-target" type="button" style="background-color:${getBackgroundColorFromColorPicker()}"></button>
-                    <label>Pick a color <input class="color-picker" type="color" value="${getBackgroundColorFromColorPicker()}"/></label>
+                    <label class="color-picker" title="Open a color picker to select a custom color.">Pick a color <input class="color-picker" type="color" value="${getBackgroundColorFromColorPicker()}"/></label>
                 </div>
                 <label>Auto Replace? <input class="auto-replace" type="checkbox" checked/></label>
                 `;
@@ -120,7 +122,7 @@ class Effects_backgroundReplace_class {
 
                 const colorPickerTarget = target.querySelector('.color-picker-target');
                 if (colorPickerTarget) {
-                    const colorPicker = target.querySelector('.color-picker');
+                    const colorPicker = target.querySelector('input.color-picker');
                     if (colorPicker) {
                         colorPicker.addEventListener(
                             'input',
