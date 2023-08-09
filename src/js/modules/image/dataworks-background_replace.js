@@ -148,7 +148,7 @@ class Effects_backgroundReplace_class {
 
                 if (readSetting('AUTO_REPLACE_BACKGROUND', true)) {
                     // Get Default Replacement with Gray Background
-                    alert("GetNewReplacement(_canvas, '#757575');");
+                    GetNewReplacement(_canvas, '#757575');
                 }
 
                 function GetNewReplacement(canvas, colorInput) {
