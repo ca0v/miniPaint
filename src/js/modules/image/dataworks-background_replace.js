@@ -67,11 +67,15 @@ function writeSetting(key, value) {
 }
 
 function rgbToHex(rgb) {
-    const [r, g, b] = rgb.match(/\d+/g);
-    const hexR = parseInt(r).toString(16);
-    const hexG = parseInt(g).toString(16);
-    const hexB = parseInt(b).toString(16);
-    return `#${hexR}${hexG}${hexB}`;
+    if (rgb.indexOf('#') === 0) return rgb;
+    if (rgb.indexOf('rgb') !== 0) throw `Invalid rgb value: ${rgb}`;
+    return (
+        '#' +
+        rgb
+            .match(/\d+/g)
+            .map((v) => parseInt(v).toString(16).padStart(2, '0'))
+            .join('')
+    );
 }
 
 function getCustomColors() {
