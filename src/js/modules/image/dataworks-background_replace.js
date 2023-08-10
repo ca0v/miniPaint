@@ -6,8 +6,8 @@ import Base_layers_class from '../../core/base-layers.js';
 
 var instance = null;
 
-const COLORS_TO_REMEMBER = 16; // max custom colors stored and rendered on color picker
-const COLORS_TO_RENDER = 5; // max colors rendered on background replace dialog
+const COLORS_TO_REMEMBER = 1; // max custom colors stored and rendered on color picker
+const COLORS_TO_RENDER = 3; // max colors rendered on background replace dialog
 const DEFAULT_COLOR = '#757575';
 const ALTERNATIVE_COLORS = ['#72d6ef'];
 
@@ -244,7 +244,7 @@ class Effects_backgroundReplace_class {
                     }
                 </style>
                 <div class="flex">
-                    <label class="color-picker" title="Open a color picker to select a custom color.">Add a color <input class="color-picker" type="color" value="${getInitialColorForColorPicker()}"/></label>
+                    <label class="color-picker" title="Open a color picker to select a custom color.">Pick a color <input class="color-picker" type="color" value="${getInitialColorForColorPicker()}"/></label>
                 </div>
                 <label>Auto Replace? <input class="auto-replace" type="checkbox" checked/></label>
                 `;
