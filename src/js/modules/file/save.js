@@ -795,6 +795,13 @@ class File_save_class {
                 goSaveAndBack();
             } else {
                 confirm('Image requires cropping before being saved.');
+                warn(
+                    `aspectRatioIsValid()=${aspectRatioIsValid()} because the image requires cropping before being saved.  The expected height is ${Math.floor(
+                        config.WIDTH * config.RATIO,
+                    )} but the actual height is ${config.HEIGHT} (the width is ${
+                        config.WIDTH
+                    } and the aspect ratio is ${config.RATIO}).`,
+                );
             }
         } else {
             const img = this.prepareCavasForServerSave();
