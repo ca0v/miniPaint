@@ -1,4 +1,4 @@
-import { warn } from '../../dataworks-plus-extensions.js';
+import { warn, aspectRatioIsValid } from '../../dataworks-plus-extensions.js';
 
 import app from './../../app.js';
 import config from './../../config.js';
@@ -11,10 +11,6 @@ import filesaver from './../../../../node_modules/file-saver/dist/FileSaver.min.
 import GIF from './../../../../node_modules/gif.js.optimized/';
 import CanvasToTIFF from './../../libs/canvastotiff.js';
 import Tools_settings_class from '../tools/settings';
-
-function aspectRatioIsValid() {
-    return 0 === Math.floor(config.HEIGHT - config.WIDTH * config.RATIO);
-}
 
 var instance = null;
 
