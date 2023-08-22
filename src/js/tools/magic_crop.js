@@ -379,9 +379,6 @@ class MagicCrop_class extends Base_tools_class {
     config.layers.forEach((link) => {
       if (link.type == null) return;
 
-      const x = link.x;
-      const y = link.y;
-
       if (link.type == "image") {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
@@ -392,6 +389,32 @@ class MagicCrop_class extends Base_tools_class {
         ctx.translate(-cropLeft, -cropTop);
         ctx.drawImage(link.link, 0, 0);
         ctx.translate(0, 0);
+
+        // create a image mask to hide the parts of the image that are not inside the polygon defined by the data
+        const maskCanvas = document.createElement("canvas");
+        const maskCtx = maskCanvas.getContext("2d");
+        maskCanvas.width = config.WIDTH;
+        maskCanvas.height = config.HEIGHT;
+        maskCtx.fillStyle = "#000000";
+        maskCtx.beginPath();
+        maskCtx.moveTo(data[0].x, data[0].y);
+        for (let i = 1; i < data.length; i++) {
+          const point = data[i];
+          if (point === null) {
+            maskCtx.closePath();
+            maskCtx.fill();
+            maskCtx.beginPath();
+          } else {
+            maskCtx.lineTo(point.x, point.y);
+          }
+        }
+        maskCtx.closePath();
+        maskCtx.fill();
+
+        // apply the mask
+        ctx.globalCompositeOperation = "destination-in";
+        ctx.drawImage(maskCanvas, 0, 0);
+
         actions.push(
           new app.Actions.Update_layer_image_action(canvas, link.id)
         );
