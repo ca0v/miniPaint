@@ -361,6 +361,39 @@ class MagicCrop_class extends Base_tools_class {
       }
     });
 
+    // now render the drag-points over the top of the lines
+    layerData.forEach((currentPoint, i) => {
+      const size = 10;
+      ctx.fillStyle = "red";
+      ctx.strokeStyle = "white";
+      ctx.fillRect(
+        currentPoint.x - Math.floor(size / 2) - 1,
+        currentPoint.y - Math.floor(size / 2) - 1,
+        size,
+        size
+      );
+    });
+
+    // also, draw semi-drag points at the centerpoint of each line
+    layerData.forEach((currentPoint, i) => {
+      const size = 5;
+      ctx.fillStyle = "blue";
+      ctx.strokeStyle = "white";
+      if (i == 0) return;
+      const priorPoint = layerData[i - 1];
+      const centerPoint = {
+        x: (currentPoint.x + priorPoint.x) / 2,
+        y: (currentPoint.y + priorPoint.y) / 2,
+      };
+
+      ctx.fillRect(
+        centerPoint.x - Math.floor(size / 2) - 1,
+        centerPoint.y - Math.floor(size / 2) - 1,
+        size,
+        size
+      );
+    });
+
     ctx.translate(-x, -y);
   }
 
