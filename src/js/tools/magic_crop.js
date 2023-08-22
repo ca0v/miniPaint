@@ -7,6 +7,16 @@ import Base_gui_class from "../core/base-gui.js";
 import Base_selection_class from "../core/base-selection.js";
 import alertify from "alertifyjs/build/alertify.min.js";
 
+const configuration = {
+  majorColor: "#ff000080",
+  hoverMajorColor: "#ff000030",
+  minorColor: "#00ff0080",
+  hoverMinorColor: "#00ff0030",
+  minorSize: 10,
+  majorSize: 20,
+  defaultStrokeColor: "#ffffff",
+};
+
 function removeColinearPoints(points) {
   if (points.length < 3) return points;
   const result = [];
@@ -153,6 +163,10 @@ class MagicCrop_class extends Base_tools_class {
         this.status = "moving_point";
         return;
       }
+      if (this.hover.midpointIndex) {
+        this.status = "moving_point";
+        return;
+      }
     }
 
     if (config.layer.type != this.name || params_hash != this.params_hash) {
@@ -278,9 +292,17 @@ class MagicCrop_class extends Base_tools_class {
         // move the point
         if (this.hover?.pointIndex >= 0) {
           const index = this.hover.pointIndex;
-          const point = config.layer.data[index];
+          const point = data[index];
           point.x = currentPoint.x;
           point.y = currentPoint.y;
+          this.renderData(data);
+          this.Base_layers.render();
+        } else if (this.hover?.midpointIndex >= 0) {
+          const index = this.hover.midpointIndex;
+          // insert current point after this index
+          data.splice(index + 1, 0, currentPoint);
+          this.hover = { pointIndex: index + 1 };
+          // render the line
           this.renderData(data);
           this.Base_layers.render();
         }
@@ -376,14 +398,13 @@ class MagicCrop_class extends Base_tools_class {
 
     // now render the drag-points over the top of the lines
     layerData.forEach((currentPoint, i) => {
-      let size = 20;
+      ctx.fillStyle = configuration.hoverMajorColor;
+      ctx.strokeStyle = configuration.defaultStrokeColor;
+      let size = configuration.majorSize;
       if (this.hover && this.hover.pointIndex == i) {
-        ctx.fillStyle = "rgba(255,0,0,1)";
-        ctx.strokeStyle = "white";
-        size = 30;
+        size *= 1.5;
       } else {
-        ctx.fillStyle = "rgba(255,0,0,0.5)";
-        ctx.strokeStyle = "white";
+        ctx.fillStyle = configuration.majorColor;
       }
       ctx.fillRect(
         currentPoint.x - Math.floor(size / 2) - 1,
@@ -395,17 +416,17 @@ class MagicCrop_class extends Base_tools_class {
 
     // also, draw semi-drag points at the centerpoint of each line
     layerData.forEach((currentPoint, i) => {
-      let size = 15;
-      ctx.fillStyle = "rgba(0,0,255,0.5)";
-      ctx.strokeStyle = "white";
-      const nextPoint = layerData[(i + 1) % layerData.length];
-      const centerPoint = {
-        x: (currentPoint.x + nextPoint.x) / 2,
-        y: (currentPoint.y + nextPoint.y) / 2,
-      };
+      let size = configuration.minorSize;
+      ctx.fillStyle = configuration.minorColor;
+      ctx.strokeStyle = configuration.defaultStrokeColor;
+      const centerPoint = this.center(
+        currentPoint,
+        layerData[(i + 1) % layerData.length]
+      );
 
       if (this.hover && this.hover.midpointIndex == i) {
-        ctx.fillStyle = "rgba(0,0,255,1)";
+        ctx.fillStyle = configuration.hoverMinorColor;
+        size *= 1.5;
       }
       ctx.fillRect(
         centerPoint.x - Math.floor(size / 2) - 1,
@@ -416,6 +437,13 @@ class MagicCrop_class extends Base_tools_class {
     });
 
     ctx.translate(-x, -y);
+  }
+
+  center(currentPoint, nextPoint) {
+    return {
+      x: (currentPoint.x + nextPoint.x) / 2,
+      y: (currentPoint.y + nextPoint.y) / 2,
+    };
   }
 
   draw_simple_line(ctx, from_x, from_y, to_x, to_y, size) {
