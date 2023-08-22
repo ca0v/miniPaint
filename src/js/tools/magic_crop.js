@@ -7,10 +7,21 @@ import Base_gui_class from "../core/base-gui.js";
 import Base_selection_class from "../core/base-selection.js";
 import alertify from "alertifyjs/build/alertify.min.js";
 
+function deep(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function distance(p1, p2) {
+  const dist_x = p1.x - p2.x;
+  const dist_y = p1.y - p2.y;
+  return Math.sqrt(dist_x * dist_x + dist_y * dist_y);
+}
+
 class MagicCrop_class extends Base_tools_class {
   constructor(ctx) {
     super();
     var _this = this;
+    this.status = "";
     this.Base_layers = new Base_layers_class();
     this.Base_gui = new Base_gui_class();
     this.GUI_tools = new GUI_tools_class();
@@ -22,7 +33,7 @@ class MagicCrop_class extends Base_tools_class {
       width: null,
       height: null,
     };
-    var sel_config = {
+    const sel_config = {
       enable_background: true,
       enable_borders: true,
       enable_controls: true,
@@ -39,6 +50,9 @@ class MagicCrop_class extends Base_tools_class {
 
   load() {
     this.default_events();
+    document.addEventListener("dblclick", (event) => {
+      this.doubleClick(event);
+    });
   }
 
   default_dragStart(event) {
@@ -50,55 +64,117 @@ class MagicCrop_class extends Base_tools_class {
     this.mousedown(event);
   }
 
-  mousedown(e) {
-    var mouse = this.get_mouse_info(e);
-    if (this.Base_selection.is_drag == false || mouse.click_valid == false)
-      return;
+  // close the path and crop the image
+  doubleClick(event) {
+    const data = config.layer.data;
+    if (data.length == 0) return;
 
-    this.mousedown_selection = JSON.parse(JSON.stringify(this.selection));
+    //close path
+    data.push({ ...data[0] });
+    this.renderData(data);
 
-    if (this.Base_selection.mouse_lock !== null) {
-      return;
-    }
-
-    //create new selection
-    this.Base_selection.set_selection(mouse.x, mouse.y, 0, 0);
+    this.status = "done";
   }
 
+  /**
+   * When the mouse is pressed, create a new layer and draw a dot
+   */
+  mousedown(e) {
+    if (this.status === "done") this.status = "start";
+    const mouse = this.get_mouse_info(e);
+    if (mouse.click_valid == false) return;
+
+    const params_hash = this.get_params_hash();
+    const opacity = Math.round((config.ALPHA / 255) * 100);
+
+    const currentPoint = {
+      x: Math.ceil(mouse.x - config.layer.x),
+      y: Math.ceil(mouse.y - config.layer.y),
+    };
+
+    if (config.layer.type != this.name || params_hash != this.params_hash) {
+      //register new object - current layer is not ours or params changed
+      this.layer = {
+        type: this.name,
+        data: [currentPoint],
+        opacity: opacity,
+        params: this.clone(this.getParams()),
+        status: "draft",
+        render_function: [this.name, "render"],
+        x: 0,
+        y: 0,
+        width: config.WIDTH,
+        height: config.HEIGHT,
+        hide_selection_if_active: true,
+        rotate: null,
+        is_vector: true,
+        color: config.COLOR,
+      };
+      app.State.do_action(
+        new app.Actions.Bundle_action("magic_crop_layer", "Magic Crop Layer", [
+          new app.Actions.Insert_layer_action(this.layer),
+        ])
+      );
+      this.params_hash = params_hash;
+    } else {
+      config.layer.data.push(currentPoint);
+    }
+  }
+
+  /**
+   * When the mouse moves, draw a straight line from the previous point to the current point.
+   */
   mousemove(e) {
-    var mouse = this.get_mouse_info(e);
-    if (this.Base_selection.is_drag == false || mouse.is_drag == false) {
-      return;
-    }
-    if (e.type == "mousedown" && mouse.click_valid == false) {
-      return;
-    }
-    if (this.Base_selection.mouse_lock !== null) {
+    if (this.status === "done") return;
+    if (this.status === "start") this.status = "drawing";
+    // render a line from the previous point to the current point
+    const mouse = this.get_mouse_info(e);
+    const params = this.getParams();
+    if (mouse.click_valid == false) {
       return;
     }
 
-    var width = mouse.x - mouse.click_x;
-    var height = mouse.y - mouse.click_y;
+    //add point
+    const currentPoint = {
+      x: Math.ceil(mouse.x - config.layer.x),
+      y: Math.ceil(mouse.y - config.layer.y),
+    };
 
-    if (e.ctrlKey == true || e.metaKey) {
-      //ctrl is pressed - crop will be calculated based on global width and height ratio
-      var ratio = config.WIDTH / config.HEIGHT;
-      var width_new = Math.round(height * ratio);
-      var height_new = Math.round(width / ratio);
+    const data = config.layer.data;
+    if (data.length) {
+      const priorPoint = data[data.length - 1];
+      const distanceToCurrentPint = distance(priorPoint, currentPoint);
+      if (distanceToCurrentPint < 10 * params.size) return;
+    }
 
-      if (
-        Math.abs((width * 100) / width_new) >
-        Math.abs((height * 100) / height_new)
-      ) {
-        if ((width * 100) / width_new > 0) height = height_new;
-        else height = -height_new;
-      } else {
-        if ((height * 100) / height_new > 0) width = width_new;
-        else width = -width_new;
+    console.log(`adding point ${currentPoint.x},${currentPoint.y}`);
+    if (mouse.is_drag == false) {
+      if (data.length) {
+        data[data.length - 1].x = currentPoint.x;
+        data[data.length - 1].y = currentPoint.y;
       }
+    } else {
+      data.push({ ...currentPoint, size: params.size || 1 });
     }
 
-    this.Base_selection.set_selection(null, null, width, height);
+    // render the line
+    this.renderData(data);
+
+    this.Base_layers.render();
+  }
+
+  renderData(data) {
+    app.State.do_action(
+      new app.Actions.Bundle_action(
+        "magic_crop_layer",
+        "Update Magic Crop Layer",
+        [
+          new app.Actions.Update_layer_action(config.layer.id, {
+            data: data,
+          }),
+        ]
+      )
+    );
   }
 
   mouseup(e) {
@@ -168,7 +244,99 @@ class MagicCrop_class extends Base_tools_class {
   }
 
   render(ctx, layer) {
-    //nothing
+    this.render_aliased(ctx, layer);
+  }
+
+  /**
+   * draw without antialiasing, sharp, ugly mode.
+   *
+   * @param {object} ctx
+   * @param {object} layer
+   */
+  render_aliased(ctx, layer) {
+    if (layer.data.length == 0) return;
+
+    const params = layer.params;
+    const data = layer.data;
+    console.log({ data });
+    const n = data.length;
+    const size = params.size || 1;
+
+    //set styles
+    ctx.fillStyle = layer.color;
+    ctx.strokeStyle = layer.color;
+    ctx.translate(layer.x, layer.y);
+
+    //draw
+    ctx.beginPath();
+    ctx.moveTo(data[0][0], data[0][1]);
+    for (let i = 1; i < n; i++) {
+      const priorPoint = data[i - 1];
+      const currentPoint = data[i];
+      if (currentPoint === null) {
+        console.log(`beginPath at ${i}`);
+        //break
+        ctx.beginPath();
+      } else {
+        if (data[i - 1] == null) {
+          console.log(`fillRect at ${i}`);
+          //exception - point
+          ctx.fillRect(
+            currentPoint.x - Math.floor(size / 2) - 1,
+            currentPoint.y - Math.floor(size / 2) - 1,
+            size,
+            size
+          );
+        } else {
+          console.log(`draw_simple_line at ${i}`);
+          //lines
+          ctx.beginPath();
+          this.draw_simple_line(
+            ctx,
+            priorPoint.x,
+            priorPoint.y,
+            currentPoint.x,
+            currentPoint.y,
+            size
+          );
+        }
+      }
+    }
+    if (n == 1 || data[1] == null) {
+      //point
+      ctx.beginPath();
+      ctx.fillRect(
+        data[0][0] - Math.floor(size / 2) - 1,
+        data[0][1] - Math.floor(size / 2) - 1,
+        size,
+        size
+      );
+    }
+
+    ctx.translate(-layer.x, -layer.y);
+  }
+
+  draw_simple_line(ctx, from_x, from_y, to_x, to_y, size) {
+    console.log(
+      `draw_simple_line: ${from_x},${from_y} to ${to_x},${to_y} of size ${size}`
+    );
+    const dist_x = from_x - to_x;
+    const dist_y = from_y - to_y;
+    const distance = Math.sqrt(dist_x * dist_x + dist_y * dist_y);
+    const radiance = Math.atan2(dist_y, dist_x);
+
+    console.log(`draw_simple_line: distance=${distance},radiance=${radiance}`);
+
+    for (let j = 0; j < distance; j++) {
+      var x_tmp =
+        Math.round(to_x + Math.cos(radiance) * j) - Math.floor(size / 2) - 1;
+      var y_tmp =
+        Math.round(to_y + Math.sin(radiance) * j) - Math.floor(size / 2) - 1;
+
+      ctx.fillRect(x_tmp, y_tmp, size, size);
+
+      console.log(`drawing line from ${from_x},${from_y} to ${to_x},${to_y}`);
+    }
   }
 
   /**
