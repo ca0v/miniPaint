@@ -7,6 +7,38 @@ import Base_gui_class from "../core/base-gui.js";
 import Base_selection_class from "../core/base-selection.js";
 import alertify from "alertifyjs/build/alertify.min.js";
 
+function removeColinearPoints(points) {
+  const result = [];
+  const n = points.length;
+  if (!n) return result;
+
+  result.push(points.at(0));
+
+  for (let i = 1; i < n - 1; i++) {
+    const priorPoint = result.at(-1);
+    const currentPoint = points.at(i);
+    const nextPoint = points.at(i + 1);
+    const priorDistance = distance(priorPoint, currentPoint);
+    const nextDistance = distance(currentPoint, nextPoint);
+    const totalDistance = distance(priorPoint, nextPoint);
+
+    if (priorDistance + nextDistance > totalDistance) {
+      result.push(currentPoint);
+    } else {
+      //colinear
+      console.log(
+        `removing colinear point ${currentPoint.x},${currentPoint.y}`
+      );
+      result.push(currentPoint);
+    }
+  }
+
+  const lastPoint = points.at(-1);
+  result.push(lastPoint);
+
+  return result;
+}
+
 function getBoundingBox(points) {
   const result = {
     top: Number.MAX_SAFE_INTEGER,
@@ -81,12 +113,22 @@ class MagicCrop_class extends Base_tools_class {
   }
 
   // close the path and crop the image
-  doubleClick(event) {
+  doubleClick(e) {
     const data = config.layer.data;
     if (data.length == 0) return;
 
+    const mouse = this.get_mouse_info(e);
+    if (mouse.click_valid == false) return;
+
     //close path
+    const currentPoint = {
+      x: Math.ceil(mouse.x - config.layer.x),
+      y: Math.ceil(mouse.y - config.layer.y),
+    };
+
+    data.push(currentPoint);
     data.push({ ...data[0] });
+
     this.renderData(data);
 
     this.status = "done";
@@ -166,7 +208,6 @@ class MagicCrop_class extends Base_tools_class {
       if (distanceToCurrentPoint > 10 * params.size) return;
     }
 
-    console.log(`adding point ${currentPoint.x},${currentPoint.y}`);
     if (mouse.is_drag == false) {
       if (data.length > 1) {
         data[data.length - 1].x = currentPoint.x;
@@ -275,32 +316,29 @@ class MagicCrop_class extends Base_tools_class {
    * @param {object} layer
    */
   render_aliased(ctx, layer) {
-    if (layer.data.length == 0) return;
-
-    const params = layer.params;
-    const data = layer.data;
-    console.log({ data });
-    const n = data.length;
+    const { x, y, color, params } = layer;
     const size = params.size || 1;
 
+    const layerData = removeColinearPoints(layer.data);
+
     //set styles
-    ctx.fillStyle = layer.color;
-    ctx.strokeStyle = layer.color;
-    ctx.translate(layer.x, layer.y);
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    ctx.translate(x, y);
 
     //draw
     ctx.beginPath();
-    ctx.moveTo(data[0][0], data[0][1]);
-    for (let i = 1; i < n; i++) {
-      const priorPoint = data[i - 1];
-      const currentPoint = data[i];
+
+    const firstPoint = layerData[0];
+    ctx.moveTo(firstPoint.x, firstPoint.y);
+
+    layerData.forEach((currentPoint, i) => {
+      const priorPoint = layerData[i - 1];
       if (currentPoint === null) {
-        console.log(`beginPath at ${i}`);
         //break
         ctx.beginPath();
       } else {
-        if (data[i - 1] == null) {
-          console.log(`fillRect at ${i}`);
+        if (priorPoint == null) {
           //exception - point
           ctx.fillRect(
             currentPoint.x - Math.floor(size / 2) - 1,
@@ -309,7 +347,6 @@ class MagicCrop_class extends Base_tools_class {
             size
           );
         } else {
-          console.log(`draw_simple_line at ${i}`);
           //lines
           ctx.beginPath();
           this.draw_simple_line(
@@ -322,31 +359,16 @@ class MagicCrop_class extends Base_tools_class {
           );
         }
       }
-    }
-    if (n == 1 || data[1] == null) {
-      //point
-      ctx.beginPath();
-      ctx.fillRect(
-        data[0][0] - Math.floor(size / 2) - 1,
-        data[0][1] - Math.floor(size / 2) - 1,
-        size,
-        size
-      );
-    }
+    });
 
-    ctx.translate(-layer.x, -layer.y);
+    ctx.translate(-x, -y);
   }
 
   draw_simple_line(ctx, from_x, from_y, to_x, to_y, size) {
-    console.log(
-      `draw_simple_line: ${from_x},${from_y} to ${to_x},${to_y} of size ${size}`
-    );
     const dist_x = from_x - to_x;
     const dist_y = from_y - to_y;
     const distance = Math.sqrt(dist_x * dist_x + dist_y * dist_y);
     const radiance = Math.atan2(dist_y, dist_x);
-
-    console.log(`draw_simple_line: distance=${distance},radiance=${radiance}`);
 
     for (let j = 0; j < distance; j++) {
       var x_tmp =
@@ -355,8 +377,6 @@ class MagicCrop_class extends Base_tools_class {
         Math.round(to_y + Math.sin(radiance) * j) - Math.floor(size / 2) - 1;
 
       ctx.fillRect(x_tmp, y_tmp, size, size);
-
-      console.log(`drawing line from ${from_x},${from_y} to ${to_x},${to_y}`);
     }
   }
 
