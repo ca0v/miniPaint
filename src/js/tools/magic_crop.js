@@ -1,20 +1,20 @@
-import app from "../app.js";
-import config from "../config.js";
-import Base_tools_class from "../core/base-tools.js";
-import Base_layers_class from "../core/base-layers.js";
-import GUI_tools_class from "../core/gui/gui-tools.js";
-import Base_gui_class from "../core/base-gui.js";
-import Base_selection_class from "../core/base-selection.js";
-import alertify from "alertifyjs/build/alertify.min.js";
+import app from '../app.js';
+import config from '../config.js';
+import Base_tools_class from '../core/base-tools.js';
+import Base_layers_class from '../core/base-layers.js';
+import GUI_tools_class from '../core/gui/gui-tools.js';
+import Base_gui_class from '../core/base-gui.js';
+import Base_selection_class from '../core/base-selection.js';
+import alertify from 'alertifyjs/build/alertify.min.js';
 
 const configuration = {
-  majorColor: "#ff000080",
-  hoverMajorColor: "#ff000030",
-  minorColor: "#00ff0080",
-  hoverMinorColor: "#00ff0030",
+  majorColor: '#ff000080',
+  hoverMajorColor: '#ff000030',
+  minorColor: '#00ff0080',
+  hoverMinorColor: '#00ff0030',
   minorSize: 10,
   majorSize: 20,
-  defaultStrokeColor: "#ffffff",
+  defaultStrokeColor: '#ffffff',
 };
 
 function removeColinearPoints(points) {
@@ -37,7 +37,7 @@ function removeColinearPoints(points) {
     } else {
       //colinear
       console.log(
-        `removing colinear point ${currentPoint.x},${currentPoint.y}`
+        `removing colinear point ${currentPoint.x},${currentPoint.y}`,
       );
     }
   }
@@ -80,12 +80,12 @@ class MagicCrop_class extends Base_tools_class {
   constructor(ctx) {
     super();
     var _this = this;
-    this.status = "";
+    this.status = '';
     this.Base_layers = new Base_layers_class();
     this.Base_gui = new Base_gui_class();
     this.GUI_tools = new GUI_tools_class();
     this.ctx = ctx;
-    this.name = "magic_crop";
+    this.name = 'magic_crop';
     this.selection = {
       x: null,
       y: null,
@@ -109,7 +109,7 @@ class MagicCrop_class extends Base_tools_class {
 
   load() {
     this.default_events();
-    document.addEventListener("dblclick", (event) => {
+    document.addEventListener('dblclick', (event) => {
       this.doubleClick(event);
     });
   }
@@ -117,7 +117,7 @@ class MagicCrop_class extends Base_tools_class {
   default_dragStart(event) {
     this.is_mousedown_canvas = false;
     if (config.TOOL.name != this.name) return;
-    if (!event.target.closest("#main_wrapper")) return;
+    if (!event.target.closest('#main_wrapper')) return;
 
     this.is_mousedown_canvas = true;
     this.mousedown(event);
@@ -125,8 +125,8 @@ class MagicCrop_class extends Base_tools_class {
 
   // close the path and crop the image
   doubleClick(e) {
-    console.log("doubleClick");
-    this.status = "done";
+    console.log('doubleClick');
+    this.status = 'done';
     config.layer.data = removeColinearPoints(config.layer.data);
     this.renderData(config.layer.data);
   }
@@ -160,11 +160,11 @@ class MagicCrop_class extends Base_tools_class {
     if (this.hover) {
       if (this.hover.pointIndex != null) {
         // mouse move will update the location of this point
-        this.status = "moving_point";
+        this.status = 'moving_point';
         return;
       }
       if (this.hover.midpointIndex != null) {
-        this.status = "moving_point";
+        this.status = 'moving_point';
         return;
       }
     }
@@ -176,8 +176,8 @@ class MagicCrop_class extends Base_tools_class {
         data: [],
         opacity: opacity,
         params: this.clone(this.getParams()),
-        status: "draft",
-        render_function: [this.name, "render"],
+        status: 'draft',
+        render_function: [this.name, 'render'],
         x: 0,
         y: 0,
         width: config.WIDTH,
@@ -188,21 +188,21 @@ class MagicCrop_class extends Base_tools_class {
         color: config.COLOR,
       };
       app.State.do_action(
-        new app.Actions.Bundle_action("magic_crop_layer", "Magic Crop Layer", [
+        new app.Actions.Bundle_action('magic_crop_layer', 'Magic Crop Layer', [
           new app.Actions.Insert_layer_action(this.layer),
-        ])
+        ]),
       );
       this.params_hash = params_hash;
     }
     {
       console.log(`adding point ${currentPoint.x},${currentPoint.y}`);
-      if (this.status === "done") {
+      if (this.status === 'done') {
         config.layer.data = [currentPoint];
       } else {
         config.layer.data.push(currentPoint);
       }
     }
-    this.status = "drawing";
+    this.status = 'drawing';
   }
 
   /**
@@ -224,7 +224,7 @@ class MagicCrop_class extends Base_tools_class {
     };
 
     switch (this.status) {
-      case "done": {
+      case 'done': {
         this.hover = null;
 
         // is the current point within 5 pixels of any of the points in the data?
@@ -260,7 +260,7 @@ class MagicCrop_class extends Base_tools_class {
         break;
       }
 
-      case "drawing": {
+      case 'drawing': {
         // render a line from the previous point to the current point
 
         if (data.length) {
@@ -288,7 +288,7 @@ class MagicCrop_class extends Base_tools_class {
         break;
       }
 
-      case "moving_point": {
+      case 'moving_point': {
         // move the point
         if (this.hover?.pointIndex >= 0) {
           const index = this.hover.pointIndex;
@@ -319,22 +319,22 @@ class MagicCrop_class extends Base_tools_class {
   renderData(data) {
     app.State.do_action(
       new app.Actions.Bundle_action(
-        "magic_crop_layer",
-        "Update Magic Crop Layer",
+        'magic_crop_layer',
+        'Update Magic Crop Layer',
         [
           new app.Actions.Update_layer_action(config.layer.id, {
             data: data,
           }),
-        ]
-      )
+        ],
+      ),
     );
   }
 
   mouseup(e) {
     switch (this.status) {
-      case "moving_point": {
+      case 'moving_point': {
         this.hover = null;
-        this.status = "done";
+        this.status = 'done';
         break;
       }
     }
@@ -381,7 +381,7 @@ class MagicCrop_class extends Base_tools_class {
             currentPoint.x - Math.floor(size / 2) - 1,
             currentPoint.y - Math.floor(size / 2) - 1,
             size,
-            size
+            size,
           );
         } else {
           //lines
@@ -392,7 +392,7 @@ class MagicCrop_class extends Base_tools_class {
             priorPoint.y,
             currentPoint.x,
             currentPoint.y,
-            size
+            size,
           );
         }
       }
@@ -416,7 +416,7 @@ class MagicCrop_class extends Base_tools_class {
         currentPoint.x - Math.floor(size / 2) - 1,
         currentPoint.y - Math.floor(size / 2) - 1,
         size,
-        size
+        size,
       );
     });
 
@@ -427,7 +427,7 @@ class MagicCrop_class extends Base_tools_class {
       ctx.strokeStyle = configuration.defaultStrokeColor;
       const centerPoint = this.center(
         currentPoint,
-        layerData[(i + 1) % layerData.length]
+        layerData[(i + 1) % layerData.length],
       );
 
       if (this.hover && this.hover.midpointIndex == i) {
@@ -442,7 +442,7 @@ class MagicCrop_class extends Base_tools_class {
         centerPoint.x - Math.floor(size / 2) - 1,
         centerPoint.y - Math.floor(size / 2) - 1,
         size,
-        size
+        size,
       );
     });
 
@@ -494,9 +494,9 @@ class MagicCrop_class extends Base_tools_class {
     config.layers.forEach((link) => {
       if (link.type == null) return;
 
-      if (link.type == "image") {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
+      if (link.type == 'image') {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
         canvas.width = cropWidth;
         canvas.height = cropHeight;
 
@@ -506,11 +506,11 @@ class MagicCrop_class extends Base_tools_class {
         ctx.translate(0, 0);
 
         // create a image mask to hide the parts of the image that are not inside the polygon defined by the data
-        const maskCanvas = document.createElement("canvas");
-        const maskCtx = maskCanvas.getContext("2d");
+        const maskCanvas = document.createElement('canvas');
+        const maskCtx = maskCanvas.getContext('2d');
         maskCanvas.width = config.WIDTH;
         maskCanvas.height = config.HEIGHT;
-        maskCtx.fillStyle = "#000000";
+        maskCtx.fillStyle = '#000000';
         maskCtx.beginPath();
         maskCtx.moveTo(data[0].x, data[0].y);
         for (let i = 1; i < data.length; i++) {
@@ -527,11 +527,11 @@ class MagicCrop_class extends Base_tools_class {
         maskCtx.fill();
 
         // apply the mask
-        ctx.globalCompositeOperation = "destination-in";
+        ctx.globalCompositeOperation = 'destination-in';
         ctx.drawImage(maskCanvas, 0, 0);
 
         actions.push(
-          new app.Actions.Update_layer_image_action(canvas, link.id)
+          new app.Actions.Update_layer_image_action(canvas, link.id),
         );
 
         actions.push(
@@ -542,32 +542,32 @@ class MagicCrop_class extends Base_tools_class {
             height: cropHeight,
             width_original: cropWidth,
             height_original: cropHeight,
-          })
+          }),
         );
       }
     });
 
     actions.push(
-      new app.Actions.Prepare_canvas_action("undo"),
+      new app.Actions.Prepare_canvas_action('undo'),
       new app.Actions.Update_config_action({
         WIDTH: cropWidth,
         HEIGHT: cropHeight,
       }),
-      new app.Actions.Prepare_canvas_action("do")
+      new app.Actions.Prepare_canvas_action('do'),
     );
 
     // delete the magic crop layer
     actions.push(
       new app.Actions.Delete_layer_action(config.layer.id),
-      new app.Actions.Reset_selection_action()
+      new app.Actions.Reset_selection_action(),
     );
 
     await app.State.do_action(
       new app.Actions.Bundle_action(
-        "magic_crop_tool",
-        "Magic Crop Tool",
-        actions
-      )
+        'magic_crop_tool',
+        'Magic Crop Tool',
+        actions,
+      ),
     );
   }
 
