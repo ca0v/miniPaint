@@ -8,9 +8,9 @@ import Base_selection_class from "../core/base-selection.js";
 import alertify from "alertifyjs/build/alertify.min.js";
 
 function removeColinearPoints(points) {
+  if (points.length < 3) return points;
   const result = [];
   const n = points.length;
-  if (!n) return result;
 
   result.push(points.at(0));
 
@@ -29,12 +29,13 @@ function removeColinearPoints(points) {
       console.log(
         `removing colinear point ${currentPoint.x},${currentPoint.y}`
       );
-      result.push(currentPoint);
     }
   }
 
   const lastPoint = points.at(-1);
-  result.push(lastPoint);
+  if (distance(lastPoint, result.at(-1))) {
+    result.push(lastPoint);
+  }
 
   return result;
 }
@@ -114,30 +115,27 @@ class MagicCrop_class extends Base_tools_class {
 
   // close the path and crop the image
   doubleClick(e) {
-    const data = config.layer.data;
-    if (data.length == 0) return;
-
-    const mouse = this.get_mouse_info(e);
-    if (mouse.click_valid == false) return;
-
-    //close path
-    const currentPoint = {
-      x: Math.ceil(mouse.x - config.layer.x),
-      y: Math.ceil(mouse.y - config.layer.y),
-    };
-
-    data.push(currentPoint);
-    data.push({ ...data[0] });
-
-    this.renderData(data);
-
+    console.log("doubleClick");
     this.status = "done";
+    config.layer.data = removeColinearPoints(config.layer.data);
+    this.renderData(config.layer.data);
   }
 
   /**
    * When the mouse is pressed, create a new layer and draw a dot
    */
   mousedown(e) {
+    // ignore double-click
+
+    const timeOfLastClick = this.timeOfLastClick || 0;
+    this.timeOfLastClick = Date.now();
+
+    const timeSinceLastClick = this.timeOfLastClick - timeOfLastClick;
+    if (timeSinceLastClick < 300) {
+      console.log(`double click detected, ignoring`);
+      return;
+    }
+
     const mouse = this.get_mouse_info(e);
     if (mouse.click_valid == false) return;
 
@@ -153,7 +151,7 @@ class MagicCrop_class extends Base_tools_class {
       //register new object - current layer is not ours or params changed
       this.layer = {
         type: this.name,
-        data: [currentPoint],
+        data: [],
         opacity: opacity,
         params: this.clone(this.getParams()),
         status: "draft",
@@ -173,7 +171,9 @@ class MagicCrop_class extends Base_tools_class {
         ])
       );
       this.params_hash = params_hash;
-    } else {
+    }
+    {
+      console.log(`adding point ${currentPoint.x},${currentPoint.y}`);
       if (this.status === "done") {
         config.layer.data = [currentPoint];
       } else {
@@ -187,42 +187,87 @@ class MagicCrop_class extends Base_tools_class {
    * When the mouse moves, draw a straight line from the previous point to the current point.
    */
   mousemove(e) {
-    if (this.status !== "drawing") return;
-    // render a line from the previous point to the current point
-    const mouse = this.get_mouse_info(e);
-    const params = this.getParams();
-    if (mouse.click_valid == false) {
-      return;
-    }
+    if (this.status === "done") {
+      // is the user over any points?
+      const mouse = this.get_mouse_info(e);
+      const params = this.getParams();
+      if (!mouse.click_valid) return;
 
-    //add point
-    const currentPoint = {
-      x: Math.ceil(mouse.x - config.layer.x),
-      y: Math.ceil(mouse.y - config.layer.y),
-    };
+      const currentPoint = {
+        x: Math.ceil(mouse.x - config.layer.x),
+        y: Math.ceil(mouse.y - config.layer.y),
+      };
 
-    const data = config.layer.data;
-    if (data.length) {
-      const priorPoint = data[data.length - 1];
-      const distanceToCurrentPoint = distance(priorPoint, currentPoint);
-      if (distanceToCurrentPoint > 10 * params.size) return;
-    }
+      // is the current point within 5 pixels of any of the points in the data?
+      const data = config.layer.data;
+      const pointIndex = data.findIndex((point) => {
+        const distanceToCurrentPoint = distance(point, currentPoint);
+        return distanceToCurrentPoint < 10;
+      });
 
-    if (mouse.is_drag == false) {
-      if (data.length > 1) {
-        data[data.length - 1].x = currentPoint.x;
-        data[data.length - 1].y = currentPoint.y;
+      if (pointIndex > -1) {
+        console.log(`hovering over point ${pointIndex}`);
+        this.hover = { pointIndex };
+        this.renderData(data);
+        return;
+      }
+
+      // is the current point within 5 pixels of any of the midpoints of the lines?
+      const midpointIndex = data.findIndex((point, i) => {
+        const nextPoint = data[(i + 1) % data.length];
+        const centerPoint = {
+          x: (point.x + nextPoint.x) / 2,
+          y: (point.y + nextPoint.y) / 2,
+        };
+        const distanceToCurrentPoint = distance(centerPoint, currentPoint);
+        return distanceToCurrentPoint < 10;
+      });
+
+      if (midpointIndex > -1) {
+        console.log(`hovering over midpoint ${midpointIndex}`);
+        this.hover = { midpointIndex };
+        this.renderData(data);
+        return;
+      }
+    } else if (this.status === "drawing") {
+      // render a line from the previous point to the current point
+      const mouse = this.get_mouse_info(e);
+      const params = this.getParams();
+      if (mouse.click_valid == false) {
+        return;
+      }
+
+      //add point
+      const currentPoint = {
+        x: Math.ceil(mouse.x - config.layer.x),
+        y: Math.ceil(mouse.y - config.layer.y),
+      };
+
+      const data = config.layer.data;
+      if (data.length) {
+        const priorPoint = data[data.length - 1];
+        const distanceToCurrentPoint = distance(priorPoint, currentPoint);
+        if (distanceToCurrentPoint > 10 * params.size) return;
+      }
+
+      if (mouse.is_drag == false) {
+        if (data.length > 1) {
+          data[data.length - 1].x = currentPoint.x;
+          data[data.length - 1].y = currentPoint.y;
+        } else {
+          console.log(`adding point ${currentPoint.x},${currentPoint.y}`);
+          data.push({ ...currentPoint, size: params.size || 1 });
+        }
       } else {
+        console.log(`adding point ${currentPoint.x},${currentPoint.y}`);
         data.push({ ...currentPoint, size: params.size || 1 });
       }
-    } else {
-      data.push({ ...currentPoint, size: params.size || 1 });
+
+      // render the line
+      this.renderData(data);
+
+      this.Base_layers.render();
     }
-
-    // render the line
-    this.renderData(data);
-
-    this.Base_layers.render();
   }
 
   renderData(data) {
@@ -332,7 +377,7 @@ class MagicCrop_class extends Base_tools_class {
     const firstPoint = layerData[0];
     ctx.moveTo(firstPoint.x, firstPoint.y);
 
-    layerData.forEach((currentPoint, i) => {
+    [...layerData, layerData[0]].forEach((currentPoint, i) => {
       const priorPoint = layerData[i - 1];
       if (currentPoint === null) {
         //break
@@ -363,9 +408,15 @@ class MagicCrop_class extends Base_tools_class {
 
     // now render the drag-points over the top of the lines
     layerData.forEach((currentPoint, i) => {
-      const size = 10;
-      ctx.fillStyle = "red";
-      ctx.strokeStyle = "white";
+      let size = 20;
+      if (this.hover && this.hover.pointIndex == i) {
+        ctx.fillStyle = "rgba(255,0,0,1)";
+        ctx.strokeStyle = "white";
+        size = 30;
+      } else {
+        ctx.fillStyle = "rgba(255,0,0,0.5)";
+        ctx.strokeStyle = "white";
+      }
       ctx.fillRect(
         currentPoint.x - Math.floor(size / 2) - 1,
         currentPoint.y - Math.floor(size / 2) - 1,
@@ -376,16 +427,18 @@ class MagicCrop_class extends Base_tools_class {
 
     // also, draw semi-drag points at the centerpoint of each line
     layerData.forEach((currentPoint, i) => {
-      const size = 5;
-      ctx.fillStyle = "blue";
+      let size = 15;
+      ctx.fillStyle = "rgba(0,0,255,0.5)";
       ctx.strokeStyle = "white";
-      if (i == 0) return;
-      const priorPoint = layerData[i - 1];
+      const nextPoint = layerData[(i + 1) % layerData.length];
       const centerPoint = {
-        x: (currentPoint.x + priorPoint.x) / 2,
-        y: (currentPoint.y + priorPoint.y) / 2,
+        x: (currentPoint.x + nextPoint.x) / 2,
+        y: (currentPoint.y + nextPoint.y) / 2,
       };
 
+      if (this.hover && this.hover.midpointIndex == i) {
+        ctx.fillStyle = "rgba(0,0,255,1)";
+      }
       ctx.fillRect(
         centerPoint.x - Math.floor(size / 2) - 1,
         centerPoint.y - Math.floor(size / 2) - 1,
