@@ -158,12 +158,12 @@ class MagicCrop_class extends Base_tools_class {
     };
 
     if (this.hover) {
-      if (this.hover.pointIndex) {
+      if (this.hover.pointIndex != null) {
         // mouse move will update the location of this point
         this.status = "moving_point";
         return;
       }
-      if (this.hover.midpointIndex) {
+      if (this.hover.midpointIndex != null) {
         this.status = "moving_point";
         return;
       }
@@ -352,7 +352,9 @@ class MagicCrop_class extends Base_tools_class {
    */
   render_aliased(ctx, layer) {
     const { x, y, color, params } = layer;
-    const size = params.size || 1;
+
+    // scale down the size based on the zoom level
+    const size = (params.size || 1) / config.ZOOM;
 
     const layerData = removeColinearPoints(layer.data);
 
@@ -406,6 +408,10 @@ class MagicCrop_class extends Base_tools_class {
       } else {
         ctx.fillStyle = configuration.majorColor;
       }
+
+      // scale down the size based on the zoom level
+      size /= config.ZOOM;
+
       ctx.fillRect(
         currentPoint.x - Math.floor(size / 2) - 1,
         currentPoint.y - Math.floor(size / 2) - 1,
@@ -428,6 +434,10 @@ class MagicCrop_class extends Base_tools_class {
         ctx.fillStyle = configuration.hoverMinorColor;
         size *= 1.5;
       }
+
+      // scale down the size based on the zoom level
+      size /= config.ZOOM;
+
       ctx.fillRect(
         centerPoint.x - Math.floor(size / 2) - 1,
         centerPoint.y - Math.floor(size / 2) - 1,
