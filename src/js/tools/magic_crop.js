@@ -7,6 +7,22 @@ import Base_gui_class from "../core/base-gui.js";
 import Base_selection_class from "../core/base-selection.js";
 import alertify from "alertifyjs/build/alertify.min.js";
 
+function getBoundingBox(points) {
+  const result = {
+    top: Number.MAX_SAFE_INTEGER,
+    left: Number.MAX_SAFE_INTEGER,
+    bottom: Number.MIN_SAFE_INTEGER,
+    right: Number.MIN_SAFE_INTEGER,
+  };
+  points.forEach((point) => {
+    if (point.x < result.left) result.left = point.x;
+    if (point.x > result.right) result.right = point.x;
+    if (point.y < result.top) result.top = point.y;
+    if (point.y > result.bottom) result.bottom = point.y;
+  });
+  return result;
+}
+
 function deep(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
@@ -74,13 +90,15 @@ class MagicCrop_class extends Base_tools_class {
     this.renderData(data);
 
     this.status = "done";
+
+    //crop
+    this.on_params_update();
   }
 
   /**
    * When the mouse is pressed, create a new layer and draw a dot
    */
   mousedown(e) {
-    if (this.status === "done") this.status = "start";
     const mouse = this.get_mouse_info(e);
     if (mouse.click_valid == false) return;
 
@@ -119,14 +137,14 @@ class MagicCrop_class extends Base_tools_class {
     } else {
       config.layer.data.push(currentPoint);
     }
+    this.status = "drawing";
   }
 
   /**
    * When the mouse moves, draw a straight line from the previous point to the current point.
    */
   mousemove(e) {
-    if (this.status === "done") return;
-    if (this.status === "start") this.status = "drawing";
+    if (this.status !== "drawing") return;
     // render a line from the previous point to the current point
     const mouse = this.get_mouse_info(e);
     const params = this.getParams();
@@ -343,126 +361,69 @@ class MagicCrop_class extends Base_tools_class {
    * do actual crop
    */
   async on_params_update() {
-    var params = this.getParams();
-    var selection = this.selection;
+    const params = this.getParams();
     params.magic_crop = true;
     this.GUI_tools.show_action_attributes();
 
-    if (
-      selection.width == null ||
-      selection.width == 0 ||
-      selection.height == 0
-    ) {
-      alertify.error("Empty selection");
-      return;
-    }
+    const actions = [];
 
-    //check for rotation
-    var rotated_name = false;
-    for (var i in config.layers) {
-      var link = config.layers[i];
-      if (link.type == null) continue;
+    const data = config.layer.data;
+    if (data.length == 0) return;
 
-      if (link.rotate > 0) {
-        rotated_name = link.name;
-        break;
-      }
-    }
-    if (rotated_name !== false) {
-      alertify.error(
-        "Crop on rotated layer is not supported. Convert it to raster to continue." +
-          "(" +
-          rotated_name +
-          ")"
-      );
-      return;
-    }
+    const bbox = getBoundingBox(data);
+    const cropWidth = bbox.right - bbox.left;
+    const cropHeight = bbox.bottom - bbox.top;
+    const cropTop = bbox.top;
+    const cropLeft = bbox.left;
 
-    //controll boundaries
-    selection.x = Math.max(selection.x, 0);
-    selection.y = Math.max(selection.y, 0);
-    selection.width = Math.min(selection.width, config.WIDTH);
-    selection.height = Math.min(selection.height, config.HEIGHT);
+    config.layers.forEach((link) => {
+      if (link.type == null) return;
 
-    let actions = [];
-
-    for (var i in config.layers) {
-      var link = config.layers[i];
-      if (link.type == null) continue;
-
-      let x = link.x;
-      let y = link.y;
-      let width = link.width;
-      let height = link.height;
-      let width_original = link.width_original;
-      let height_original = link.height_original;
-
-      //move
-      x -= parseInt(selection.x);
-      y -= parseInt(selection.y);
+      const x = link.x;
+      const y = link.y;
 
       if (link.type == "image") {
-        //also remove unvisible data
-        let left = 0;
-        if (x < 0) left = -x;
-        let top = 0;
-        if (y < 0) top = -y;
-        let right = 0;
-        if (x + width > selection.width) right = x + width - selection.width;
-        let bottom = 0;
-        if (y + height > selection.height)
-          bottom = y + height - selection.height;
-        let crop_width = width - left - right;
-        let crop_height = height - top - bottom;
-
-        //if image was streched
-        let width_ratio = width / width_original;
-        let height_ratio = height / height_original;
-
-        //create smaller canvas
-        let canvas = document.createElement("canvas");
-        let ctx = canvas.getContext("2d");
-        canvas.width = crop_width / width_ratio;
-        canvas.height = crop_height / height_ratio;
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = cropWidth;
+        canvas.height = cropHeight;
 
         //cut required part
-        ctx.translate(-left / width_ratio, -top / height_ratio);
-        canvas.getContext("2d").drawImage(link.link, 0, 0);
+        ctx.translate(-cropLeft, -cropTop);
+        ctx.drawImage(link.link, 0, 0);
         ctx.translate(0, 0);
         actions.push(
           new app.Actions.Update_layer_image_action(canvas, link.id)
         );
 
-        //update attributes
-        width = Math.ceil(canvas.width * width_ratio);
-        height = Math.ceil(canvas.height * height_ratio);
-        x += left;
-        y += top;
-        width_original = canvas.width;
-        height_original = canvas.height;
+        actions.push(
+          new app.Actions.Update_layer_action(link.id, {
+            x: 0,
+            y: 0,
+            width: cropWidth,
+            height: cropHeight,
+            width_original: cropWidth,
+            height_original: cropHeight,
+          })
+        );
       }
-
-      actions.push(
-        new app.Actions.Update_layer_action(link.id, {
-          x,
-          y,
-          width,
-          height,
-          width_original,
-          height_original,
-        })
-      );
-    }
+    });
 
     actions.push(
       new app.Actions.Prepare_canvas_action("undo"),
       new app.Actions.Update_config_action({
-        WIDTH: parseInt(selection.width),
-        HEIGHT: parseInt(selection.height),
+        WIDTH: cropWidth,
+        HEIGHT: cropHeight,
       }),
-      new app.Actions.Prepare_canvas_action("do"),
-      new app.Actions.Reset_selection_action(this.selection)
+      new app.Actions.Prepare_canvas_action("do")
     );
+
+    // delete the magic crop layer
+    actions.push(
+      new app.Actions.Delete_layer_action(config.layer.id),
+      new app.Actions.Reset_selection_action()
+    );
+
     await app.State.do_action(
       new app.Actions.Bundle_action(
         "magic_crop_tool",
