@@ -3,7 +3,7 @@ import alertify from '../../node_modules/alertifyjs/build/alertify.min.js';
 import Tools_translate_class from './modules/tools/translate.js';
 
 export function aspectRatioIsValid() {
-    return 1 > Math.abs(config.HEIGHT - config.WIDTH * config.RATIO);
+    return config.HEIGHT === Math.round(config.WIDTH * config.RATIO);
 }
 
 function hijackAlertify() {
