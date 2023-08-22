@@ -147,6 +147,14 @@ class MagicCrop_class extends Base_tools_class {
       y: Math.ceil(mouse.y - config.layer.y),
     };
 
+    if (this.hover) {
+      if (this.hover.pointIndex) {
+        // mouse move will update the location of this point
+        this.status = "moving_point";
+        return;
+      }
+    }
+
     if (config.layer.type != this.name || params_hash != this.params_hash) {
       //register new object - current layer is not ours or params changed
       this.layer = {
@@ -187,86 +195,102 @@ class MagicCrop_class extends Base_tools_class {
    * When the mouse moves, draw a straight line from the previous point to the current point.
    */
   mousemove(e) {
-    if (this.status === "done") {
-      // is the user over any points?
-      const mouse = this.get_mouse_info(e);
-      const params = this.getParams();
-      if (!mouse.click_valid) return;
+    const mouse = this.get_mouse_info(e);
+    const params = this.getParams();
+    if (mouse.click_valid == false) {
+      return;
+    }
 
-      const currentPoint = {
-        x: Math.ceil(mouse.x - config.layer.x),
-        y: Math.ceil(mouse.y - config.layer.y),
-      };
+    const data = config.layer.data;
 
-      // is the current point within 5 pixels of any of the points in the data?
-      const data = config.layer.data;
-      const pointIndex = data.findIndex((point) => {
-        const distanceToCurrentPoint = distance(point, currentPoint);
-        return distanceToCurrentPoint < 10;
-      });
+    //add point
+    const currentPoint = {
+      x: Math.ceil(mouse.x - config.layer.x),
+      y: Math.ceil(mouse.y - config.layer.y),
+    };
 
-      if (pointIndex > -1) {
-        console.log(`hovering over point ${pointIndex}`);
-        this.hover = { pointIndex };
-        this.renderData(data);
-        return;
+    switch (this.status) {
+      case "done": {
+        this.hover = null;
+
+        // is the current point within 5 pixels of any of the points in the data?
+        const pointIndex = data.findIndex((point) => {
+          const distanceToCurrentPoint = distance(point, currentPoint);
+          return distanceToCurrentPoint < 10;
+        });
+
+        if (pointIndex > -1) {
+          console.log(`hovering over point ${pointIndex}`);
+          this.hover = { pointIndex };
+          this.renderData(data);
+          return;
+        }
+
+        // is the current point within 5 pixels of any of the midpoints of the lines?
+        const midpointIndex = data.findIndex((point, i) => {
+          const nextPoint = data[(i + 1) % data.length];
+          const centerPoint = {
+            x: (point.x + nextPoint.x) / 2,
+            y: (point.y + nextPoint.y) / 2,
+          };
+          const distanceToCurrentPoint = distance(centerPoint, currentPoint);
+          return distanceToCurrentPoint < 10;
+        });
+
+        if (midpointIndex > -1) {
+          console.log(`hovering over midpoint ${midpointIndex}`);
+          this.hover = { midpointIndex };
+          this.renderData(data);
+          return;
+        }
+        break;
       }
 
-      // is the current point within 5 pixels of any of the midpoints of the lines?
-      const midpointIndex = data.findIndex((point, i) => {
-        const nextPoint = data[(i + 1) % data.length];
-        const centerPoint = {
-          x: (point.x + nextPoint.x) / 2,
-          y: (point.y + nextPoint.y) / 2,
-        };
-        const distanceToCurrentPoint = distance(centerPoint, currentPoint);
-        return distanceToCurrentPoint < 10;
-      });
+      case "drawing": {
+        // render a line from the previous point to the current point
 
-      if (midpointIndex > -1) {
-        console.log(`hovering over midpoint ${midpointIndex}`);
-        this.hover = { midpointIndex };
-        this.renderData(data);
-        return;
-      }
-    } else if (this.status === "drawing") {
-      // render a line from the previous point to the current point
-      const mouse = this.get_mouse_info(e);
-      const params = this.getParams();
-      if (mouse.click_valid == false) {
-        return;
-      }
+        if (data.length) {
+          const priorPoint = data[data.length - 1];
+          const distanceToCurrentPoint = distance(priorPoint, currentPoint);
+          if (distanceToCurrentPoint > 10 * params.size) return;
+        }
 
-      //add point
-      const currentPoint = {
-        x: Math.ceil(mouse.x - config.layer.x),
-        y: Math.ceil(mouse.y - config.layer.y),
-      };
-
-      const data = config.layer.data;
-      if (data.length) {
-        const priorPoint = data[data.length - 1];
-        const distanceToCurrentPoint = distance(priorPoint, currentPoint);
-        if (distanceToCurrentPoint > 10 * params.size) return;
-      }
-
-      if (mouse.is_drag == false) {
-        if (data.length > 1) {
-          data[data.length - 1].x = currentPoint.x;
-          data[data.length - 1].y = currentPoint.y;
+        if (mouse.is_drag == false) {
+          if (data.length > 1) {
+            data[data.length - 1].x = currentPoint.x;
+            data[data.length - 1].y = currentPoint.y;
+          } else {
+            console.log(`adding point ${currentPoint.x},${currentPoint.y}`);
+            data.push({ ...currentPoint, size: params.size || 1 });
+          }
         } else {
           console.log(`adding point ${currentPoint.x},${currentPoint.y}`);
           data.push({ ...currentPoint, size: params.size || 1 });
         }
-      } else {
-        console.log(`adding point ${currentPoint.x},${currentPoint.y}`);
-        data.push({ ...currentPoint, size: params.size || 1 });
+
+        // render the line
+        this.renderData(data);
+        this.Base_layers.render();
+        break;
       }
 
-      // render the line
-      this.renderData(data);
+      case "moving_point": {
+        // move the point
+        if (this.hover?.pointIndex >= 0) {
+          const index = this.hover.pointIndex;
+          const point = config.layer.data[index];
+          point.x = currentPoint.x;
+          point.y = currentPoint.y;
+          this.renderData(data);
+          this.Base_layers.render();
+        }
+        break;
+      }
 
-      this.Base_layers.render();
+      default: {
+        console.log(`unknown status ${this.status}`);
+        break;
+      }
     }
   }
 
@@ -285,69 +309,13 @@ class MagicCrop_class extends Base_tools_class {
   }
 
   mouseup(e) {
-    var mouse = this.get_mouse_info(e);
-
-    if (!this.Base_selection.is_drag) {
-      return;
-    }
-    if (e.type == "mousedown" && mouse.click_valid == false) {
-      return;
-    }
-
-    var width = mouse.x - this.selection.x;
-    var height = mouse.y - this.selection.y;
-
-    if (width == 0 || height == 0) {
-      //cancel selection
-      this.Base_selection.reset_selection();
-      config.need_render = true;
-      return;
-    }
-
-    if (this.selection.width != null) {
-      //make sure coords not negative
-      var details = this.selection;
-      var x = details.x;
-      var y = details.y;
-      if (details.width < 0) {
-        x = x + details.width;
+    switch (this.status) {
+      case "moving_point": {
+        this.hover = null;
+        this.status = "done";
+        break;
       }
-      if (details.height < 0) {
-        y = y + details.height;
-      }
-      this.selection = {
-        x: x,
-        y: y,
-        width: Math.abs(details.width),
-        height: Math.abs(details.height),
-      };
     }
-
-    //control boundaries
-    if (this.selection.x < 0) {
-      this.selection.width += this.selection.x;
-      this.selection.x = 0;
-    }
-    if (this.selection.y < 0) {
-      this.selection.height += this.selection.y;
-      this.selection.y = 0;
-    }
-    if (this.selection.x + this.selection.width > config.WIDTH) {
-      this.selection.width = config.WIDTH - this.selection.x;
-    }
-    if (this.selection.y + this.selection.height > config.HEIGHT) {
-      this.selection.height = config.HEIGHT - this.selection.y;
-    }
-
-    app.State.do_action(
-      new app.Actions.Set_selection_action(
-        this.selection.x,
-        this.selection.y,
-        this.selection.width,
-        this.selection.height,
-        this.mousedown_selection
-      )
-    );
   }
 
   render(ctx, layer) {
