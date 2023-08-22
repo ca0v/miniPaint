@@ -90,9 +90,6 @@ class MagicCrop_class extends Base_tools_class {
     this.renderData(data);
 
     this.status = "done";
-
-    //crop
-    this.on_params_update();
   }
 
   /**
@@ -135,7 +132,11 @@ class MagicCrop_class extends Base_tools_class {
       );
       this.params_hash = params_hash;
     } else {
-      config.layer.data.push(currentPoint);
+      if (this.status === "done") {
+        config.layer.data = [currentPoint];
+      } else {
+        config.layer.data.push(currentPoint);
+      }
     }
     this.status = "drawing";
   }
@@ -161,15 +162,17 @@ class MagicCrop_class extends Base_tools_class {
     const data = config.layer.data;
     if (data.length) {
       const priorPoint = data[data.length - 1];
-      const distanceToCurrentPint = distance(priorPoint, currentPoint);
-      if (distanceToCurrentPint < 10 * params.size) return;
+      const distanceToCurrentPoint = distance(priorPoint, currentPoint);
+      if (distanceToCurrentPoint > 10 * params.size) return;
     }
 
     console.log(`adding point ${currentPoint.x},${currentPoint.y}`);
     if (mouse.is_drag == false) {
-      if (data.length) {
+      if (data.length > 1) {
         data[data.length - 1].x = currentPoint.x;
         data[data.length - 1].y = currentPoint.y;
+      } else {
+        data.push({ ...currentPoint, size: params.size || 1 });
       }
     } else {
       data.push({ ...currentPoint, size: params.size || 1 });
