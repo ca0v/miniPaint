@@ -9,9 +9,9 @@ import alertify from 'alertifyjs/build/alertify.min.js';
 
 const configuration = {
   majorColor: '#ff000080',
-  hoverMajorColor: '#ff000030',
   minorColor: '#00ff0080',
-  hoverMinorColor: '#00ff0030',
+  hoverMajorColor: '#ff000010',
+  hoverMinorColor: '#00ff0010',
   minorSize: 10,
   majorSize: 20,
   defaultStrokeColor: '#ffffff',
@@ -200,6 +200,18 @@ class MagicCrop_class extends Base_tools_class {
         config.layer.data = [currentPoint];
       } else {
         config.layer.data.push(currentPoint);
+        // create an undo action to preserve the original data
+        app.State.do_action(
+          new app.Actions.Bundle_action(
+            'magic_crop_layer',
+            'Update Magic Crop Layer',
+            [
+              new app.Actions.Update_layer_action(config.layer.id, {
+                data: deep(config.layer.data),
+              }),
+            ],
+          ),
+        );
       }
     }
     this.status = 'drawing';
@@ -400,24 +412,31 @@ class MagicCrop_class extends Base_tools_class {
 
     // now render the drag-points over the top of the lines
     layerData.forEach((currentPoint, i) => {
-      ctx.fillStyle = configuration.hoverMajorColor;
+      ctx.fillStyle = configuration.hoverColor;
+
+      // the circle should have an outline
       ctx.strokeStyle = configuration.defaultStrokeColor;
-      let size = configuration.majorSize;
-      if (this.hover && this.hover.pointIndex == i) {
-        size *= 1.5;
-      } else {
-        ctx.fillStyle = configuration.majorColor;
-      }
+      ctx.lineWidth = 1;
 
       // scale down the size based on the zoom level
-      size /= config.ZOOM;
+      let size = configuration.majorSize / config.ZOOM;
 
-      ctx.fillRect(
-        currentPoint.x - Math.floor(size / 2) - 1,
-        currentPoint.y - Math.floor(size / 2) - 1,
-        size,
-        size,
+      if (this.hover && this.hover.pointIndex == i) {
+        size *= 1.5;
+        ctx.fillStyle = configuration.hoverMajorColor;
+      }
+      // draw a circle
+      ctx.beginPath();
+      ctx.arc(
+        currentPoint.x,
+        currentPoint.y,
+        Math.floor(size / 2) + 1,
+        0,
+        2 * Math.PI,
       );
+
+      ctx.fill();
+      ctx.stroke();
     });
 
     // also, draw semi-drag points at the centerpoint of each line
