@@ -18,6 +18,7 @@ import Base_gui_class from '../core/base-gui.js';
 import GUI_preview_class from '../core/gui/gui-preview.js';
 import Base_selection_class from '../core/base-selection.js';
 import alertify from 'alertifyjs/build/alertify.min.js';
+import { Base_action } from '../actions/base.js';
 
 const Drawings = {
   major: { color: '#ff000080', size: 10 },
@@ -27,6 +28,28 @@ const Drawings = {
   defaultStrokeColor: '#ffffff',
   fill: { color: '#ffffff01', exclusionColor: '#101010c0' },
 };
+
+class Update_layer_action extends Base_action {
+  constructor(cropper) {
+    super('update_magic_crop_data', 'Magic Crop Changes');
+    this.cropper = cropper;
+  }
+
+  async do() {
+    super.do();
+    this.data = deep(this.cropper.data);
+  }
+
+  async undo() {
+    super.undo();
+    this.cropper.data = deep(this.data);
+    this.cropper.Base_layers.render();
+  }
+
+  free() {
+    super.free();
+  }
+}
 
 class EventManager {
   constructor() {
@@ -144,6 +167,7 @@ class MagicCrop_class extends Base_tools_class {
               break;
           }
           if (dx || dy) {
+            this.snapshot('before moving point');
             const scale = (e.ctrlKey ? 10 : 1) / (e.altKey ? 1 : config.ZOOM);
             if (isMidpoint) {
               // create the point an select the new point
@@ -185,6 +209,7 @@ class MagicCrop_class extends Base_tools_class {
             case 'Backspace':
               // delete the point
               if (!isMidpoint) {
+                this.snapshot('before deleting point');
                 this.data.splice(pointIndex, 1);
               }
           }
@@ -243,6 +268,7 @@ class MagicCrop_class extends Base_tools_class {
         // delete the hover point
         const hoverPointIndex = computeHover(data, currentPoint)?.pointIndex;
         if (hoverPointIndex >= 0) {
+          this.snapshot('before deleting point');
           data.splice(hoverPointIndex, 1);
           this.renderData();
           if (!data.length) {
@@ -275,6 +301,7 @@ class MagicCrop_class extends Base_tools_class {
 
     switch (this.status) {
       case Status.hover: {
+        this.snapshot('before dragging');
         this.status = Status.dragging;
         break;
       }
@@ -288,6 +315,7 @@ class MagicCrop_class extends Base_tools_class {
 
       case Status.placing: {
         const data = this.data;
+        this.snapshot('before placing');
         data.push(currentPoint);
         this.renderData();
         this.status = Status.drawing;
@@ -305,15 +333,13 @@ class MagicCrop_class extends Base_tools_class {
     const currentPoint = this.mousePoint(e);
     if (!currentPoint) return;
 
-    const data = this.data;
-
     switch (this.status) {
       case Status.dragging: {
         this.status = Status.editing;
         break;
       }
       default: {
-        console.log(`mouseup: unknown status ${this.status}`);
+        console.log(`mouseup: unknown status '${this.status}'`);
         break;
       }
     }
@@ -505,6 +531,11 @@ class MagicCrop_class extends Base_tools_class {
     ctx.translate(-x, -y);
   }
 
+  snapshot(why) {
+    console.log(`snapshot: ${why}`);
+    const action = new Update_layer_action(this);
+    app.State.do_action(action);
+  }
   /**
    * do actual crop
    */
