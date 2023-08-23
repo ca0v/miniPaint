@@ -39,62 +39,6 @@ const configuration = {
   defaultStrokeColor: '#ffffff',
 };
 
-function removeColinearPoints(points) {
-  if (points.length < 3) return points;
-  const result = [];
-  const n = points.length;
-
-  result.push(points.at(0));
-
-  for (let i = 1; i < n - 1; i++) {
-    const priorPoint = result.at(-1);
-    const currentPoint = points.at(i);
-    const nextPoint = points.at(i + 1);
-    const priorDistance = distance(priorPoint, currentPoint);
-    const nextDistance = distance(currentPoint, nextPoint);
-    const totalDistance = distance(priorPoint, nextPoint);
-
-    if (priorDistance + nextDistance > totalDistance) {
-      result.push(currentPoint);
-    } else {
-      //colinear
-    }
-  }
-
-  const lastPoint = points.at(-1);
-  if (distance(lastPoint, result.at(-1))) {
-    result.push(lastPoint);
-  }
-
-  return result;
-}
-
-function getBoundingBox(points) {
-  const result = {
-    top: Number.MAX_SAFE_INTEGER,
-    left: Number.MAX_SAFE_INTEGER,
-    bottom: Number.MIN_SAFE_INTEGER,
-    right: Number.MIN_SAFE_INTEGER,
-  };
-  points.forEach((point) => {
-    if (point.x < result.left) result.left = point.x;
-    if (point.x > result.right) result.right = point.x;
-    if (point.y < result.top) result.top = point.y;
-    if (point.y > result.bottom) result.bottom = point.y;
-  });
-  return result;
-}
-
-function deep(obj) {
-  return JSON.parse(JSON.stringify(obj));
-}
-
-function distance(p1, p2) {
-  const dist_x = p1.x - p2.x;
-  const dist_y = p1.y - p2.y;
-  return Math.sqrt(dist_x * dist_x + dist_y * dist_y);
-}
-
 class MagicCrop_class extends Base_tools_class {
   constructor(ctx) {
     super();
@@ -348,7 +292,7 @@ class MagicCrop_class extends Base_tools_class {
   }
 
   render(ctx, layer) {
-    this.render_aliased(ctx, layer);
+    this.drawTool(ctx, layer);
   }
 
   /**
@@ -357,7 +301,7 @@ class MagicCrop_class extends Base_tools_class {
    * @param {object} ctx
    * @param {object} layer
    */
-  render_aliased(ctx, layer) {
+  drawTool(ctx, layer) {
     const { x, y, color, params } = layer;
 
     // scale down the size based on the zoom level
@@ -376,7 +320,7 @@ class MagicCrop_class extends Base_tools_class {
     ctx.beginPath();
     try {
       ctx.moveTo(firstPoint.x, firstPoint.y);
-      layerData.forEach((currentPoint, i) => {
+      layerData.forEach((_, i) => {
         const nextPoint = layerData.at((i + 1) % layerData.length);
         ctx.lineTo(nextPoint.x, nextPoint.y);
       });
@@ -407,16 +351,14 @@ class MagicCrop_class extends Base_tools_class {
 
     // also, draw semi-drag points at the centerpoint of each line
     layerData.forEach((currentPoint, i) => {
+      const nextPoint = layerData[(i + 1) % layerData.length];
       // scale down the size based on the zoom level
       let size = configuration.minorSize / config.ZOOM;
       ctx.fillStyle = configuration.minorColor;
       ctx.strokeStyle = configuration.defaultStrokeColor;
       ctx.lineWidth = 1 / config.ZOOM;
 
-      const centerPoint = this.center(
-        currentPoint,
-        layerData[(i + 1) % layerData.length],
-      );
+      const centerPoint = center(currentPoint, nextPoint);
 
       if (this.hover && this.hover.midpointIndex == i) {
         ctx.fillStyle = configuration.hoverMinorColor;
@@ -428,13 +370,6 @@ class MagicCrop_class extends Base_tools_class {
     });
 
     ctx.translate(-x, -y);
-  }
-
-  center(currentPoint, nextPoint) {
-    return {
-      x: (currentPoint.x + nextPoint.x) / 2,
-      y: (currentPoint.y + nextPoint.y) / 2,
-    };
   }
 
   /**
@@ -581,10 +516,7 @@ function computeHover(data, currentPoint) {
   // is the current point within 5 pixels of any of the midpoints of the lines?
   const midpointIndex = data.findIndex((point, i) => {
     const nextPoint = data[(i + 1) % data.length];
-    const centerPoint = {
-      x: (point.x + nextPoint.x) / 2,
-      y: (point.y + nextPoint.y) / 2,
-    };
+    const centerPoint = center(point, nextPoint);
     const distanceToCurrentPoint = distance(centerPoint, currentPoint);
     return distanceToCurrentPoint < configuration.minorSize / config.ZOOM;
   });
@@ -594,4 +526,63 @@ function computeHover(data, currentPoint) {
   }
 
   return null;
+}
+
+function center(currentPoint, nextPoint) {
+  return {
+    x: (currentPoint.x + nextPoint.x) / 2,
+    y: (currentPoint.y + nextPoint.y) / 2,
+  };
+}
+
+function removeColinearPoints(points) {
+  if (points.length < 3) return points;
+  const result = [];
+  const n = points.length;
+
+  result.push(points.at(0));
+
+  for (let i = 1; i < n - 1; i++) {
+    const priorPoint = result.at(-1);
+    const currentPoint = points.at(i);
+    const nextPoint = points.at(i + 1);
+    const priorDistance = distance(priorPoint, currentPoint);
+    const nextDistance = distance(currentPoint, nextPoint);
+    const totalDistance = distance(priorPoint, nextPoint);
+
+    if (priorDistance + nextDistance > totalDistance) {
+      result.push(currentPoint);
+    } else {
+      //colinear
+    }
+  }
+
+  const lastPoint = points.at(-1);
+  if (distance(lastPoint, result.at(-1))) {
+    result.push(lastPoint);
+  }
+
+  return result;
+}
+
+function getBoundingBox(points) {
+  const result = {
+    top: Number.MAX_SAFE_INTEGER,
+    left: Number.MAX_SAFE_INTEGER,
+    bottom: Number.MIN_SAFE_INTEGER,
+    right: Number.MIN_SAFE_INTEGER,
+  };
+  points.forEach((point) => {
+    if (point.x < result.left) result.left = point.x;
+    if (point.x > result.right) result.right = point.x;
+    if (point.y < result.top) result.top = point.y;
+    if (point.y > result.bottom) result.bottom = point.y;
+  });
+  return result;
+}
+
+function distance(p1, p2) {
+  const dist_x = p1.x - p2.x;
+  const dist_y = p1.y - p2.y;
+  return Math.sqrt(dist_x * dist_x + dist_y * dist_y);
 }
