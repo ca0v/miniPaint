@@ -191,9 +191,6 @@ class MagicCrop_class extends Base_tools_class {
 
     const data = this.data;
 
-    // save data to localstorage
-    localStorage.setItem('magic_crop_data', JSON.stringify(data));
-
     switch (this.status) {
       case Status.drawing:
       case Status.placing: {
@@ -209,10 +206,10 @@ class MagicCrop_class extends Base_tools_class {
         const hoverPointIndex = computeHover(data, currentPoint)?.pointIndex;
         if (hoverPointIndex >= 0) {
           data.splice(hoverPointIndex, 1);
-          if (data.length !== this.data.length) {
-            debugger;
-          }
           this.renderData();
+          if (!data.length) {
+            this.status = Status.ready;
+          }
         }
         break;
       }
@@ -221,6 +218,8 @@ class MagicCrop_class extends Base_tools_class {
         break;
       }
     }
+    // save data
+    localStorage.setItem('magic_crop_data', JSON.stringify(data));
   }
 
   mousedown(e) {
@@ -244,6 +243,7 @@ class MagicCrop_class extends Base_tools_class {
 
       case Status.done:
       case Status.ready: {
+        this.data = [currentPoint];
         this.status = Status.drawing;
         break;
       }
@@ -389,6 +389,7 @@ class MagicCrop_class extends Base_tools_class {
     const size = (params.size || 1) / config.ZOOM;
 
     const data = this.data;
+    if (!data.length) return;
 
     //set styles
     ctx.fillStyle = color;
@@ -562,7 +563,7 @@ class MagicCrop_class extends Base_tools_class {
     switch (this.status) {
       case Status.none:
         this.data = JSON.parse(localStorage.getItem('magic_crop_data') || '[]');
-        this.status = Status.ready;
+        this.status = this.data.length ? Status.editing : Status.ready;
         this.events.on('keydown', (event) => this.keydown(event));
         this.events.on('dblclick', (event) => this.dblclick(event));
         this.events.on('mousedown', (event) => this.mousedown(event));
