@@ -15,6 +15,7 @@ import Base_tools_class from '../core/base-tools.js';
 import Base_layers_class from '../core/base-layers.js';
 import GUI_tools_class from '../core/gui/gui-tools.js';
 import Base_gui_class from '../core/base-gui.js';
+import GUI_preview_class from '../core/gui/gui-preview.js';
 import Base_selection_class from '../core/base-selection.js';
 import alertify from 'alertifyjs/build/alertify.min.js';
 
@@ -74,6 +75,7 @@ class MagicCrop_class extends Base_tools_class {
     this.status = Status.none;
     this.events = new EventManager();
     this.Base_layers = new Base_layers_class();
+    this.GUI_preview = new GUI_preview_class();
     this.Base_gui = new Base_gui_class();
     this.GUI_tools = new GUI_tools_class();
     this.ctx = ctx;
@@ -145,7 +147,7 @@ class MagicCrop_class extends Base_tools_class {
             this.Base_layers.render();
           }
         } else {
-          let zoom = config.ZOOM;
+          let zoom = 0;
           switch (e.key) {
             case 'ArrowLeft':
             case 'ArrowUp':
@@ -157,17 +159,15 @@ class MagicCrop_class extends Base_tools_class {
               break;
             case '+':
               // zoom in
-              zoom++;
+              zoom = 1;
               break;
             case '-':
               // zoom out
-              zoom--;
+              zoom = -1;
               break;
           }
-          if (zoom !== config.ZOOM) {
-            config.ZOOM = zoom;
-            // config.need_render = true;
-            // new Base_gui_class().prepare_canvas();
+          if (zoom) {
+            this.GUI_preview.zoom(zoom);
           }
 
           pointIndex = (pointIndex + this.data.length) % this.data.length;
