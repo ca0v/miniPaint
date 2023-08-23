@@ -143,10 +143,32 @@ class MagicCrop_class extends Base_tools_class {
   }
 
   doubleClick(e) {
-    // simplify the path
-    config.layer.data = removeColinearPoints(config.layer.data);
-    this.renderData(config.layer.data);
-    this.status = Status.editing;
+    const data = config.layer.data;
+
+    switch (this.status) {
+      case Status.drawing:
+      case Status.placing: {
+        // simplify the path
+        config.layer.data = removeColinearPoints(config.layer.data);
+        this.renderData(config.layer.data);
+        this.status = Status.editing;
+        break;
+      }
+      case Status.editing:
+      case Status.hover: {
+        // delete the point
+        if (this.hover?.pointIndex >= 0) {
+          const index = this.hover.pointIndex;
+          data.splice(index, 1);
+          this.renderData(data);
+        }
+        break;
+      }
+      default: {
+        console.log(`doubleClick: unknown status ${this.status}`);
+        break;
+      }
+    }
   }
 
   mousedown(e) {
@@ -217,9 +239,19 @@ class MagicCrop_class extends Base_tools_class {
     }
   }
 
-  /**
-   * When the mouse moves, draw a straight line from the previous point to the current point.
-   */
+  mouseup(e) {
+    switch (this.status) {
+      case Status.dragging: {
+        this.status = Status.editing;
+        break;
+      }
+      default: {
+        console.log(`mouseup: unknown status ${this.status}`);
+        break;
+      }
+    }
+  }
+
   mousemove(e) {
     const currentPoint = this.mousePoint(e);
     if (!currentPoint) return;
@@ -228,9 +260,13 @@ class MagicCrop_class extends Base_tools_class {
 
     switch (this.status) {
       case Status.hover: {
+        const priorHover = JSON.stringify(this.hover);
         this.hover = computeHover(data, currentPoint);
         if (!this.hover) {
           this.status = Status.editing;
+          this.renderData(data);
+        }
+        if (priorHover != JSON.stringify(this.hover)) {
           this.renderData(data);
         }
         break;
@@ -273,7 +309,7 @@ class MagicCrop_class extends Base_tools_class {
         // move the point
         if (this.hover?.pointIndex >= 0) {
           const index = this.hover.pointIndex;
-          const point = data[index];
+          const point = data.at(index);
           point.x = currentPoint.x;
           point.y = currentPoint.y;
           this.renderData(data);
@@ -311,19 +347,6 @@ class MagicCrop_class extends Base_tools_class {
     );
   }
 
-  mouseup(e) {
-    switch (this.status) {
-      case Status.dragging: {
-        this.status = Status.editing;
-        break;
-      }
-      default: {
-        console.log(`mouseup: unknown status ${this.status}`);
-        break;
-      }
-    }
-  }
-
   render(ctx, layer) {
     this.render_aliased(ctx, layer);
   }
@@ -345,42 +368,22 @@ class MagicCrop_class extends Base_tools_class {
     //set styles
     ctx.fillStyle = color;
     ctx.strokeStyle = color;
+    ctx.lineWidth = size;
     ctx.translate(x, y);
 
-    //draw
+    const firstPoint = layerData.at(0);
+
     ctx.beginPath();
-
-    const firstPoint = layerData[0];
-    ctx.moveTo(firstPoint.x, firstPoint.y);
-
-    [...layerData, layerData[0]].forEach((currentPoint, i) => {
-      const priorPoint = layerData[i - 1];
-      if (currentPoint === null) {
-        //break
-        ctx.beginPath();
-      } else {
-        if (priorPoint == null) {
-          //exception - point
-          ctx.fillRect(
-            currentPoint.x - Math.floor(size / 2) - 1,
-            currentPoint.y - Math.floor(size / 2) - 1,
-            size,
-            size,
-          );
-        } else {
-          //lines
-          ctx.beginPath();
-          this.draw_simple_line(
-            ctx,
-            priorPoint.x,
-            priorPoint.y,
-            currentPoint.x,
-            currentPoint.y,
-            size,
-          );
-        }
-      }
-    });
+    try {
+      ctx.moveTo(firstPoint.x, firstPoint.y);
+      layerData.forEach((currentPoint, i) => {
+        const nextPoint = layerData.at((i + 1) % layerData.length);
+        ctx.lineTo(nextPoint.x, nextPoint.y);
+      });
+    } finally {
+      ctx.closePath();
+      ctx.stroke();
+    }
 
     // now render the drag-points over the top of the lines
     layerData.forEach((currentPoint, i) => {
@@ -408,7 +411,7 @@ class MagicCrop_class extends Base_tools_class {
       let size = configuration.minorSize / config.ZOOM;
       ctx.fillStyle = configuration.minorColor;
       ctx.strokeStyle = configuration.defaultStrokeColor;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1 / config.ZOOM;
 
       const centerPoint = this.center(
         currentPoint,
@@ -432,22 +435,6 @@ class MagicCrop_class extends Base_tools_class {
       x: (currentPoint.x + nextPoint.x) / 2,
       y: (currentPoint.y + nextPoint.y) / 2,
     };
-  }
-
-  draw_simple_line(ctx, from_x, from_y, to_x, to_y, size) {
-    const dist_x = from_x - to_x;
-    const dist_y = from_y - to_y;
-    const distance = Math.sqrt(dist_x * dist_x + dist_y * dist_y);
-    const radiance = Math.atan2(dist_y, dist_x);
-
-    for (let j = 0; j < distance; j++) {
-      var x_tmp =
-        Math.round(to_x + Math.cos(radiance) * j) - Math.floor(size / 2) - 1;
-      var y_tmp =
-        Math.round(to_y + Math.sin(radiance) * j) - Math.floor(size / 2) - 1;
-
-      ctx.fillRect(x_tmp, y_tmp, size, size);
-    }
   }
 
   /**
@@ -490,9 +477,11 @@ class MagicCrop_class extends Base_tools_class {
         maskCanvas.height = config.HEIGHT;
         maskCtx.fillStyle = '#000000';
         maskCtx.beginPath();
+
         maskCtx.moveTo(data[0].x, data[0].y);
+
         for (let i = 1; i < data.length; i++) {
-          const point = data[i];
+          const point = data.at(i);
           if (point === null) {
             maskCtx.closePath();
             maskCtx.fill();
