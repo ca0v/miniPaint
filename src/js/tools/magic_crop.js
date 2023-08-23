@@ -180,6 +180,12 @@ class MagicCrop_class extends Base_tools_class {
               // zoom out
               zoom--;
               break;
+            case 'Delete':
+            case 'Backspace':
+              // delete the point
+              if (!isMidpoint) {
+                this.data.splice(pointIndex, 1);
+              }
           }
           if (zoom) {
             this.GUI_preview.zoom(zoom);
