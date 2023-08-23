@@ -1,3 +1,14 @@
+/**
+ * Magic Crop Tool
+ * status values: ready, drawing, placing, editing, hover, dragging, done
+ * ready - tool has been initialized and is listening for 1st click
+ * drawing - tool has placed a point
+ * placing - user is moving mouse deciding where to place the next point
+ * editing - user has closed the polygon and can now add/move/delete vertices
+ * hover - user is hovering over a vertex or midpoint
+ * dragging - user is dragging a vertex or midpoint
+ * done - user has clicked the "Magic Crop" button, all points are cleared
+ */
 import app from '../app.js';
 import config from '../config.js';
 import Base_tools_class from '../core/base-tools.js';
@@ -6,6 +17,17 @@ import GUI_tools_class from '../core/gui/gui-tools.js';
 import Base_gui_class from '../core/base-gui.js';
 import Base_selection_class from '../core/base-selection.js';
 import alertify from 'alertifyjs/build/alertify.min.js';
+
+const Status = {
+  none: '',
+  ready: 'ready',
+  drawing: 'drawing',
+  placing: 'placing',
+  editing: 'editing',
+  hover: 'hover',
+  dragging: 'dragging',
+  done: 'done',
+};
 
 const configuration = {
   majorColor: '#ff000080',
@@ -36,9 +58,6 @@ function removeColinearPoints(points) {
       result.push(currentPoint);
     } else {
       //colinear
-      console.log(
-        `removing colinear point ${currentPoint.x},${currentPoint.y}`,
-      );
     }
   }
 
@@ -80,7 +99,7 @@ class MagicCrop_class extends Base_tools_class {
   constructor(ctx) {
     super();
     var _this = this;
-    this.status = '';
+    this.status = Status.none;
     this.Base_layers = new Base_layers_class();
     this.Base_gui = new Base_gui_class();
     this.GUI_tools = new GUI_tools_class();
@@ -112,195 +131,145 @@ class MagicCrop_class extends Base_tools_class {
     document.addEventListener('dblclick', (event) => {
       this.doubleClick(event);
     });
+    this.status = Status.ready;
   }
 
   default_dragStart(event) {
     this.is_mousedown_canvas = false;
     if (config.TOOL.name != this.name) return;
     if (!event.target.closest('#main_wrapper')) return;
-
     this.is_mousedown_canvas = true;
     this.mousedown(event);
   }
 
-  // close the path and crop the image
   doubleClick(e) {
-    console.log('doubleClick');
-    this.status = 'done';
+    // simplify the path
     config.layer.data = removeColinearPoints(config.layer.data);
     this.renderData(config.layer.data);
+    this.status = Status.editing;
   }
 
-  /**
-   * When the mouse is pressed, create a new layer and draw a dot
-   */
   mousedown(e) {
-    // ignore double-click
-
-    const timeOfLastClick = this.timeOfLastClick || 0;
-    this.timeOfLastClick = Date.now();
-
-    const timeSinceLastClick = this.timeOfLastClick - timeOfLastClick;
-    if (timeSinceLastClick < 300) {
-      console.log(`double click detected, ignoring`);
-      return;
+    {
+      const timeOfLastClick = this.timeOfClick || 0;
+      this.timeOfClick = Date.now();
+      const timeSinceLastClick = this.timeOfClick - timeOfLastClick;
+      if (timeSinceLastClick < 300) return;
     }
 
-    const mouse = this.get_mouse_info(e);
-    if (mouse.click_valid == false) return;
+    const currentPoint = this.mousePoint(e);
+    if (!currentPoint) return;
 
     const params_hash = this.get_params_hash();
     const opacity = Math.round((config.ALPHA / 255) * 100);
 
-    const currentPoint = {
-      x: Math.ceil(mouse.x - config.layer.x),
-      y: Math.ceil(mouse.y - config.layer.y),
-    };
-
-    if (this.hover) {
-      if (this.hover.pointIndex != null) {
-        // mouse move will update the location of this point
-        this.status = 'moving_point';
-        return;
+    switch (this.status) {
+      case Status.hover: {
+        this.status = Status.dragging;
+        break;
       }
-      if (this.hover.midpointIndex != null) {
-        this.status = 'moving_point';
-        return;
-      }
-    }
 
-    if (config.layer.type != this.name || params_hash != this.params_hash) {
-      //register new object - current layer is not ours or params changed
-      this.layer = {
-        type: this.name,
-        data: [],
-        opacity: opacity,
-        params: this.clone(this.getParams()),
-        status: 'draft',
-        render_function: [this.name, 'render'],
-        x: 0,
-        y: 0,
-        width: config.WIDTH,
-        height: config.HEIGHT,
-        hide_selection_if_active: true,
-        rotate: null,
-        is_vector: true,
-        color: config.COLOR,
-      };
-      app.State.do_action(
-        new app.Actions.Bundle_action('magic_crop_layer', 'Magic Crop Layer', [
-          new app.Actions.Insert_layer_action(this.layer),
-        ]),
-      );
-      this.params_hash = params_hash;
-    }
-    {
-      console.log(`adding point ${currentPoint.x},${currentPoint.y}`);
-      if (this.status === 'done') {
+      case Status.done:
+      case Status.ready: {
+        if (config.layer.type != this.name || params_hash != this.params_hash) {
+          //register new object - current layer is not ours or params changed
+          this.layer = {
+            type: this.name,
+            data: [],
+            opacity: opacity,
+            params: this.clone(this.getParams()),
+            status: 'draft',
+            render_function: [this.name, 'render'],
+            x: 0,
+            y: 0,
+            width: config.WIDTH,
+            height: config.HEIGHT,
+            hide_selection_if_active: true,
+            rotate: null,
+            is_vector: true,
+            color: config.COLOR,
+          };
+          app.State.do_action(
+            new app.Actions.Bundle_action(
+              'magic_crop_layer',
+              'Magic Crop Layer',
+              [new app.Actions.Insert_layer_action(this.layer)],
+            ),
+          );
+          this.params_hash = params_hash;
+        }
         config.layer.data = [currentPoint];
-      } else {
+        this.status = Status.drawing;
+        break;
+      }
+
+      case Status.placing: {
         config.layer.data.push(currentPoint);
-        // create an undo action to preserve the original data
-        app.State.do_action(
-          new app.Actions.Bundle_action(
-            'magic_crop_layer',
-            'Update Magic Crop Layer',
-            [
-              new app.Actions.Update_layer_action(config.layer.id, {
-                data: deep(config.layer.data),
-              }),
-            ],
-          ),
-        );
+        this.renderData(config.layer.data);
+        this.status = Status.drawing;
+        break;
+      }
+
+      default: {
+        console.log(`mousedown: unknown status ${this.status}`);
+        break;
       }
     }
-    this.status = 'drawing';
   }
 
   /**
    * When the mouse moves, draw a straight line from the previous point to the current point.
    */
   mousemove(e) {
-    const mouse = this.get_mouse_info(e);
-    const params = this.getParams();
-    if (mouse.click_valid == false) {
-      return;
-    }
+    const currentPoint = this.mousePoint(e);
+    if (!currentPoint) return;
 
     const data = config.layer.data;
 
-    //add point
-    const currentPoint = {
-      x: Math.ceil(mouse.x - config.layer.x),
-      y: Math.ceil(mouse.y - config.layer.y),
-    };
-
     switch (this.status) {
-      case 'done': {
-        this.hover = null;
-
-        // is the current point within 5 pixels of any of the points in the data?
-        const pointIndex = data.findIndex((point) => {
-          const distanceToCurrentPoint = distance(point, currentPoint);
-          return distanceToCurrentPoint < configuration.majorSize / config.ZOOM;
-        });
-
-        if (pointIndex > -1) {
-          console.log(`hovering over point ${pointIndex}`);
-          this.hover = { pointIndex };
+      case Status.hover: {
+        this.hover = computeHover(data, currentPoint);
+        if (!this.hover) {
+          this.status = Status.editing;
           this.renderData(data);
-          return;
-        }
-
-        // is the current point within 5 pixels of any of the midpoints of the lines?
-        const midpointIndex = data.findIndex((point, i) => {
-          const nextPoint = data[(i + 1) % data.length];
-          const centerPoint = {
-            x: (point.x + nextPoint.x) / 2,
-            y: (point.y + nextPoint.y) / 2,
-          };
-          const distanceToCurrentPoint = distance(centerPoint, currentPoint);
-          return distanceToCurrentPoint < configuration.minorSize / config.ZOOM;
-        });
-
-        if (midpointIndex > -1) {
-          console.log(`hovering over midpoint ${midpointIndex}`);
-          this.hover = { midpointIndex };
-          this.renderData(data);
-          return;
         }
         break;
       }
 
-      case 'drawing': {
-        // render a line from the previous point to the current point
-
-        if (data.length) {
-          const priorPoint = data[data.length - 1];
-          const distanceToCurrentPoint = distance(priorPoint, currentPoint);
-          if (distanceToCurrentPoint > 10 * params.size) return;
+      case Status.editing: {
+        this.hover = computeHover(data, currentPoint);
+        if (this.hover) {
+          this.status = Status.hover;
+          this.renderData(data);
         }
+        break;
+      }
 
-        if (mouse.is_drag == false) {
-          if (data.length > 1) {
-            data[data.length - 1].x = currentPoint.x;
-            data[data.length - 1].y = currentPoint.y;
-          } else {
-            console.log(`adding point ${currentPoint.x},${currentPoint.y}`);
-            data.push({ ...currentPoint, size: params.size || 1 });
-          }
+      case Status.drawing: {
+        if (data.length > 1) {
+          this.status = Status.placing;
         } else {
-          console.log(`adding point ${currentPoint.x},${currentPoint.y}`);
-          data.push({ ...currentPoint, size: params.size || 1 });
+          data.push(currentPoint);
+          // render the line
+          this.renderData(data);
+          this.Base_layers.render();
         }
-
-        // render the line
-        this.renderData(data);
-        this.Base_layers.render();
         break;
       }
 
-      case 'moving_point': {
+      case Status.placing: {
+        if (data.length) {
+          const p = data.at(-1);
+          p.x = currentPoint.x;
+          p.y = currentPoint.y;
+          // render the line
+          this.renderData(data);
+          this.Base_layers.render();
+        }
+        break;
+      }
+
+      case Status.dragging: {
         // move the point
         if (this.hover?.pointIndex >= 0) {
           const index = this.hover.pointIndex;
@@ -322,7 +291,7 @@ class MagicCrop_class extends Base_tools_class {
       }
 
       default: {
-        console.log(`unknown status ${this.status}`);
+        console.log(`mousemove: unknown status ${this.status}`);
         break;
       }
     }
@@ -344,9 +313,12 @@ class MagicCrop_class extends Base_tools_class {
 
   mouseup(e) {
     switch (this.status) {
-      case 'moving_point': {
-        this.hover = null;
-        this.status = 'done';
+      case Status.dragging: {
+        this.status = Status.editing;
+        break;
+      }
+      default: {
+        console.log(`mouseup: unknown status ${this.status}`);
         break;
       }
     }
@@ -575,10 +547,21 @@ class MagicCrop_class extends Base_tools_class {
         actions,
       ),
     );
+
+    this.status = Status.done;
   }
 
   on_leave() {
     return [new app.Actions.Reset_selection_action()];
+  }
+
+  mousePoint(e) {
+    const mouse = this.get_mouse_info(e);
+    if (mouse.click_valid == false) return null;
+    return {
+      x: Math.ceil(mouse.x - config.layer.x),
+      y: Math.ceil(mouse.y - config.layer.y),
+    };
   }
 }
 
@@ -596,4 +579,30 @@ function dot(ctx, point) {
   ctx.beginPath();
   ctx.arc(point.x, point.y, 0.5, 0, 2 * Math.PI);
   ctx.fill();
+}
+
+function computeHover(data, currentPoint) {
+  const pointIndex = data.findIndex((point) => {
+    const distanceToCurrentPoint = distance(point, currentPoint);
+    return distanceToCurrentPoint < configuration.majorSize / config.ZOOM;
+  });
+
+  if (pointIndex > -1) return { pointIndex };
+
+  // is the current point within 5 pixels of any of the midpoints of the lines?
+  const midpointIndex = data.findIndex((point, i) => {
+    const nextPoint = data[(i + 1) % data.length];
+    const centerPoint = {
+      x: (point.x + nextPoint.x) / 2,
+      y: (point.y + nextPoint.y) / 2,
+    };
+    const distanceToCurrentPoint = distance(centerPoint, currentPoint);
+    return distanceToCurrentPoint < configuration.minorSize / config.ZOOM;
+  });
+
+  if (midpointIndex > -1) {
+    return { midpointIndex };
+  }
+
+  return null;
 }
