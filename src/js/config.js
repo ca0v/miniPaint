@@ -3,19 +3,19 @@
 var config = {};
 
 config.TRANSPARENCY = false;
-config.TRANSPARENCY_TYPE = "squares"; //squares, green, grey
-config.LANG = "en";
+config.TRANSPARENCY_TYPE = 'squares'; //squares, green, grey
+config.LANG = 'en';
 config.WIDTH = null;
 config.HEIGHT = null;
 config.visible_width = null;
 config.visible_height = null;
-config.COLOR = "#008000";
+config.COLOR = '#008000';
 config.ALPHA = 255;
 config.ZOOM = 1;
 config.SNAP = true;
-config.pixabay_key = "3ca2cd8af3fde33af218bea02-9021417";
+config.pixabay_key = '3ca2cd8af3fde33af218bea02-9021417';
 config.safe_search_can_be_disabled = true;
-config.google_webfonts_key = "AIzaSyAC_Tx8RKkvN235fXCUyi_5XhSaRCzNhMg";
+config.google_webfonts_key = 'AIzaSyAC_Tx8RKkvN235fXCUyi_5XhSaRCzNhMg';
 config.layers = [];
 config.layer = null;
 config.need_render = false;
@@ -32,85 +32,85 @@ config.ruler_active = false;
 config.enable_autoresize_by_default = true;
 
 //requires styles in reset.css
-config.themes = ["dark", "light", "green"];
+config.themes = ['dark', 'light', 'green'];
 
 //no-translate BEGIN
 config.FONTS = [
-  "Arial",
-  "Courier",
-  "Impact",
-  "Helvetica",
-  "Monospace",
-  "Tahoma",
-  "Times New Roman",
-  "Verdana",
-  "Amatic SC",
-  "Arimo",
-  "Codystar",
-  "Creepster",
-  "Indie Flower",
-  "Lato",
-  "Lora",
-  "Merriweather",
-  "Monoton",
-  "Montserrat",
-  "Mukta",
-  "Muli",
-  "Nosifer",
-  "Nunito",
-  "Oswald",
-  "Orbitron",
-  "Pacifico",
-  "PT Sans",
-  "PT Serif",
-  "Playfair Display",
-  "Poppins",
-  "Raleway",
-  "Roboto",
-  "Rubik",
-  "Special Elite",
-  "Tangerine",
-  "Titillium Web",
-  "Ubuntu",
+  'Arial',
+  'Courier',
+  'Impact',
+  'Helvetica',
+  'Monospace',
+  'Tahoma',
+  'Times New Roman',
+  'Verdana',
+  'Amatic SC',
+  'Arimo',
+  'Codystar',
+  'Creepster',
+  'Indie Flower',
+  'Lato',
+  'Lora',
+  'Merriweather',
+  'Monoton',
+  'Montserrat',
+  'Mukta',
+  'Muli',
+  'Nosifer',
+  'Nunito',
+  'Oswald',
+  'Orbitron',
+  'Pacifico',
+  'PT Sans',
+  'PT Serif',
+  'Playfair Display',
+  'Poppins',
+  'Raleway',
+  'Roboto',
+  'Rubik',
+  'Special Elite',
+  'Tangerine',
+  'Titillium Web',
+  'Ubuntu',
 ];
 //no-translate END
 
 config.TOOLS = [
   {
-    name: "select",
-    title: "Select object tool",
+    name: 'select',
+    title: 'Select object tool',
     attributes: {
       auto_select: true,
     },
   },
   {
-    name: "selection",
+    name: 'selection',
     attributes: {},
-    on_leave: "on_leave",
+    on_leave: 'on_leave',
   },
   {
-    name: "brush",
+    name: 'brush',
     attributes: {
       size: 4,
       pressure: false,
     },
   },
   {
-    name: "pencil",
+    name: 'pencil',
     attributes: {
       size: 1,
       pressure: false,
     },
   },
   {
-    name: "pick_color",
+    name: 'pick_color',
     attributes: {
       global: false,
     },
   },
   {
-    name: "erase",
-    on_update: "on_params_update",
+    name: 'erase',
+    on_update: 'on_params_update',
     attributes: {
       size: 30,
       circle: true,
@@ -118,8 +118,8 @@ config.TOOLS = [
     },
   },
   {
-    name: "magic_erase",
-    title: "Magic Eraser Tool",
+    name: 'magic_erase',
+    title: 'Magic Eraser Tool',
     attributes: {
       power: 15,
       anti_aliasing: true,
@@ -127,7 +127,7 @@ config.TOOLS = [
     },
   },
   {
-    name: "fill",
+    name: 'fill',
     attributes: {
       power: 5,
       anti_aliasing: false,
@@ -135,37 +135,37 @@ config.TOOLS = [
     },
   },
   {
-    name: "shape",
-    on_activate: "on_activate",
-    title: "Shapes (H)",
+    name: 'shape',
+    on_activate: 'on_activate',
+    title: 'Shapes (H)',
     attributes: {
       size: 3,
-      stroke: "#00aa00",
+      stroke: '#00aa00',
     },
   },
   {
-    name: "line",
+    name: 'line',
     visible: false,
     attributes: {
       size: 4,
     },
   },
   {
-    name: "arrow",
+    name: 'arrow',
     visible: false,
     attributes: {
       size: 4,
     },
   },
   {
-    name: "rectangle",
+    name: 'rectangle',
     visible: false,
     attributes: {
       border_size: 4,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
       radius: {
         value: 0,
         min: 0,
@@ -174,115 +174,115 @@ config.TOOLS = [
     },
   },
   {
-    name: "ellipse",
+    name: 'ellipse',
     visible: false,
     attributes: {
       border_size: 4,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
       circle: false,
     },
   },
   {
-    name: "media",
-    title: "Search Images",
-    on_activate: "on_activate",
+    name: 'media',
+    title: 'Search Images',
+    on_activate: 'on_activate',
     attributes: {
       size: 30,
     },
   },
   {
-    name: "triangle",
+    name: 'triangle',
     visible: false,
     attributes: {
       border_size: 4,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
     },
   },
   {
-    name: "right_triangle",
+    name: 'right_triangle',
     visible: false,
     attributes: {
       border_size: 4,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
     },
   },
   {
-    name: "romb",
+    name: 'romb',
     visible: false,
     attributes: {
       border_size: 4,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
     },
   },
   {
-    name: "parallelogram",
+    name: 'parallelogram',
     visible: false,
     attributes: {
       border_size: 4,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
     },
   },
   {
-    name: "trapezoid",
+    name: 'trapezoid',
     visible: false,
     attributes: {
       border_size: 4,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
     },
   },
   {
-    name: "plus",
+    name: 'plus',
     visible: false,
     attributes: {
       border_size: 4,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
     },
   },
   {
-    name: "pentagon",
+    name: 'pentagon',
     visible: false,
     attributes: {
       border_size: 4,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
     },
   },
   {
-    name: "hexagon",
+    name: 'hexagon',
     visible: false,
     attributes: {
       border_size: 4,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
     },
   },
   {
-    name: "star",
+    name: 'star',
     visible: false,
     attributes: {
       border_size: 4,
@@ -290,102 +290,102 @@ config.TOOLS = [
       inner_radius: 40,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
     },
   },
   {
-    name: "heart",
+    name: 'heart',
     visible: false,
     attributes: {
       border_size: 4,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
     },
   },
   {
-    name: "cylinder",
+    name: 'cylinder',
     visible: false,
     attributes: {
       border_size: 4,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
     },
   },
   {
-    name: "human",
+    name: 'human',
     visible: false,
     attributes: {
       border_size: 4,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
     },
   },
   {
-    name: "tear",
+    name: 'tear',
     visible: false,
     attributes: {
       border_size: 4,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
     },
   },
   {
-    name: "cog",
+    name: 'cog',
     visible: false,
     attributes: {
-      fill_color: "#555555",
+      fill_color: '#555555',
     },
   },
   {
-    name: "bezier_curve",
+    name: 'bezier_curve',
     visible: false,
     attributes: {
       size: 4,
     },
   },
   {
-    name: "moon",
+    name: 'moon',
     visible: false,
     attributes: {
       border_size: 4,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
     },
   },
   {
-    name: "callout",
+    name: 'callout',
     visible: false,
     attributes: {
       border_size: 4,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
     },
   },
   {
-    name: "text",
-    on_update: "on_params_update",
+    name: 'text',
+    on_update: 'on_params_update',
     attributes: {
       font: {
-        value: "Arial",
+        value: 'Arial',
         values() {
           const user_font_names = Object.keys(config.user_fonts);
           return [
-            "",
-            "[Add Font...]",
+            '',
+            '[Add Font...]',
             ...Array.from(
-              new Set([...config.FONTS, ...user_font_names].sort())
+              new Set([...config.FONTS, ...user_font_names].sort()),
             ),
           ];
         },
@@ -407,8 +407,8 @@ config.TOOLS = [
         value: false,
         icon: `strikethrough.svg`,
       },
-      fill: "#008800",
-      stroke: "#000000",
+      fill: '#008800',
+      stroke: '#000000',
       stroke_size: {
         value: 0,
         min: 0,
@@ -429,65 +429,66 @@ config.TOOLS = [
     },
   },
   {
-    name: "gradient",
+    name: 'gradient',
     attributes: {
-      color_1: "#008000",
-      color_2: "#ffffff",
+      color_1: '#008000',
+      color_2: '#ffffff',
       alpha: 0,
       radial: false,
       radial_power: 50,
     },
   },
   {
-    name: "clone",
+    name: 'clone',
     attributes: {
       size: 30,
       anti_aliasing: true,
       source_layer: {
-        value: "Current",
-        values: ["Current", "Previous"],
+        value: 'Current',
+        values: ['Current', 'Previous'],
       },
     },
   },
   {
-    name: "crop",
-    on_update: "on_params_update",
-    on_leave: "on_leave",
+    name: 'crop',
+    on_update: 'on_params_update',
+    on_leave: 'on_leave',
     attributes: {
       crop: true,
     },
   },
   {
-    name: "magic_crop",
-    on_update: "on_params_update",
-    on_leave: "on_leave",
+    name: 'magic_crop',
+    on_activate: 'on_activate',
+    on_update: 'on_params_update',
+    on_leave: 'on_leave',
     attributes: {
       magic_crop: true,
     },
   },
   {
-    name: "blur",
+    name: 'blur',
     attributes: {
       size: 30,
       strength: 1,
     },
   },
   {
-    name: "sharpen",
+    name: 'sharpen',
     attributes: {
       size: 30,
     },
   },
   {
-    name: "desaturate",
+    name: 'desaturate',
     attributes: {
       size: 50,
       anti_aliasing: true,
     },
   },
   {
-    name: "bulge_pinch",
-    title: "Bulge/Pinch Tool",
+    name: 'bulge_pinch',
+    title: 'Bulge/Pinch Tool',
     attributes: {
       radius: 80,
       power: 50,
@@ -495,24 +496,24 @@ config.TOOLS = [
     },
   },
   {
-    name: "animation",
-    on_activate: "on_activate",
-    on_update: "on_params_update",
-    on_leave: "on_leave",
+    name: 'animation',
+    on_activate: 'on_activate',
+    on_update: 'on_params_update',
+    on_leave: 'on_leave',
     attributes: {
       play: false,
       delay: 400,
     },
   },
   {
-    name: "polygon",
+    name: 'polygon',
     visible: false,
     attributes: {
       border_size: 4,
       border: true,
       fill: true,
-      border_color: "#555555",
-      fill_color: "#aaaaaa",
+      border_color: '#555555',
+      fill_color: '#aaaaaa',
     },
   },
 ];

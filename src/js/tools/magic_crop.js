@@ -18,8 +18,37 @@ import Base_gui_class from '../core/base-gui.js';
 import Base_selection_class from '../core/base-selection.js';
 import alertify from 'alertifyjs/build/alertify.min.js';
 
+class EventManager {
+  constructor() {
+    this.ops = {};
+    this.events = {};
+  }
+
+  on(event, callback) {
+    if (!this.events[event]) {
+      this.events[event] = [];
+      const op = (e) => {
+        this.events[event].forEach((callback) => {
+          callback(e);
+        });
+      };
+      document.addEventListener(event, op);
+      this.ops[event] = op;
+    }
+    this.events[event].push(callback);
+  }
+
+  off() {
+    Object.keys(this.ops).forEach((eventName) =>
+      document.removeEventListener(eventName, this.ops[eventName]),
+    );
+    this.ops = [];
+    this.events = {};
+  }
+}
+
 const Status = {
-  none: '',
+  none: 'none',
   ready: 'ready',
   drawing: 'drawing',
   placing: 'placing',
@@ -42,8 +71,8 @@ const configuration = {
 class MagicCrop_class extends Base_tools_class {
   constructor(ctx) {
     super();
-    var _this = this;
     this.status = Status.none;
+    this.events = new EventManager();
     this.Base_layers = new Base_layers_class();
     this.Base_gui = new Base_gui_class();
     this.GUI_tools = new GUI_tools_class();
@@ -62,20 +91,14 @@ class MagicCrop_class extends Base_tools_class {
       crop_lines: true,
       enable_rotation: false,
       enable_move: false,
-      data_function: function () {
-        return _this.selection;
-      },
+      data_function: () => this.selection,
     };
     this.mousedown_selection = null;
     this.Base_selection = new Base_selection_class(ctx, sel_config, this.name);
   }
 
   load() {
-    this.default_events();
-    document.addEventListener('dblclick', (event) => {
-      this.doubleClick(event);
-    });
-    this.status = Status.ready;
+    this.status = Status.none;
   }
 
   default_dragStart(event) {
@@ -86,15 +109,18 @@ class MagicCrop_class extends Base_tools_class {
     this.mousedown(event);
   }
 
-  doubleClick(e) {
+  keydown(e) {
+    console.log(`keydown: ${e}`);
+  }
+
+  dblclick(e) {
     const data = config.layer.data;
 
     switch (this.status) {
       case Status.drawing:
       case Status.placing: {
         // simplify the path
-        config.layer.data = removeColinearPoints(config.layer.data);
-        this.renderData(config.layer.data);
+        this.renderData(removeColinearPoints(data));
         this.status = Status.editing;
         break;
       }
@@ -139,9 +165,9 @@ class MagicCrop_class extends Base_tools_class {
       case Status.ready: {
         if (config.layer.type != this.name || params_hash != this.params_hash) {
           //register new object - current layer is not ours or params changed
-          this.layer = {
+          const layer = {
             type: this.name,
-            data: [],
+            data: [currentPoint],
             opacity: opacity,
             params: this.clone(this.getParams()),
             status: 'draft',
@@ -157,27 +183,30 @@ class MagicCrop_class extends Base_tools_class {
           };
           app.State.do_action(
             new app.Actions.Bundle_action(
-              'magic_crop_layer',
+              'new_magic_crop_layer',
               'Magic Crop Layer',
-              [new app.Actions.Insert_layer_action(this.layer)],
+              [new app.Actions.Insert_layer_action(layer)],
             ),
           );
           this.params_hash = params_hash;
+        } else {
+          this.renderData([currentPoint]);
         }
-        config.layer.data = [currentPoint];
         this.status = Status.drawing;
         break;
       }
 
       case Status.placing: {
-        config.layer.data.push(currentPoint);
-        this.renderData(config.layer.data);
+        console.log('cloning data');
+        const data = deep(config.layer.data);
+        data.push(currentPoint);
+        this.renderData(data);
         this.status = Status.drawing;
         break;
       }
 
       default: {
-        console.log(`mousedown: unknown status ${this.status}`);
+        console.log(`mousedown: unknown status '${this.status}'`);
         break;
       }
     }
@@ -208,10 +237,10 @@ class MagicCrop_class extends Base_tools_class {
         this.hover = computeHover(data, currentPoint);
         if (!this.hover) {
           this.status = Status.editing;
-          this.renderData(data);
+          this.Base_layers.render();
         }
         if (priorHover != JSON.stringify(this.hover)) {
-          this.renderData(data);
+          this.Base_layers.render();
         }
         break;
       }
@@ -220,7 +249,7 @@ class MagicCrop_class extends Base_tools_class {
         this.hover = computeHover(data, currentPoint);
         if (this.hover) {
           this.status = Status.hover;
-          this.renderData(data);
+          this.Base_layers.render();
         }
         break;
       }
@@ -230,9 +259,7 @@ class MagicCrop_class extends Base_tools_class {
           this.status = Status.placing;
         } else {
           data.push(currentPoint);
-          // render the line
           this.renderData(data);
-          this.Base_layers.render();
         }
         break;
       }
@@ -244,7 +271,6 @@ class MagicCrop_class extends Base_tools_class {
           p.y = currentPoint.y;
           // render the line
           this.renderData(data);
-          this.Base_layers.render();
         }
         break;
       }
@@ -256,7 +282,7 @@ class MagicCrop_class extends Base_tools_class {
           const point = data.at(index);
           point.x = currentPoint.x;
           point.y = currentPoint.y;
-          this.renderData(data);
+          // render the line
           this.Base_layers.render();
         } else if (this.hover?.midpointIndex >= 0) {
           const index = this.hover.midpointIndex;
@@ -264,7 +290,6 @@ class MagicCrop_class extends Base_tools_class {
           data.splice(index + 1, 0, currentPoint);
           this.hover = { pointIndex: index + 1 };
           // render the line
-          this.renderData(data);
           this.Base_layers.render();
         }
         break;
@@ -278,13 +303,14 @@ class MagicCrop_class extends Base_tools_class {
   }
 
   renderData(data) {
+    console.log('update_layer_data');
     app.State.do_action(
       new app.Actions.Bundle_action(
-        'magic_crop_layer',
+        'update_magic_crop_layer',
         'Update Magic Crop Layer',
         [
           new app.Actions.Update_layer_action(config.layer.id, {
-            data: data,
+            data,
           }),
         ],
       ),
@@ -475,8 +501,31 @@ class MagicCrop_class extends Base_tools_class {
     this.status = Status.done;
   }
 
+  on_activate() {
+    console.log(`on_activate: status '${this.status}'`);
+    switch (this.status) {
+      case Status.none:
+        this.status = Status.ready;
+        this.events.on('keydown', (event) => this.keydown(event));
+        this.events.on('dblclick', (event) => this.dblclick(event));
+        this.events.on('mousedown', (event) => this.mousedown(event));
+        this.events.on('mousemove', (event) => this.mousemove(event));
+        this.events.on('mouseup', (event) => this.mouseup(event));
+        this.events.on('touchstart', (event) => this.mousedown(event));
+        this.events.on('touchmove', (event) => this.mousemove(event));
+        this.events.on('touchend', (event) => this.mouseup(event));
+    }
+  }
+
   on_leave() {
-    return [new app.Actions.Reset_selection_action()];
+    console.log(`on_leave: status '${this.status}'`);
+    this.events.off();
+    this.status = Status.none;
+    // delete the magic crop layer
+    return [
+      new app.Actions.Delete_layer_action(config.layer.id),
+      new app.Actions.Reset_selection_action(),
+    ];
   }
 
   mousePoint(e) {
@@ -585,4 +634,8 @@ function distance(p1, p2) {
   const dist_x = p1.x - p2.x;
   const dist_y = p1.y - p2.y;
   return Math.sqrt(dist_x * dist_x + dist_y * dist_y);
+}
+
+function deep(obj) {
+  return JSON.parse(JSON.stringify(obj));
 }
