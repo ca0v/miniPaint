@@ -139,11 +139,13 @@ class MagicCrop_class extends Base_tools_class {
               break;
           }
           if (dx || dy) {
-            point.x += dx;
-            point.y += dy;
+            const scale = (e.ctrlKey ? 10 : 1) / config.ZOOM;
+            point.x += dx * scale;
+            point.y += dy * scale;
             this.Base_layers.render();
           }
         } else {
+          let zoom = config.ZOOM;
           switch (e.key) {
             case 'ArrowLeft':
             case 'ArrowUp':
@@ -153,7 +155,21 @@ class MagicCrop_class extends Base_tools_class {
             case 'ArrowDown':
               pointIndex++;
               break;
+            case '+':
+              // zoom in
+              zoom++;
+              break;
+            case '-':
+              // zoom out
+              zoom--;
+              break;
           }
+          if (zoom !== config.ZOOM) {
+            config.ZOOM = zoom;
+            // config.need_render = true;
+            // new Base_gui_class().prepare_canvas();
+          }
+
           pointIndex = (pointIndex + this.data.length) % this.data.length;
           this.hover = { pointIndex };
           this.Base_layers.render();
@@ -220,9 +236,6 @@ class MagicCrop_class extends Base_tools_class {
     const currentPoint = this.mousePoint(e);
     if (!currentPoint) return;
 
-    const params_hash = this.get_params_hash();
-    const opacity = Math.round((config.ALPHA / 255) * 100);
-
     switch (this.status) {
       case Status.hover: {
         this.status = Status.dragging;
@@ -231,35 +244,6 @@ class MagicCrop_class extends Base_tools_class {
 
       case Status.done:
       case Status.ready: {
-        if (config.layer.type != this.name || params_hash != this.params_hash) {
-          //register new object - current layer is not ours or params changed
-          this.data = [currentPoint];
-          const layer = {
-            type: this.name,
-            opacity: opacity,
-            params: this.clone(this.getParams()),
-            status: 'draft',
-            render_function: [this.name, 'render'],
-            x: 0,
-            y: 0,
-            width: config.WIDTH,
-            height: config.HEIGHT,
-            hide_selection_if_active: true,
-            rotate: null,
-            is_vector: true,
-            color: config.COLOR,
-          };
-          app.State.do_action(
-            new app.Actions.Bundle_action(
-              'new_magic_crop_layer',
-              'Magic Crop Layer',
-              [new app.Actions.Insert_layer_action(layer)],
-            ),
-          );
-          this.params_hash = params_hash;
-        } else {
-          this.renderData();
-        }
         this.status = Status.drawing;
         break;
       }
@@ -380,7 +364,22 @@ class MagicCrop_class extends Base_tools_class {
   }
 
   render(ctx, layer) {
+    this.drawMask(ctx);
     this.drawTool(ctx, layer);
+  }
+
+  drawMask(ctx) {
+    const pointData = this.data;
+    if (pointData.length < 3) return;
+    // fill the entire ctx with a light gray except the polygon defined by the point data
+    ctx.fillStyle = '#cccccc10';
+    ctx.beginPath();
+    ctx.moveTo(pointData[0].x, pointData[0].y);
+    pointData.forEach((point) => {
+      ctx.lineTo(point.x, point.y);
+    });
+    ctx.closePath();
+    ctx.fill();
   }
 
   drawTool(ctx, layer) {
@@ -542,7 +541,6 @@ class MagicCrop_class extends Base_tools_class {
 
     // delete the magic crop layer
     const layerId = config.layer.id;
-    debugger;
     actions.push(
       new app.Actions.Delete_layer_action(layerId),
       new app.Actions.Reset_selection_action(),
@@ -563,6 +561,7 @@ class MagicCrop_class extends Base_tools_class {
     console.log(`on_activate: status '${this.status}'`);
     switch (this.status) {
       case Status.none:
+        this.data = JSON.parse(localStorage.getItem('magic_crop_data') || '[]');
         this.status = Status.ready;
         this.events.on('keydown', (event) => this.keydown(event));
         this.events.on('dblclick', (event) => this.dblclick(event));
@@ -572,6 +571,38 @@ class MagicCrop_class extends Base_tools_class {
         this.events.on('touchstart', (event) => this.mousedown(event));
         this.events.on('touchmove', (event) => this.mousemove(event));
         this.events.on('touchend', (event) => this.mouseup(event));
+    }
+
+    const params_hash = this.get_params_hash();
+    const opacity = Math.round((config.ALPHA / 255) * 100);
+
+    if (config?.layer?.type != this.name || params_hash != this.params_hash) {
+      //register new object - current layer is not ours or params changed
+      const layer = {
+        type: this.name,
+        opacity: opacity,
+        params: this.clone(this.getParams()),
+        status: 'draft',
+        render_function: [this.name, 'render'],
+        x: 0,
+        y: 0,
+        width: config.WIDTH,
+        height: config.HEIGHT,
+        hide_selection_if_active: true,
+        rotate: null,
+        is_vector: true,
+        color: config.COLOR,
+      };
+      app.State.do_action(
+        new app.Actions.Bundle_action(
+          'new_magic_crop_layer',
+          'Magic Crop Layer',
+          [new app.Actions.Insert_layer_action(layer)],
+        ),
+      );
+      this.params_hash = params_hash;
+    } else {
+      this.renderData();
     }
   }
 
