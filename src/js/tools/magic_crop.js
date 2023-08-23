@@ -30,6 +30,25 @@ const Drawings = {
   fill: { color: '#ffffff01', exclusionColor: '#101010c0' },
 };
 
+class Generic_action extends Base_action {
+  constructor(cropper, { doit, undo }) {
+    super('generic_magic_crop_action', 'Magic Crop Changes');
+    this.cropper = cropper; //not used
+    this.doit = doit;
+    this.undo = undo;
+  }
+
+  async do() {
+    super.do();
+    this.doit();
+  }
+
+  async undo() {
+    this.undo();
+    super.undo();
+  }
+}
+
 class Update_layer_action extends Base_action {
   constructor(cropper, cb) {
     super('update_magic_crop_data', 'Magic Crop Changes');
@@ -224,7 +243,15 @@ class MagicCrop_class extends Base_tools_class {
               }
           }
           if (zoom) {
-            this.GUI_preview.zoom(zoom);
+            this.undoredo(
+              'before zooming',
+              () => {
+                this.GUI_preview.zoom(zoom);
+              },
+              () => {
+                this.GUI_preview.zoom(-zoom);
+              },
+            );
           }
 
           if (indexOffset) {
@@ -544,6 +571,13 @@ class MagicCrop_class extends Base_tools_class {
     const action = new Update_layer_action(this, cb);
     app.State.do_action(action);
   }
+
+  undoredo(why, doit, undo) {
+    console.log(`undoredo: ${why}`);
+    const action = new Generic_action(this, { doit, undo });
+    app.State.do_action(action);
+  }
+
   /**
    * do actual crop
    */
