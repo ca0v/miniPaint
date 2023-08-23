@@ -25,6 +25,7 @@ const Drawings = {
   hoverMajor: { color: '#ff000010', size: 20 },
   hoverMinor: { color: '#00ff0010', size: 20 },
   defaultStrokeColor: '#ffffff',
+  fill: { color: '#ffffff01', exclusionColor: '#101010c0' },
 };
 
 class EventManager {
@@ -143,7 +144,7 @@ class MagicCrop_class extends Base_tools_class {
               break;
           }
           if (dx || dy) {
-            const scale = (e.ctrlKey ? 10 : 1) / config.ZOOM;
+            const scale = (e.ctrlKey ? 10 : 1) / (e.altKey ? 1 : config.ZOOM);
             if (isMidpoint) {
               // create the point an select the new point
               const index = this.hover.midpointIndex;
@@ -191,20 +192,22 @@ class MagicCrop_class extends Base_tools_class {
             this.GUI_preview.zoom(zoom);
           }
 
-          if (isMidpoint) {
-            if (indexOffset < 0) {
-              pointIndex += indexOffset + 1;
+          if (indexOffset) {
+            if (isMidpoint) {
+              pointIndex += indexOffset;
+              if (indexOffset < 0) pointIndex++;
+
+              this.hover = {
+                pointIndex: (pointIndex + this.data.length) % this.data.length,
+              };
             } else {
               pointIndex += indexOffset;
-            }
-            this.hover = {
-              pointIndex: (pointIndex + this.data.length) % this.data.length,
-            };
-          } else {
-            if (indexOffset < 0) {
-              this.hover = { midpointIndex: pointIndex + indexOffset };
-            } else {
-              this.hover = { midpointIndex: pointIndex + indexOffset - 1 };
+              if (indexOffset > 0) pointIndex--;
+
+              this.hover = {
+                midpointIndex:
+                  (pointIndex + this.data.length) % this.data.length,
+              };
             }
           }
           this.Base_layers.render();
@@ -406,14 +409,28 @@ class MagicCrop_class extends Base_tools_class {
   drawMask(ctx) {
     const pointData = this.data;
     if (pointData.length < 3) return;
+
     // fill the entire ctx with a light gray except the polygon defined by the point data
-    ctx.fillStyle = '#cccccc10';
+    ctx.fillStyle = Drawings.fill.exclusionColor;
     ctx.beginPath();
+    ctx.rect(0, 0, config.WIDTH, config.HEIGHT);
     ctx.moveTo(pointData[0].x, pointData[0].y);
-    pointData.forEach((point) => {
+    [...pointData].reverse().forEach((point) => {
       ctx.lineTo(point.x, point.y);
     });
     ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.fillStyle = Drawings.fill.color;
+    try {
+      ctx.moveTo(pointData[0].x, pointData[0].y);
+      pointData.forEach((point) => {
+        ctx.lineTo(point.x, point.y);
+      });
+    } finally {
+      ctx.closePath();
+    }
     ctx.fill();
   }
 
@@ -427,8 +444,7 @@ class MagicCrop_class extends Base_tools_class {
     if (!data.length) return;
 
     //set styles
-    ctx.fillStyle = color;
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = Drawings.defaultStrokeColor;
     ctx.lineWidth = size;
     ctx.translate(x, y);
 
