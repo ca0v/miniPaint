@@ -12,8 +12,8 @@ const configuration = {
   minorColor: '#00ff0080',
   hoverMajorColor: '#ff000010',
   hoverMinorColor: '#00ff0010',
-  minorSize: 10,
-  majorSize: 20,
+  minorSize: 6,
+  majorSize: 10,
   defaultStrokeColor: '#ffffff',
 };
 
@@ -242,7 +242,7 @@ class MagicCrop_class extends Base_tools_class {
         // is the current point within 5 pixels of any of the points in the data?
         const pointIndex = data.findIndex((point) => {
           const distanceToCurrentPoint = distance(point, currentPoint);
-          return distanceToCurrentPoint < 10;
+          return distanceToCurrentPoint < configuration.majorSize / config.ZOOM;
         });
 
         if (pointIndex > -1) {
@@ -260,7 +260,7 @@ class MagicCrop_class extends Base_tools_class {
             y: (point.y + nextPoint.y) / 2,
           };
           const distanceToCurrentPoint = distance(centerPoint, currentPoint);
-          return distanceToCurrentPoint < 10;
+          return distanceToCurrentPoint < configuration.minorSize / config.ZOOM;
         });
 
         if (midpointIndex > -1) {
@@ -412,38 +412,32 @@ class MagicCrop_class extends Base_tools_class {
 
     // now render the drag-points over the top of the lines
     layerData.forEach((currentPoint, i) => {
-      ctx.fillStyle = configuration.hoverColor;
+      ctx.fillStyle = configuration.majorColor;
 
       // the circle should have an outline
       ctx.strokeStyle = configuration.defaultStrokeColor;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1 / config.ZOOM;
 
       // scale down the size based on the zoom level
       let size = configuration.majorSize / config.ZOOM;
 
-      if (this.hover && this.hover.pointIndex == i) {
+      if (this.hover && this.hover.pointIndex === i) {
         size *= 1.5;
         ctx.fillStyle = configuration.hoverMajorColor;
       }
       // draw a circle
-      ctx.beginPath();
-      ctx.arc(
-        currentPoint.x,
-        currentPoint.y,
-        Math.floor(size / 2) + 1,
-        0,
-        2 * Math.PI,
-      );
-
-      ctx.fill();
-      ctx.stroke();
+      circle(ctx, currentPoint, size);
+      dot(ctx, currentPoint, { color: configuration.majorColor });
     });
 
     // also, draw semi-drag points at the centerpoint of each line
     layerData.forEach((currentPoint, i) => {
-      let size = configuration.minorSize;
+      // scale down the size based on the zoom level
+      let size = configuration.minorSize / config.ZOOM;
       ctx.fillStyle = configuration.minorColor;
       ctx.strokeStyle = configuration.defaultStrokeColor;
+      ctx.lineWidth = 1;
+
       const centerPoint = this.center(
         currentPoint,
         layerData[(i + 1) % layerData.length],
@@ -454,15 +448,8 @@ class MagicCrop_class extends Base_tools_class {
         size *= 1.5;
       }
 
-      // scale down the size based on the zoom level
-      size /= config.ZOOM;
-
-      ctx.fillRect(
-        centerPoint.x - Math.floor(size / 2) - 1,
-        centerPoint.y - Math.floor(size / 2) - 1,
-        size,
-        size,
-      );
+      // draw a circle
+      circle(ctx, centerPoint, size);
     });
 
     ctx.translate(-x, -y);
@@ -596,3 +583,17 @@ class MagicCrop_class extends Base_tools_class {
 }
 
 export default MagicCrop_class;
+
+function circle(ctx, center, size) {
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, Math.floor(size / 2) + 1, 0, 2 * Math.PI);
+
+  ctx.fill();
+  ctx.stroke();
+}
+
+function dot(ctx, point) {
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, 0.5, 0, 2 * Math.PI);
+  ctx.fill();
+}
