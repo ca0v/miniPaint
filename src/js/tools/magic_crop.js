@@ -110,7 +110,40 @@ class MagicCrop_class extends Base_tools_class {
   }
 
   keydown(e) {
-    console.log(`keydown: ${e}`);
+    switch (this.status) {
+      case Status.hover: {
+        let dx = 0;
+        let dy = 0;
+        const pointIndex = this.hover.pointIndex;
+        if (typeof pointIndex !== 'number') break;
+
+        const point = config.layer.data.at(pointIndex);
+
+        switch (e.key) {
+          // arrow left
+          case 'ArrowLeft':
+            --dx;
+            break;
+          case 'ArrowRight':
+            ++dx;
+            break;
+          case 'ArrowUp':
+            --dy;
+            break;
+          case 'ArrowDown':
+            ++dy;
+            break;
+          default:
+            break;
+        }
+        if (dx || dy) {
+          point.x += dx;
+          point.y += dy;
+          this.Base_layers.render();
+        }
+        break;
+      }
+    }
   }
 
   dblclick(e) {
@@ -149,6 +182,8 @@ class MagicCrop_class extends Base_tools_class {
       if (timeSinceLastClick < 300) return;
     }
 
+    console.log(`mousedown: status '${this.status}'`);
+
     const currentPoint = this.mousePoint(e);
     if (!currentPoint) return;
 
@@ -164,6 +199,9 @@ class MagicCrop_class extends Base_tools_class {
       case Status.done:
       case Status.ready: {
         if (config.layer.type != this.name || params_hash != this.params_hash) {
+          console.log(
+            `register new object with starting point of ${currentPoint.x}, ${currentPoint.y}`,
+          );
           //register new object - current layer is not ours or params changed
           const layer = {
             type: this.name,
@@ -190,6 +228,7 @@ class MagicCrop_class extends Base_tools_class {
           );
           this.params_hash = params_hash;
         } else {
+          console.log('updating layer data');
           this.renderData([currentPoint]);
         }
         this.status = Status.drawing;
@@ -213,6 +252,11 @@ class MagicCrop_class extends Base_tools_class {
   }
 
   mouseup(e) {
+    const currentPoint = this.mousePoint(e);
+    if (!currentPoint) return;
+
+    const data = config.layer.data;
+
     switch (this.status) {
       case Status.dragging: {
         this.status = Status.editing;
@@ -485,8 +529,10 @@ class MagicCrop_class extends Base_tools_class {
     );
 
     // delete the magic crop layer
+    const layerId = config.layer.id;
+    debugger;
     actions.push(
-      new app.Actions.Delete_layer_action(config.layer.id),
+      new app.Actions.Delete_layer_action(layerId),
       new app.Actions.Reset_selection_action(),
     );
 
@@ -522,18 +568,24 @@ class MagicCrop_class extends Base_tools_class {
     this.events.off();
     this.status = Status.none;
     // delete the magic crop layer
-    return [
-      new app.Actions.Delete_layer_action(config.layer.id),
-      new app.Actions.Reset_selection_action(),
-    ];
+    const actions = config.layers
+      .filter((l) => l.type === this.name)
+      .map((l) => {
+        console.log(`deleting layer ${l.id}, ${l.name}`);
+        return new app.Actions.Delete_layer_action(l.id);
+      });
+    return [...actions, new app.Actions.Reset_selection_action()];
   }
 
   mousePoint(e) {
     const mouse = this.get_mouse_info(e);
     if (mouse.click_valid == false) return null;
+
+    console.log(`mousePoint: ${mouse.x}, ${mouse.y}`);
+
     return {
-      x: Math.ceil(mouse.x - config.layer.x),
-      y: Math.ceil(mouse.y - config.layer.y),
+      x: mouse.x,
+      y: mouse.y,
     };
   }
 }
