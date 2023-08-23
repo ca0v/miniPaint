@@ -175,6 +175,9 @@ class MagicCrop_class extends Base_tools_class {
 
     const data = this.data;
 
+    // save data to localstorage
+    localStorage.setItem('magic_crop_data', JSON.stringify(data));
+
     switch (this.status) {
       case Status.drawing:
       case Status.placing: {
@@ -233,7 +236,6 @@ class MagicCrop_class extends Base_tools_class {
           this.data = [currentPoint];
           const layer = {
             type: this.name,
-            data: this.data,
             opacity: opacity,
             params: this.clone(this.getParams()),
             status: 'draft',
@@ -381,19 +383,13 @@ class MagicCrop_class extends Base_tools_class {
     this.drawTool(ctx, layer);
   }
 
-  /**
-   * draw without antialiasing, sharp, ugly mode.
-   *
-   * @param {object} ctx
-   * @param {object} layer
-   */
   drawTool(ctx, layer) {
     const { x, y, color, params } = layer;
 
     // scale down the size based on the zoom level
     const size = (params.size || 1) / config.ZOOM;
 
-    const layerData = removeColinearPoints(layer.data);
+    const data = this.data;
 
     //set styles
     ctx.fillStyle = color;
@@ -401,13 +397,13 @@ class MagicCrop_class extends Base_tools_class {
     ctx.lineWidth = size;
     ctx.translate(x, y);
 
-    const firstPoint = layerData.at(0);
+    const firstPoint = data.at(0);
 
     ctx.beginPath();
     try {
       ctx.moveTo(firstPoint.x, firstPoint.y);
-      layerData.forEach((_, i) => {
-        const nextPoint = layerData.at((i + 1) % layerData.length);
+      data.forEach((_, i) => {
+        const nextPoint = data.at((i + 1) % data.length);
         ctx.lineTo(nextPoint.x, nextPoint.y);
       });
     } finally {
@@ -416,7 +412,7 @@ class MagicCrop_class extends Base_tools_class {
     }
 
     // now render the drag-points over the top of the lines
-    layerData.forEach((currentPoint, i) => {
+    data.forEach((currentPoint, i) => {
       ctx.fillStyle = configuration.majorColor;
 
       // the circle should have an outline
@@ -436,8 +432,8 @@ class MagicCrop_class extends Base_tools_class {
     });
 
     // also, draw semi-drag points at the centerpoint of each line
-    layerData.forEach((currentPoint, i) => {
-      const nextPoint = layerData[(i + 1) % layerData.length];
+    data.forEach((currentPoint, i) => {
+      const nextPoint = data[(i + 1) % data.length];
       // scale down the size based on the zoom level
       let size = configuration.minorSize / config.ZOOM;
       ctx.fillStyle = configuration.minorColor;
