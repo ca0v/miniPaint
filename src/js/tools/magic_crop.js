@@ -19,6 +19,14 @@ import GUI_preview_class from '../core/gui/gui-preview.js';
 import Base_selection_class from '../core/base-selection.js';
 import alertify from 'alertifyjs/build/alertify.min.js';
 
+const Drawings = {
+  major: { color: '#ff000080', size: 10 },
+  minor: { color: '#00ff0080', size: 6 },
+  hoverMajor: { color: '#ff000010', size: 20 },
+  hoverMinor: { color: '#00ff0010', size: 20 },
+  defaultStrokeColor: '#ffffff',
+};
+
 class EventManager {
   constructor() {
     this.ops = {};
@@ -57,16 +65,6 @@ const Status = {
   hover: 'hover',
   dragging: 'dragging',
   done: 'done',
-};
-
-const configuration = {
-  majorColor: '#ff000080',
-  minorColor: '#00ff0080',
-  hoverMajorColor: '#ff000010',
-  hoverMinorColor: '#00ff0010',
-  minorSize: 6,
-  majorSize: 10,
-  defaultStrokeColor: '#ffffff',
 };
 
 class MagicCrop_class extends Base_tools_class {
@@ -118,7 +116,11 @@ class MagicCrop_class extends Base_tools_class {
       case Status.hover: {
         let dx = 0;
         let dy = 0;
-        let pointIndex = this.hover?.pointIndex || 0;
+        let indexOffset = 0;
+
+        const isMidpoint = this.hover?.midpointIndex >= 0;
+        let pointIndex =
+          this.hover?.pointIndex || this.hover?.midpointIndex || 0;
 
         const point = this.data.at(pointIndex);
 
@@ -142,8 +144,21 @@ class MagicCrop_class extends Base_tools_class {
           }
           if (dx || dy) {
             const scale = (e.ctrlKey ? 10 : 1) / config.ZOOM;
-            point.x += dx * scale;
-            point.y += dy * scale;
+            if (isMidpoint) {
+              // create the point an select the new point
+              const index = this.hover.midpointIndex;
+              const point = center(
+                this.data.at(index),
+                this.data.at((index + 1) % this.data.length),
+              );
+              point.x += dx * scale;
+              point.y += dy * scale;
+              this.data.splice(index + 1, 0, point);
+              this.hover = { pointIndex: index + 1 };
+            } else {
+              point.x += dx * scale;
+              point.y += dy * scale;
+            }
             this.Base_layers.render();
           }
         } else {
@@ -151,27 +166,41 @@ class MagicCrop_class extends Base_tools_class {
           switch (e.key) {
             case 'ArrowLeft':
             case 'ArrowUp':
-              pointIndex--;
+              indexOffset--;
               break;
             case 'ArrowRight':
             case 'ArrowDown':
-              pointIndex++;
+              indexOffset++;
               break;
             case '+':
               // zoom in
-              zoom = 1;
+              zoom++;
               break;
             case '-':
               // zoom out
-              zoom = -1;
+              zoom--;
               break;
           }
           if (zoom) {
             this.GUI_preview.zoom(zoom);
           }
 
-          pointIndex = (pointIndex + this.data.length) % this.data.length;
-          this.hover = { pointIndex };
+          if (isMidpoint) {
+            if (indexOffset < 0) {
+              pointIndex += indexOffset + 1;
+            } else {
+              pointIndex += indexOffset;
+            }
+            this.hover = {
+              pointIndex: (pointIndex + this.data.length) % this.data.length,
+            };
+          } else {
+            if (indexOffset < 0) {
+              this.hover = { midpointIndex: pointIndex + indexOffset };
+            } else {
+              this.hover = { midpointIndex: pointIndex + indexOffset - 1 };
+            }
+          }
           this.Base_layers.render();
         }
 
@@ -413,38 +442,38 @@ class MagicCrop_class extends Base_tools_class {
 
     // now render the drag-points over the top of the lines
     data.forEach((currentPoint, i) => {
-      ctx.fillStyle = configuration.majorColor;
+      ctx.fillStyle = Drawings.major.color;
 
       // the circle should have an outline
-      ctx.strokeStyle = configuration.defaultStrokeColor;
+      ctx.strokeStyle = Drawings.defaultStrokeColor;
       ctx.lineWidth = 1 / config.ZOOM;
 
       // scale down the size based on the zoom level
-      let size = configuration.majorSize / config.ZOOM;
+      let size = Drawings.major.size / config.ZOOM;
 
       if (this.hover && this.hover.pointIndex === i) {
-        size *= 1.5;
-        ctx.fillStyle = configuration.hoverMajorColor;
+        size = Drawings.hoverMajor.size;
+        ctx.fillStyle = Drawings.hoverMajor.color;
       }
       // draw a circle
       circle(ctx, currentPoint, size);
-      dot(ctx, currentPoint, { color: configuration.majorColor });
+      dot(ctx, currentPoint, { color: Drawings.major.color });
     });
 
     // also, draw semi-drag points at the centerpoint of each line
     data.forEach((currentPoint, i) => {
       const nextPoint = data[(i + 1) % data.length];
       // scale down the size based on the zoom level
-      let size = configuration.minorSize / config.ZOOM;
-      ctx.fillStyle = configuration.minorColor;
-      ctx.strokeStyle = configuration.defaultStrokeColor;
+      let size = Drawings.minor.size / config.ZOOM;
+      ctx.fillStyle = Drawings.minor.color;
+      ctx.strokeStyle = Drawings.defaultStrokeColor;
       ctx.lineWidth = 1 / config.ZOOM;
 
       const centerPoint = center(currentPoint, nextPoint);
 
       if (this.hover && this.hover.midpointIndex == i) {
-        ctx.fillStyle = configuration.hoverMinorColor;
-        size *= 1.5;
+        ctx.fillStyle = Drawings.hoverMinor.color;
+        size = Drawings.hoverMinor.size;
       }
 
       // draw a circle
@@ -651,7 +680,7 @@ function dot(ctx, point) {
 function computeHover(data, currentPoint) {
   const pointIndex = data.findIndex((point) => {
     const distanceToCurrentPoint = distance(point, currentPoint);
-    return distanceToCurrentPoint < configuration.majorSize / config.ZOOM;
+    return distanceToCurrentPoint < Drawings.major.size / config.ZOOM;
   });
 
   if (pointIndex > -1) return { pointIndex };
@@ -661,7 +690,7 @@ function computeHover(data, currentPoint) {
     const nextPoint = data[(i + 1) % data.length];
     const centerPoint = center(point, nextPoint);
     const distanceToCurrentPoint = distance(centerPoint, currentPoint);
-    return distanceToCurrentPoint < configuration.minorSize / config.ZOOM;
+    return distanceToCurrentPoint < Drawings.minor.size / config.ZOOM;
   });
 
   if (midpointIndex > -1) {
