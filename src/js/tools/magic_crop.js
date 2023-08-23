@@ -19,6 +19,7 @@ import GUI_preview_class from '../core/gui/gui-preview.js';
 import Base_selection_class from '../core/base-selection.js';
 import alertify from 'alertifyjs/build/alertify.min.js';
 import { Base_action } from '../actions/base.js';
+import Base_state_class from '../core/base-state.js';
 
 const Drawings = {
   major: { color: '#ff000080', size: 10 },
@@ -30,20 +31,26 @@ const Drawings = {
 };
 
 class Update_layer_action extends Base_action {
-  constructor(cropper) {
+  constructor(cropper, cb) {
     super('update_magic_crop_data', 'Magic Crop Changes');
     this.cropper = cropper;
+    this.cb = cb;
+    this.state = deep(this.cropper.data);
   }
 
   async do() {
     super.do();
-    this.data = deep(this.cropper.data);
+    if (this.cb) {
+      this.cropper.data = deep(this.state);
+      this.cb();
+      this.cropper.Base_layers.render();
+    }
   }
 
   async undo() {
-    super.undo();
-    this.cropper.data = deep(this.data);
+    this.cropper.data = deep(this.state);
     this.cropper.Base_layers.render();
+    super.undo();
   }
 
   free() {
@@ -97,6 +104,7 @@ class MagicCrop_class extends Base_tools_class {
     this.status = Status.none;
     this.events = new EventManager();
     this.Base_layers = new Base_layers_class();
+    this.Base_state = new Base_state_class();
     this.GUI_preview = new GUI_preview_class();
     this.Base_gui = new Base_gui_class();
     this.GUI_tools = new GUI_tools_class();
@@ -146,8 +154,6 @@ class MagicCrop_class extends Base_tools_class {
         let pointIndex =
           this.hover?.pointIndex || this.hover?.midpointIndex || 0;
 
-        const point = this.data.at(pointIndex);
-
         if (e.shiftKey) {
           switch (e.key) {
             // arrow left
@@ -167,7 +173,6 @@ class MagicCrop_class extends Base_tools_class {
               break;
           }
           if (dx || dy) {
-            this.snapshot('before moving point');
             const scale = (e.ctrlKey ? 10 : 1) / (e.altKey ? 1 : config.ZOOM);
             if (isMidpoint) {
               // create the point an select the new point
@@ -178,13 +183,17 @@ class MagicCrop_class extends Base_tools_class {
               );
               point.x += dx * scale;
               point.y += dy * scale;
-              this.data.splice(index + 1, 0, point);
+              this.snapshot('before moving point', () => {
+                this.data.splice(index + 1, 0, point);
+              });
               this.hover = { pointIndex: index + 1 };
             } else {
-              point.x += dx * scale;
-              point.y += dy * scale;
+              this.snapshot('before moving point', () => {
+                const point = this.data.at(pointIndex);
+                point.x += dx * scale;
+                point.y += dy * scale;
+              });
             }
-            this.Base_layers.render();
           }
         } else {
           let zoom = 0;
@@ -209,8 +218,9 @@ class MagicCrop_class extends Base_tools_class {
             case 'Backspace':
               // delete the point
               if (!isMidpoint) {
-                this.snapshot('before deleting point');
-                this.data.splice(pointIndex, 1);
+                this.snapshot('before deleting point', () => {
+                  this.data.splice(pointIndex, 1);
+                });
               }
           }
           if (zoom) {
@@ -268,9 +278,9 @@ class MagicCrop_class extends Base_tools_class {
         // delete the hover point
         const hoverPointIndex = computeHover(data, currentPoint)?.pointIndex;
         if (hoverPointIndex >= 0) {
-          this.snapshot('before deleting point');
-          data.splice(hoverPointIndex, 1);
-          this.renderData();
+          this.snapshot('before deleting point', () => {
+            this.data.splice(hoverPointIndex, 1);
+          });
           if (!data.length) {
             this.status = Status.ready;
           }
@@ -301,7 +311,6 @@ class MagicCrop_class extends Base_tools_class {
 
     switch (this.status) {
       case Status.hover: {
-        this.snapshot('before dragging');
         this.status = Status.dragging;
         break;
       }
@@ -314,10 +323,9 @@ class MagicCrop_class extends Base_tools_class {
       }
 
       case Status.placing: {
-        const data = this.data;
-        this.snapshot('before placing');
-        data.push(currentPoint);
-        this.renderData();
+        this.snapshot('before placing', () => {
+          this.data.push(currentPoint);
+        });
         this.status = Status.drawing;
         break;
       }
@@ -531,9 +539,9 @@ class MagicCrop_class extends Base_tools_class {
     ctx.translate(-x, -y);
   }
 
-  snapshot(why) {
+  snapshot(why, cb) {
     console.log(`snapshot: ${why}`);
-    const action = new Update_layer_action(this);
+    const action = new Update_layer_action(this, cb);
     app.State.do_action(action);
   }
   /**
@@ -654,6 +662,9 @@ class MagicCrop_class extends Base_tools_class {
         this.events.on('touchstart', (event) => this.mousedown(event));
         this.events.on('touchmove', (event) => this.mousemove(event));
         this.events.on('touchend', (event) => this.mouseup(event));
+
+        this.prior_action_history_max = this.Base_state.action_history_max;
+        this.Base_state.action_history_max = 1000;
     }
 
     const params_hash = this.get_params_hash();
@@ -693,6 +704,9 @@ class MagicCrop_class extends Base_tools_class {
     console.log(`on_leave: status '${this.status}'`);
     this.events.off();
     this.status = Status.none;
+
+    this.Base_state.action_history_max = this.prior_action_history_max;
+
     // delete the magic crop layer
     const actions = config.layers
       .filter((l) => l.type === this.name)
