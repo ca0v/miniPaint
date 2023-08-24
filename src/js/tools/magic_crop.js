@@ -20,6 +20,7 @@ import Base_selection_class from '../core/base-selection.js';
 import alertify from 'alertifyjs/build/alertify.min.js';
 import { Base_action } from '../actions/base.js';
 import Base_state_class from '../core/base-state.js';
+import zoomView from './../libs/zoomView.js';
 
 const Drawings = {
   major: { color: '#ff000080', size: 10 },
@@ -161,6 +162,24 @@ class MagicCrop_class extends Base_tools_class {
     this.mousedown(event);
   }
 
+  centerAt(point) {
+    // pan the canvas so that the point is centered
+    const { x: dx, y: dy } = zoomView.getPosition();
+    const { x: px, y: py } = point;
+    const pos_global = zoomView.toScreen(point);
+
+    console.log(
+      `point at: ${px}, ${py} zoom at: ${dx}, ${dy}, moving to: ${pos_global.x}, ${pos_global.y}`,
+    );
+
+    // preview top-left of point
+    zoomView.move(-pos_global.x, -pos_global.y);
+    zoomView.move(config.WIDTH / 2, config.HEIGHT / 2);
+
+    // scale
+    zoomView.apply();
+  }
+
   keydown(e) {
     switch (this.status) {
       case Status.editing:
@@ -217,6 +236,10 @@ class MagicCrop_class extends Base_tools_class {
         } else {
           let zoom = 0;
           switch (e.key) {
+            case 'c': {
+              this.centerAt(this.data[pointIndex]);
+              break;
+            }
             case 'ArrowLeft':
             case 'ArrowUp':
               indexOffset--;
@@ -320,7 +343,7 @@ class MagicCrop_class extends Base_tools_class {
       }
     }
     // save data
-    // localStorage.setItem('magic_crop_data', JSON.stringify(data));
+    //localStorage.setItem('magic_crop_data', JSON.stringify(data));
   }
 
   mousedown(e) {
