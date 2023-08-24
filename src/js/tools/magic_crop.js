@@ -31,6 +31,17 @@ const Drawings = {
   fill: { color: '#ffffff01', exclusionColor: '#101010c0' },
 };
 
+const Keyboard = {
+  ArrowLeft: 'ArrowLeft',
+  ArrowRight: 'ArrowRight',
+  ArrowUp: 'ArrowUp',
+  ArrowDown: 'ArrowDown',
+  CenterAt: 'c',
+  Delete: 'Delete',
+  ZoomIn: '+',
+  ZoomOut: '-',
+};
+
 class Generic_action extends Base_action {
   constructor(cropper, { doit, undo }) {
     super('generic_magic_crop_action', 'Magic Crop Changes');
@@ -236,28 +247,27 @@ class MagicCrop_class extends Base_tools_class {
         } else {
           let zoom = 0;
           switch (e.key) {
-            case 'c': {
+            case Keyboard.CenterAt: {
               this.centerAt(this.data[pointIndex]);
               break;
             }
-            case 'ArrowLeft':
-            case 'ArrowUp':
+            case Keyboard.ArrowLeft:
+            case Keyboard.ArrowUp:
               indexOffset--;
               break;
-            case 'ArrowRight':
-            case 'ArrowDown':
+            case Keyboard.ArrowRight:
+            case Keyboard.ArrowDown:
               indexOffset++;
               break;
-            case '+':
+            case Keyboard.ZoomIn:
               // zoom in
               zoom++;
               break;
-            case '-':
+            case Keyboard.ZoomOut:
               // zoom out
               zoom--;
               break;
-            case 'Delete':
-            case 'Backspace':
+            case Keyboard.Delete:
               // delete the point
               if (!isMidpoint) {
                 this.snapshot('before deleting point', () => {
