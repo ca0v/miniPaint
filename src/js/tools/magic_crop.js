@@ -12,14 +12,14 @@
  * ** KNOWN ISSUES **
  * - FIXED: Need a way to reset the tool
  * - FIXED: Clicking outside the canvas is placing a point (should not)
- * - Places a duplicate point at start/end after double-clicking
+ * - FIXED: Places a duplicate point at start/end after double-clicking
  * - "Escape" should clear all points
  * - "Enter" should close the polygon
  * - "X" should cut the interior
- * - Does not properly crop a "pencil" layer (different offset?)
+ * - Load an image then move it and the crop is the wrong part of the image...need to compensate for translations, etc.
+ * -- Similarly, cut only working for images that have been cropped to the top-left corner, not sure where the problem is
+ * -- but the crop.js works correctly, so the solution is in there somewhere
  * - Cut is using correct color but crop is using transparent
- *
- *
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -51,7 +51,7 @@ const Drawings = {
   hoverMajor: { color: '#00ff0010', size: 20 },
   hoverMinor: { color: '#00ff0010', size: 20 },
   defaultStrokeColor: '#000000ff',
-  fill: { color: '#ffffff01', exclusionColor: '#101010c0' },
+  fill: { color: '#ffffff01', exclusionColor: '#c4632bc0' },
 };
 
 const Keyboard = {
@@ -345,13 +345,19 @@ class MagicCrop_class extends Base_tools_class {
     const currentPoint = this.mousePoint(e);
     if (!currentPoint) return;
 
-    const data = this.data;
+    this.data = removeColinearPoints(this.data);
 
     switch (this.status) {
       case Status.drawing:
       case Status.placing: {
         // simplify the path
-        // this.data = removeColinearPoints(data); causing issues
+        {
+          // mousedown creates a point that mousemove updates
+          // since mousedown fires during a double click, that updated point is getting duplicated
+          // so remove it or stop using dblclick
+          // this.data.pop();
+        }
+
         this.renderData();
         this.status = Status.editing;
         break;
@@ -359,12 +365,15 @@ class MagicCrop_class extends Base_tools_class {
       case Status.editing:
       case Status.hover: {
         // delete the hover point
-        const hoverPointIndex = computeHover(data, currentPoint)?.pointIndex;
+        const hoverPointIndex = computeHover(
+          this.data,
+          currentPoint,
+        )?.pointIndex;
         if (hoverPointIndex >= 0) {
           this.snapshot('before deleting point', () => {
             this.data.splice(hoverPointIndex, 1);
           });
-          if (!data.length) {
+          if (!this.data.length) {
             this.status = Status.ready;
           }
         }
@@ -707,6 +716,10 @@ class MagicCrop_class extends Base_tools_class {
     console.log(`fill selection with background color: ${fillColor}`);
 
     const imageLayers = config.layers.filter((l) => l.type === 'image');
+    if (!imageLayers.length) {
+      alertify.error('No image layers found');
+      return;
+    }
 
     const actions = [];
 
@@ -753,10 +766,15 @@ class MagicCrop_class extends Base_tools_class {
     const bbox = getBoundingBox(data);
     const cropWidth = bbox.right - bbox.left;
     const cropHeight = bbox.bottom - bbox.top;
+
     const cropTop = bbox.top;
     const cropLeft = bbox.left;
 
     const imageLayers = config.layers.filter((l) => l.type === 'image');
+    if (!imageLayers.length) {
+      alertify.error('No image layers found');
+      return;
+    }
 
     imageLayers.forEach((link) => {
       const canvas = document.createElement('canvas');
@@ -764,8 +782,15 @@ class MagicCrop_class extends Base_tools_class {
       canvas.width = cropWidth;
       canvas.height = cropHeight;
 
+      const { x, y } = link;
+
       //cut required part
-      ctx.translate(-cropLeft, -cropTop);
+      console.log(
+        `cropping image ${link.id} to ${cropWidth}x${cropHeight}, width_ratio=${
+          link.width / link.width_original
+        }`,
+      );
+      ctx.translate(-cropLeft - x, -cropTop);
       ctx.drawImage(link.link, 0, 0);
       ctx.translate(0, 0);
 
@@ -788,24 +813,14 @@ class MagicCrop_class extends Base_tools_class {
           y: 0,
           width: cropWidth,
           height: cropHeight,
-          width_original: cropWidth,
-          height_original: cropHeight,
+          width_original: link.width_original,
+          height_original: link.height_original,
         }),
       );
     });
 
-    actions.push(
-      new app.Actions.Prepare_canvas_action('undo'),
-      new app.Actions.Update_config_action({
-        WIDTH: cropWidth,
-        HEIGHT: cropHeight,
-      }),
-      new app.Actions.Prepare_canvas_action('do'),
-    );
-
     this.snapshot('before cropping', () => (this.data = []));
 
-    actions.push(new app.Actions.Reset_selection_action());
     await doActions(actions);
 
     this.status = Status.done;
