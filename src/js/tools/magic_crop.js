@@ -1,5 +1,7 @@
 /**
+ * ---------------------------------------------------------------------
  * Magic Crop Tool
+ * ---------------------------------------------------------------------
  * status values: ready, drawing, placing, editing, hover, dragging, done
  * ready - tool has been initialized and is listening for 1st click
  * drawing - tool has placed a point
@@ -10,16 +12,17 @@
  * done - user has clicked the "Magic Crop" button, all points are cleared
  *
  * ** KNOWN ISSUES **
- * - FIXED: Need a way to reset the tool
- * - FIXED: Clicking outside the canvas is placing a point (should not)
- * - FIXED: Places a duplicate point at start/end after double-clicking
- * - "Escape" should clear all points
- * - "Enter" should close the polygon
- * - "X" should cut the interior
  * - Load an image then move it and the crop is the wrong part of the image...need to compensate for translations, etc.
  * -- Similarly, cut only working for images that have been cropped to the top-left corner, not sure where the problem is
  * -- but the crop.js works correctly, so the solution is in there somewhere
  * - Cut is using correct color but crop is using transparent
+ * - Undo/Redo needs tuning (a debounce might work well here when drag drawing points)
+ *
+ * ** TODO **
+ * - "Escape" should clear all points
+ * - "Enter" should close the polygon
+ * - "X" should cut the interior
+ *
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -725,20 +728,29 @@ class MagicCrop_class extends Base_tools_class {
 
     // for each image layer, fill the selection with the background color
     imageLayers.forEach((link) => {
+      const { x, y, width, height, width_original, height_original } = link;
+      console.log('cut', {
+        x,
+        y,
+        width,
+        height,
+        width_original,
+        height_original,
+      });
+
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      canvas.width = config.WIDTH;
-      canvas.height = config.HEIGHT;
+      canvas.width = width;
+      canvas.height = height;
 
       // copy the original image to the canvas
+      ctx.translate(x, y);
       ctx.drawImage(link.link, 0, 0);
 
       // draw the clipping path
       ctx.beginPath();
       ctx.moveTo(this.data[0].x, this.data[0].y);
-      this.data.forEach((point) => {
-        ctx.lineTo(point.x, point.y);
-      });
+      this.data.forEach((point) => ctx.lineTo(point.x, point.y));
       ctx.closePath();
       ctx.clip();
 
