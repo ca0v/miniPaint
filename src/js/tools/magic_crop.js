@@ -132,6 +132,10 @@ const Status = {
 class MagicCrop_class extends Base_tools_class {
   constructor(ctx) {
     super();
+    this.metrics = {
+      timeOfClick: Date.now(),
+      timeOfMove: Date.now(),
+    };
     this.status = Status.none;
     this.events = new EventManager();
     this.Base_layers = new Base_layers_class();
@@ -243,6 +247,7 @@ class MagicCrop_class extends Base_tools_class {
                 point.y += dy * scale;
               });
             }
+            this.metrics.timeOfMove = Date.now();
           }
         } else {
           let zoom = 0;
@@ -358,9 +363,8 @@ class MagicCrop_class extends Base_tools_class {
 
   mousedown(e) {
     {
-      const timeOfLastClick = this.timeOfClick || 0;
-      this.timeOfClick = Date.now();
-      const timeSinceLastClick = this.timeOfClick - timeOfLastClick;
+      const timeSinceLastClick = Date.now() - this.metrics.timeOfClick;
+      this.metrics.timeOfClick = Date.now();
       if (timeSinceLastClick < 300) return;
     }
 
@@ -567,13 +571,21 @@ class MagicCrop_class extends Base_tools_class {
       // scale down the size based on the zoom level
       let size = Drawings.major.size / config.ZOOM;
 
-      if (this.hover && this.hover.pointIndex === i) {
-        size = Drawings.hoverMajor.size;
-        ctx.fillStyle = Drawings.hoverMajor.color;
+      if (this.hover?.pointIndex === i) {
+        if (age(this.metrics.timeOfMove) < 1000) {
+          dot(ctx, currentPoint, { color: Drawings.major.color });
+        } else {
+          size = Drawings.hoverMajor.size / config.ZOOM;
+          ctx.fillStyle = Drawings.hoverMajor.color;
+          // draw a circle
+          circle(ctx, currentPoint, size);
+          dot(ctx, currentPoint, { color: Drawings.major.color });
+        }
+      } else {
+        // draw a circle
+        circle(ctx, currentPoint, size);
+        dot(ctx, currentPoint, { color: Drawings.major.color });
       }
-      // draw a circle
-      circle(ctx, currentPoint, size);
-      dot(ctx, currentPoint, { color: Drawings.major.color });
     });
 
     // also, draw semi-drag points at the centerpoint of each line
@@ -589,7 +601,7 @@ class MagicCrop_class extends Base_tools_class {
 
       if (this.hover && this.hover.midpointIndex == i) {
         ctx.fillStyle = Drawings.hoverMinor.color;
-        size = Drawings.hoverMinor.size;
+        size = Drawings.hoverMinor.size / config.ZOOM;
       }
 
       // draw a circle
@@ -861,7 +873,7 @@ function circle(ctx, center, size) {
 function dot(ctx, point) {
   ctx.beginPath();
   ctx.arc(point.x, point.y, 0.5, 0, 2 * Math.PI);
-  ctx.fill();
+  ctx.stroke();
 }
 
 function computeHover(data, currentPoint) {
@@ -948,4 +960,8 @@ function distance(p1, p2) {
 
 function deep(obj) {
   return JSON.parse(JSON.stringify(obj));
+}
+
+function age(time) {
+  return Date.now() - time;
 }
