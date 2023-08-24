@@ -358,7 +358,7 @@ class MagicCrop_class extends Base_tools_class {
       }
     }
     // save data
-    //localStorage.setItem('magic_crop_data', JSON.stringify(data));
+    localStorage.setItem('magic_crop_data', JSON.stringify(this.data));
   }
 
   mousedown(e) {
@@ -495,7 +495,6 @@ class MagicCrop_class extends Base_tools_class {
   }
 
   renderData() {
-    console.log('TODO: undo/redo state');
     this.Base_layers.render();
   }
 
@@ -706,32 +705,16 @@ class MagicCrop_class extends Base_tools_class {
       ctx.drawImage(link.link, 0, 0);
       ctx.translate(0, 0);
 
-      // create a image mask to hide the parts of the image that are not inside the polygon defined by the data
-      const maskCanvas = document.createElement('canvas');
-      const maskCtx = maskCanvas.getContext('2d');
-      maskCanvas.width = config.WIDTH;
-      maskCanvas.height = config.HEIGHT;
-      maskCtx.fillStyle = '#000000';
-      maskCtx.beginPath();
-
-      maskCtx.moveTo(data[0].x, data[0].y);
-
-      for (let i = 1; i < data.length; i++) {
-        const point = data.at(i);
-        if (point === null) {
-          maskCtx.closePath();
-          maskCtx.fill();
-          maskCtx.beginPath();
-        } else {
-          maskCtx.lineTo(point.x, point.y);
-        }
-      }
-      maskCtx.closePath();
-      maskCtx.fill();
-
-      // apply the mask
+      // crop everything outside the polygon
       ctx.globalCompositeOperation = 'destination-in';
-      ctx.drawImage(maskCanvas, 0, 0);
+      ctx.fillStyle = config.COLOR;
+      ctx.beginPath();
+      ctx.moveTo(data[0].x, data[0].y);
+      data.forEach((point) => {
+        ctx.lineTo(point.x, point.y);
+      });
+      ctx.closePath();
+      ctx.fill();
 
       actions.push(new app.Actions.Update_layer_image_action(canvas, link.id));
 
@@ -756,8 +739,7 @@ class MagicCrop_class extends Base_tools_class {
       new app.Actions.Prepare_canvas_action('do'),
     );
 
-    // delete the magic crop layer
-    this.addDeleteToolAction(actions);
+    this.snapshot('before cropping', () => (this.data = []));
 
     actions.push(new app.Actions.Reset_selection_action());
     await doActions(actions);
@@ -778,7 +760,7 @@ class MagicCrop_class extends Base_tools_class {
     console.log(`on_activate: status '${this.status}'`);
     switch (this.status) {
       case Status.none:
-        this.data = JSON.parse(localStorage.getItem('magic_crop_data') || '[]');
+        this.data = []; //JSON.parse(localStorage.getItem('magic_crop_data') || '[]');
         this.status = this.data.length ? Status.editing : Status.ready;
         this.events.on('keydown', (event) => this.keydown(event));
         this.events.on('dblclick', (event) => this.dblclick(event));
@@ -796,9 +778,12 @@ class MagicCrop_class extends Base_tools_class {
     const params_hash = this.get_params_hash();
     const opacity = Math.round((config.ALPHA / 255) * 100);
 
-    if (config?.layer?.type != this.name || params_hash != this.params_hash) {
-      //register new object - current layer is not ours or params changed
+    const layer = config?.layers.find((l) => l.type === this.name);
+
+    if (!layer) {
+      console.log(`creating new magic crop layer`);
       const layer = {
+        name: 'DW Lasso',
         type: this.name,
         opacity: opacity,
         params: this.clone(this.getParams()),
