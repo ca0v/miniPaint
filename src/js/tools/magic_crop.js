@@ -10,8 +10,8 @@
  * done - user has clicked the "Magic Crop" button, all points are cleared
  *
  * ** KNOWN ISSUES **
- * - Need a way to reset the tool
- * - Clicking outside the canvas is placing a point (should not)
+ * - FIXED: Need a way to reset the tool
+ * - FIXED: Clicking outside the canvas is placing a point (should not)
  * - Places a duplicate point at start/end after double-clicking
  * - "Escape" should clear all points
  * - "Enter" should close the polygon
@@ -46,11 +46,11 @@ const Status = {
 };
 
 const Drawings = {
-  major: { color: '#ff000080', size: 5 },
-  minor: { color: '#00ff0080', size: 3 },
-  hoverMajor: { color: '#ff000010', size: 20 },
+  major: { color: '#ffffffa0', size: 5 },
+  minor: { color: '#1f1f1fa0', size: 3 },
+  hoverMajor: { color: '#00ff0010', size: 20 },
   hoverMinor: { color: '#00ff0010', size: 20 },
-  defaultStrokeColor: '#ffffff',
+  defaultStrokeColor: '#000000ff',
   fill: { color: '#ffffff01', exclusionColor: '#101010c0' },
 };
 
