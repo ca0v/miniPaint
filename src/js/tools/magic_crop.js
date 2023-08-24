@@ -8,6 +8,18 @@
  * hover - user is hovering over a vertex or midpoint
  * dragging - user is dragging a vertex or midpoint
  * done - user has clicked the "Magic Crop" button, all points are cleared
+ *
+ * ** KNOWN ISSUES **
+ * - Need a way to reset the tool
+ * - Clicking outside the canvas is placing a point (should not)
+ * - Places a duplicate point at start/end after double-clicking
+ * - "Escape" should clear all points
+ * - "Enter" should close the polygon
+ * - "X" should cut the interior
+ * - Does not properly crop a "pencil" layer (different offset?)
+ * - Cut is using correct color but crop is using transparent
+ *
+ *
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -427,6 +439,17 @@ class MagicCrop_class extends Base_tools_class {
     const currentPoint = this.mousePoint(e);
     if (!currentPoint) return;
 
+    // is the current point outside the canvas?
+    if (
+      currentPoint.x < 0 ||
+      currentPoint.x > config.WIDTH ||
+      currentPoint.y < 0 ||
+      currentPoint.y > config.HEIGHT
+    ) {
+      // if so, then we are not hovering over anything
+      return;
+    }
+
     const data = this.data;
 
     const isMouseKeyPressed = e.buttons > 0;
@@ -670,6 +693,10 @@ class MagicCrop_class extends Base_tools_class {
       case 'dw_crop':
         await this.crop();
         break;
+      case 'dw_reset':
+        this.snapshot('before reset', () => (this.data = []));
+        this.status = Status.ready;
+        this.renderData();
       default:
         break;
     }

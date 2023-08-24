@@ -465,6 +465,7 @@ config.TOOLS = [
     attributes: {
       dw_crop: true,
       dw_cut: true,
+      dw_reset: true,
     },
   },
   {
