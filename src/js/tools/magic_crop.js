@@ -320,7 +320,7 @@ class MagicCrop_class extends Base_tools_class {
       }
     }
     // save data
-    localStorage.setItem('magic_crop_data', JSON.stringify(data));
+    // localStorage.setItem('magic_crop_data', JSON.stringify(data));
   }
 
   mousedown(e) {
@@ -581,15 +581,66 @@ class MagicCrop_class extends Base_tools_class {
   /**
    * do actual crop
    */
-  async on_params_update() {
-    const params = this.getParams();
-    params.magic_crop = true;
-    this.GUI_tools.show_action_attributes();
+  async on_params_update(event) {
+    switch (event.key) {
+      case 'dw_cut':
+        await this.cut();
+        break;
+      case 'dw_crop':
+        await this.crop();
+        break;
+      default:
+        break;
+    }
+  }
+
+  async cut() {
+    const fillColor = config.COLOR;
+    console.log(`fill selection with background color: ${fillColor}`);
+
+    const imageLayers = config.layers.filter((l) => l.type === 'image');
 
     const actions = [];
 
+    // for each image layer, fill the selection with the background color
+    imageLayers.forEach((link) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = config.WIDTH;
+      canvas.height = config.HEIGHT;
+
+      // copy the original image to the canvas
+      ctx.drawImage(link.link, 0, 0);
+
+      // draw the clipping path
+      ctx.beginPath();
+      ctx.moveTo(this.data[0].x, this.data[0].y);
+      this.data.forEach((point) => {
+        ctx.lineTo(point.x, point.y);
+      });
+      ctx.closePath();
+      ctx.clip();
+
+      // fill the canvas with the background color
+      ctx.fillStyle = fillColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // update the link with the new image
+      actions.push(new app.Actions.Update_layer_image_action(canvas, link.id));
+    });
+
+    // clear the data and reset the state
+    this.snapshot('before cutting', () => (this.data = []));
+    this.status = Status.ready;
+
+    await doActions(actions);
+  }
+
+  async crop() {
     const data = this.data;
     if (data.length == 0) return;
+
+    const actions = [];
 
     const bbox = getBoundingBox(data);
     const cropWidth = bbox.right - bbox.left;
@@ -597,62 +648,58 @@ class MagicCrop_class extends Base_tools_class {
     const cropTop = bbox.top;
     const cropLeft = bbox.left;
 
-    config.layers.forEach((link) => {
-      if (link.type == null) return;
+    const imageLayers = config.layers.filter((l) => l.type === 'image');
 
-      if (link.type == 'image') {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = cropWidth;
-        canvas.height = cropHeight;
+    imageLayers.forEach((link) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = cropWidth;
+      canvas.height = cropHeight;
 
-        //cut required part
-        ctx.translate(-cropLeft, -cropTop);
-        ctx.drawImage(link.link, 0, 0);
-        ctx.translate(0, 0);
+      //cut required part
+      ctx.translate(-cropLeft, -cropTop);
+      ctx.drawImage(link.link, 0, 0);
+      ctx.translate(0, 0);
 
-        // create a image mask to hide the parts of the image that are not inside the polygon defined by the data
-        const maskCanvas = document.createElement('canvas');
-        const maskCtx = maskCanvas.getContext('2d');
-        maskCanvas.width = config.WIDTH;
-        maskCanvas.height = config.HEIGHT;
-        maskCtx.fillStyle = '#000000';
-        maskCtx.beginPath();
+      // create a image mask to hide the parts of the image that are not inside the polygon defined by the data
+      const maskCanvas = document.createElement('canvas');
+      const maskCtx = maskCanvas.getContext('2d');
+      maskCanvas.width = config.WIDTH;
+      maskCanvas.height = config.HEIGHT;
+      maskCtx.fillStyle = '#000000';
+      maskCtx.beginPath();
 
-        maskCtx.moveTo(data[0].x, data[0].y);
+      maskCtx.moveTo(data[0].x, data[0].y);
 
-        for (let i = 1; i < data.length; i++) {
-          const point = data.at(i);
-          if (point === null) {
-            maskCtx.closePath();
-            maskCtx.fill();
-            maskCtx.beginPath();
-          } else {
-            maskCtx.lineTo(point.x, point.y);
-          }
+      for (let i = 1; i < data.length; i++) {
+        const point = data.at(i);
+        if (point === null) {
+          maskCtx.closePath();
+          maskCtx.fill();
+          maskCtx.beginPath();
+        } else {
+          maskCtx.lineTo(point.x, point.y);
         }
-        maskCtx.closePath();
-        maskCtx.fill();
-
-        // apply the mask
-        ctx.globalCompositeOperation = 'destination-in';
-        ctx.drawImage(maskCanvas, 0, 0);
-
-        actions.push(
-          new app.Actions.Update_layer_image_action(canvas, link.id),
-        );
-
-        actions.push(
-          new app.Actions.Update_layer_action(link.id, {
-            x: 0,
-            y: 0,
-            width: cropWidth,
-            height: cropHeight,
-            width_original: cropWidth,
-            height_original: cropHeight,
-          }),
-        );
       }
+      maskCtx.closePath();
+      maskCtx.fill();
+
+      // apply the mask
+      ctx.globalCompositeOperation = 'destination-in';
+      ctx.drawImage(maskCanvas, 0, 0);
+
+      actions.push(new app.Actions.Update_layer_image_action(canvas, link.id));
+
+      actions.push(
+        new app.Actions.Update_layer_action(link.id, {
+          x: 0,
+          y: 0,
+          width: cropWidth,
+          height: cropHeight,
+          width_original: cropWidth,
+          height_original: cropHeight,
+        }),
+      );
     });
 
     actions.push(
@@ -665,21 +712,21 @@ class MagicCrop_class extends Base_tools_class {
     );
 
     // delete the magic crop layer
-    const layerId = config.layer.id;
-    actions.push(
-      new app.Actions.Delete_layer_action(layerId),
-      new app.Actions.Reset_selection_action(),
-    );
+    this.addDeleteToolAction(actions);
 
-    await app.State.do_action(
-      new app.Actions.Bundle_action(
-        'magic_crop_tool',
-        'Magic Crop Tool',
-        actions,
-      ),
-    );
+    actions.push(new app.Actions.Reset_selection_action());
+    await doActions(actions);
 
     this.status = Status.done;
+  }
+
+  addDeleteToolAction(actions) {
+    config.layers
+      .filter((l) => l.type === this.name)
+      .map((l) => {
+        console.log(`deleting layer ${l.id}, ${l.name}`);
+        actions.push(new app.Actions.Delete_layer_action(l.id));
+      });
   }
 
   on_activate() {
@@ -742,13 +789,9 @@ class MagicCrop_class extends Base_tools_class {
     this.Base_state.action_history_max = this.prior_action_history_max;
 
     // delete the magic crop layer
-    const actions = config.layers
-      .filter((l) => l.type === this.name)
-      .map((l) => {
-        console.log(`deleting layer ${l.id}, ${l.name}`);
-        return new app.Actions.Delete_layer_action(l.id);
-      });
-    return [...actions, new app.Actions.Reset_selection_action()];
+    const actions = [new app.Actions.Reset_selection_action()];
+    this.addDeleteToolAction(actions);
+    return actions;
   }
 
   mousePoint(e) {
@@ -763,6 +806,16 @@ class MagicCrop_class extends Base_tools_class {
 }
 
 export default MagicCrop_class;
+
+async function doActions(actions) {
+  await app.State.do_action(
+    new app.Actions.Bundle_action(
+      'magic_crop_tool',
+      'Magic Crop Tool',
+      actions,
+    ),
+  );
+}
 
 function circle(ctx, center, size) {
   ctx.beginPath();

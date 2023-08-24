@@ -463,7 +463,8 @@ config.TOOLS = [
     on_update: 'on_params_update',
     on_leave: 'on_leave',
     attributes: {
-      magic_crop: true,
+      dw_crop: true,
+      dw_cut: true,
     },
   },
   {
