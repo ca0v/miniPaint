@@ -22,9 +22,20 @@ import { Base_action } from '../actions/base.js';
 import Base_state_class from '../core/base-state.js';
 import zoomView from './../libs/zoomView.js';
 
+const Status = {
+  none: 'none',
+  ready: 'ready',
+  drawing: 'drawing',
+  placing: 'placing',
+  editing: 'editing',
+  hover: 'hover',
+  dragging: 'dragging',
+  done: 'done',
+};
+
 const Drawings = {
-  major: { color: '#ff000080', size: 10 },
-  minor: { color: '#00ff0080', size: 6 },
+  major: { color: '#ff000080', size: 5 },
+  minor: { color: '#00ff0080', size: 3 },
   hoverMajor: { color: '#ff000010', size: 20 },
   hoverMinor: { color: '#00ff0010', size: 20 },
   defaultStrokeColor: '#ffffff',
@@ -40,6 +51,12 @@ const Keyboard = {
   Delete: 'Delete',
   ZoomIn: '+',
   ZoomOut: '-',
+};
+
+const Settings = {
+  distanceBetweenPoints: 64,
+  minimalDistanceBetweenPoints: 8,
+  radiusThreshold: Math.PI / 16,
 };
 
 class Generic_action extends Base_action {
@@ -117,17 +134,6 @@ class EventManager {
     this.events = {};
   }
 }
-
-const Status = {
-  none: 'none',
-  ready: 'ready',
-  drawing: 'drawing',
-  placing: 'placing',
-  editing: 'editing',
-  hover: 'hover',
-  dragging: 'dragging',
-  done: 'done',
-};
 
 class MagicCrop_class extends Base_tools_class {
   constructor(ctx) {
@@ -423,6 +429,8 @@ class MagicCrop_class extends Base_tools_class {
 
     const data = this.data;
 
+    const isMouseKeyPressed = e.buttons > 0;
+
     switch (this.status) {
       case Status.hover: {
         const priorHover = JSON.stringify(this.hover);
@@ -448,7 +456,36 @@ class MagicCrop_class extends Base_tools_class {
 
       case Status.drawing: {
         if (data.length > 1) {
-          this.status = Status.placing;
+          if (!isMouseKeyPressed) {
+            this.status = Status.placing;
+          } else {
+            const priorPoint = data.at(-2);
+            let drawPoint = false;
+            const d = distance(priorPoint, currentPoint) * config.ZOOM;
+            drawPoint = drawPoint || d > Settings.distanceBetweenPoints;
+            if (
+              !drawPoint &&
+              data.length > 2 &&
+              d > Settings.minimalDistanceBetweenPoints
+            ) {
+              const a =
+                Math.PI - angleOf(data.at(-3), priorPoint, currentPoint);
+              drawPoint =
+                d * a >
+                Settings.radiusThreshold * Settings.distanceBetweenPoints;
+              if (drawPoint) {
+                console.log(`angle: ${a}, distance: ${d}`);
+              }
+            }
+            if (drawPoint) {
+              data.push(currentPoint);
+            } else {
+              const p = data.at(-1);
+              p.x = currentPoint.x;
+              p.y = currentPoint.y;
+            }
+            this.renderData();
+          }
         } else {
           data.push(currentPoint);
           this.renderData();
@@ -864,7 +901,7 @@ function dot(ctx, point) {
 function computeHover(data, currentPoint) {
   const pointIndex = data.findIndex((point) => {
     const distanceToCurrentPoint = distance(point, currentPoint);
-    return distanceToCurrentPoint < Drawings.major.size / config.ZOOM;
+    return distanceToCurrentPoint < Drawings.hoverMajor.size / config.ZOOM;
   });
 
   if (pointIndex > -1) return { pointIndex };
@@ -874,7 +911,7 @@ function computeHover(data, currentPoint) {
     const nextPoint = data[(i + 1) % data.length];
     const centerPoint = center(point, nextPoint);
     const distanceToCurrentPoint = distance(centerPoint, currentPoint);
-    return distanceToCurrentPoint < Drawings.minor.size / config.ZOOM;
+    return distanceToCurrentPoint < Drawings.hoverMinor.size / config.ZOOM;
   });
 
   if (midpointIndex > -1) {
@@ -949,4 +986,11 @@ function deep(obj) {
 
 function age(time) {
   return Date.now() - time;
+}
+
+function angleOf(p1, p2, p3) {
+  const a = distance(p1, p2);
+  const b = distance(p2, p3);
+  const c = distance(p1, p3);
+  return Math.acos((a * a + b * b - c * c) / (2 * a * b));
 }
