@@ -500,8 +500,8 @@ class MagicCrop_class extends Base_tools_class {
     const currentPoint = this.mousePoint(e);
     if (!currentPoint) return;
 
-    const simplifiedData = removeColinearPoints(this.data);
-    if (simplifiedData.length < this.data.length) {
+    const simplifiedData = smooth(removeColinearPoints(this.data));
+    if (simplifiedData.length != this.data.length) {
       this.snapshot(`before removing colinear points`, () => {
         this.data = deep(simplifiedData);
       });
@@ -1332,3 +1332,168 @@ function clockwise(data) {
 
   return data;
 }
+
+class Smooth {
+  static smooth(data) {
+    if (data.length < 3) return data;
+
+    // generate new points which fit the data using a bezier curve
+    const result = [];
+
+    for (let i = 0; i < data.length - 2; i += 2) {
+      const p1 = data.at(i + 0);
+      const p2 = data.at((i + 1) % data.length);
+      const p3 = data.at((i + 2) % data.length);
+
+      const circle = this.centerOfCircle(p1, p2, p3);
+      const angle1 = this.radianOfPoint(circle, center(p1, p2));
+      const angle2 = this.radianOfPoint(circle, center(p2, p3));
+      result.push(
+        p1,
+        this.arcPoint(circle, angle1),
+        p2,
+        this.arcPoint(circle, angle2),
+      );
+    }
+
+    console.log('diff', data.length, result.length, diff(data, result));
+
+    return result;
+  }
+
+  centerOfCircle(p1, p2, p3) {
+    const a = distance(p1, p2);
+    const b = distance(p2, p3);
+    const c = distance(p1, p3);
+    const s = (a + b + c) / 2;
+    const r = (a * b * c) / (4 * Math.sqrt(s * (s - a) * (s - b) * (s - c)));
+    const a1 = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+    const a2 = Math.atan2(p3.y - p2.y, p3.x - p2.x);
+    const a3 = (a1 + a2) / 2;
+    const x = p2.x + r * Math.cos(a3);
+    const y = p2.y + r * Math.sin(a3);
+    return { r, x, y };
+  }
+
+  radianOfPoint(circle, point) {
+    const a = Math.atan2(point.y - circle.y, point.x - circle.x);
+    return a < 0 ? a + 2 * Math.PI : a;
+  }
+
+  arcPoint(circle, angle) {
+    const x = circle.x + circle.r * Math.cos(angle);
+    const y = circle.y + circle.r * Math.sin(angle);
+    return { x, y };
+  }
+}
+
+function diff(array1, array2) {
+  const result = [];
+  array1.forEach((item, i) => {
+    if (item.x !== array2[i].x || item.y !== array2[i].y) {
+      result.push({ index: i, item1: item, item2: array2[i] });
+    }
+  });
+  return result;
+}
+
+class Tests {
+  tests() {
+    const vision = new Smooth();
+
+    {
+      vision.arcPoint; // tests
+
+      const circle = { x: 0, y: 0, r: 1 };
+      this.eq(
+        1,
+        vision.arcPoint(circle, 0).x,
+        'A circle at origin with radius 1 at 0 degrees should be at (1,0)',
+      );
+
+      this.eq(
+        0,
+        vision.arcPoint(circle, 0).y,
+        'A circle at origin with radius 1 at 0 degrees should be at (1,0)',
+      );
+
+      {
+        this.eq(
+          0,
+          vision.arcPoint(circle, Math.PI / 2).x,
+          `A circle at origin with radius 1 at 90 degrees should be at (0,_)`,
+        );
+      }
+
+      this.eq(
+        1,
+        vision.arcPoint(circle, Math.PI / 2).y,
+        'A circle at origin with radius 1 at 90 degrees should be at (_,1)',
+      );
+    }
+
+    {
+      vision.radianOfPoint; // tests
+
+      const circle = { x: 0, y: 0, r: 1 };
+      this.eq(
+        0,
+        vision.radianOfPoint(circle, { x: 1, y: 0 }),
+        'A circle at origin with radius 1 at (1,0) should be at 0 degrees',
+      );
+
+      this.eq(
+        Math.PI / 2,
+        vision.radianOfPoint(circle, { x: 0, y: 1 }),
+        'A circle at origin with radius 1 at (0,1) should be at 90 degrees',
+      );
+
+      this.eq(
+        Math.PI,
+        vision.radianOfPoint(circle, { x: -1, y: 0 }),
+        'A circle at origin with radius 1 at (-1,0) should be at 180 degrees',
+      );
+
+      this.eq(
+        (3 * Math.PI) / 2,
+        vision.radianOfPoint(circle, { x: 0, y: -1 }),
+        'A circle at origin with radius 1 at (0,-1) should be at 270 degrees',
+      );
+    }
+
+    {
+      vision.centerOfCircle; // tests
+
+      let circle = vision.centerOfCircle(
+        { x: -1, y: 0 },
+        { x: 1, y: 0 },
+        { x: 0, y: 1 },
+      );
+      this.eq(
+        0.5,
+        circle.x,
+        'The center of a circle with points (0,0), (1,0), (0,1) should be at (0.5,0.5)',
+      );
+      this.eq(
+        0.5,
+        circle.y,
+        'The center of a circle with points (0,0), (1,0), (0,1) should be at (0.5,0.5)',
+      );
+    }
+  }
+
+  eq(expected, actual, assertion) {
+    if (typeof actual === 'number') actual = actual.toFixed(6);
+    if (typeof expected === 'number') expected = expected.toFixed(6);
+    console.assert(
+      expected === actual,
+      `${assertion}: the actual value was ${actual} but the expected value was ${expected}`,
+    );
+  }
+
+  radToDeg(rad) {
+    return Math.round((rad * 180) / Math.PI);
+  }
+}
+
+new Tests().tests();
