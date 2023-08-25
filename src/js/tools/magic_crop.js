@@ -18,11 +18,7 @@
  * -- but the crop.js works correctly, so the solution is in there somewhere
  * - Cut is using correct color but crop is using transparent
  * - Undo/Redo needs tuning (a debounce might work well here when drag drawing points)
- *
- * ** TODO **
- * - "Escape" should clear all points
- * - "Enter" should close the polygon
- * - "X" should cut the interior
+ * - Double-clicking is also clicking, so replace dblclick with shift+click
  *
  */
 import app from '../app.js';
@@ -192,6 +188,19 @@ class EventManager {
 }
 
 class MagicCrop_class extends Base_tools_class {
+  // define getter and setter for status
+  get status() {
+    return this._status;
+  }
+
+  set status(value) {
+    console.log(`status: ${this._status} -> ${value}`);
+    if (this._status !== value) {
+      alertify.success(`status: ${this._status} -> ${value}`);
+      this._status = value;
+    }
+  }
+
   constructor(ctx) {
     super();
     this.metrics = {
@@ -516,12 +525,19 @@ class MagicCrop_class extends Base_tools_class {
           currentPoint,
         )?.pointIndex;
         if (hoverPointIndex >= 0) {
-          this.snapshot('before deleting point', () => {
-            this.data.splice(hoverPointIndex, 1);
-            if (!this.data.length) {
-              this.status = Status.ready;
-            }
-          });
+          this.undoredo(
+            'before deleting point',
+            () => {
+              this.data.splice(hoverPointIndex, 1);
+              if (!this.data.length) {
+                this.status = Status.ready;
+              }
+            },
+            () => {
+              this.data.splice(hoverPointIndex, 0, currentPoint);
+              this.status = Status.editing;
+            },
+          );
         }
         break;
       }
@@ -1038,7 +1054,10 @@ class MagicCrop_class extends Base_tools_class {
         this.data = []; //JSON.parse(localStorage.getItem('magic_crop_data') || '[]');
         this.status = this.data.length ? Status.editing : Status.ready;
         this.events.on('keydown', (event) => this.keydown(event));
-        this.events.on('dblclick', (event) => this.dblclick(event));
+        this.events.on(
+          'mousedown',
+          (event) => event.shiftKey && this.dblclick(event),
+        );
         this.events.on('mousedown', (event) => this.mousedown(event));
         this.events.on('mousemove', (event) => this.mousemove(event));
         this.events.on('mouseup', (event) => this.mouseup(event));
