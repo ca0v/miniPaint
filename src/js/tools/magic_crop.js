@@ -31,7 +31,7 @@ import { Base_action } from '../actions/base.js';
 import Base_state_class from '../core/base-state.js';
 import zoomView from './../libs/zoomView.js';
 
-const Status = {
+const Status = Object.freeze({
   none: 'none',
   ready: 'ready',
   drawing: 'drawing',
@@ -41,18 +41,18 @@ const Status = {
   dragging: 'dragging',
   before_dragging: 'before_dragging',
   done: 'done',
-};
+});
 
-const Drawings = {
+const Drawings = Object.freeze({
   major: { color: '#ffffffa0', size: 5 },
   minor: { color: '#1f1f1fa0', size: 3 },
   hoverMajor: { color: '#00ff0010', size: 20 },
   hoverMinor: { color: '#00ff0010', size: 20 },
   defaultStrokeColor: '#000000ff',
   fill: { color: '#ffffff01', exclusionColor: '#00000020' },
-};
+});
 
-const Keyboard = {
+const Keyboard = Object.freeze({
   ArrowLeft: 'ArrowLeft',
   ArrowRight: 'ArrowRight',
   ArrowUp: 'ArrowUp',
@@ -65,13 +65,13 @@ const Keyboard = {
   ClearInterior: 'Shift+X',
   ClearExterior: 'x',
   ClosePolygon: ' ',
-};
+});
 
-const Settings = {
+const Settings = Object.freeze({
   distanceBetweenPoints: 64,
   minimalDistanceBetweenPoints: 8,
   radiusThreshold: Math.PI / 16,
-};
+});
 
 class Generic_action extends Base_action {
   constructor(cropper, { why, doit, undo }) {
