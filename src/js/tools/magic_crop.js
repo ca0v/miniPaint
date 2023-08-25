@@ -8,6 +8,7 @@
  * placing - user is moving mouse deciding where to place the next point
  * editing - user has closed the polygon and can now add/move/delete vertices
  * hover - user is hovering over a vertex or midpoint
+ * before_dragging - pragmatic state for capturing undo/redo data
  * dragging - user is dragging a vertex or midpoint
  * done - user has clicked the "Magic Crop" button, all points are cleared
  *
@@ -45,6 +46,7 @@ const Status = {
   editing: 'editing',
   hover: 'hover',
   dragging: 'dragging',
+  before_dragging: 'before_dragging',
   done: 'done',
 };
 
@@ -79,43 +81,55 @@ const Settings = {
 };
 
 class Generic_action extends Base_action {
-  constructor(cropper, { doit, undo }) {
+  constructor(cropper, { why, doit, undo }) {
     super('generic_magic_crop_action', 'Magic Crop Changes');
     this.cropper = cropper; //not used
-    this.doit = doit;
-    this.undo = undo;
+    this._why = why;
+    this._doit = doit;
+    this._undo = undo;
   }
 
   async do() {
     super.do();
-    this.doit();
+    console.log(`generic do: ${this._why}`);
+    this._doit();
   }
 
   async undo() {
-    this.undo();
+    console.log(`generic undo: ${this._why}`);
+    this._undo();
     super.undo();
   }
 }
 
 class Update_layer_action extends Base_action {
-  constructor(cropper, cb) {
+  constructor(cropper, about, cb) {
     super('update_magic_crop_data', 'Magic Crop Changes');
     this.cropper = cropper;
+    this.about = about;
     this.cb = cb;
-    this.state = deep(this.cropper.data);
+    this.initialData = deep(this.cropper.data);
   }
 
   async do() {
     super.do();
+    console.log(`do: ${this.about}`);
     if (this.cb) {
-      this.cropper.data = deep(this.state);
+      this.cropper.data = deep(this.initialData);
       this.cb();
       this.cropper.Base_layers.render();
+    } else if (this.dataBeforeUndo) {
+      this.cropper.Base_layers.render();
+      this.cropper.data = deep(this.dataBeforeUndo);
+    } else {
+      // nothing to do
     }
   }
 
   async undo() {
-    this.cropper.data = deep(this.state);
+    console.log(`undo: ${this.about}`);
+    this.dataBeforeUndo = deep(this.cropper.data);
+    this.cropper.data = deep(this.initialData);
     this.cropper.Base_layers.render();
     super.undo();
   }
@@ -510,7 +524,7 @@ class MagicCrop_class extends Base_tools_class {
 
     switch (this.status) {
       case Status.hover: {
-        this.status = Status.dragging;
+        this.status = Status.before_dragging;
         break;
       }
 
@@ -644,13 +658,29 @@ class MagicCrop_class extends Base_tools_class {
         break;
       }
 
-      case Status.dragging: {
-        // move the point
+      case Status.before_dragging: {
         if (this.hover?.pointIndex >= 0) {
           const index = this.hover.pointIndex;
-          const point = data.at(index);
-          point.x = currentPoint.x;
-          point.y = currentPoint.y;
+          this.hover.point = this.data.at(index);
+
+          const { x: original_x, y: original_y } = this.data.at(index);
+          let { x: redo_x, y: redo_y } = currentPoint;
+          this.undoredo(
+            `before dragging point ${index} from ${original_x}, ${original_y}`,
+            () => {
+              const point = this.data.at(index);
+              point.x = redo_x;
+              point.y = redo_y;
+            },
+            () => {
+              const point = this.data.at(index);
+              redo_x = point.x;
+              redo_y = point.y;
+              point.x = original_x;
+              point.y = original_y;
+            },
+          );
+
           // render the line
           this.Base_layers.render();
         } else if (this.hover?.midpointIndex >= 0) {
@@ -658,8 +688,22 @@ class MagicCrop_class extends Base_tools_class {
           // insert current point after this index
           data.splice(index + 1, 0, currentPoint);
           this.hover = { pointIndex: index + 1 };
+          this.hover.point = data.at(index + 1);
           // render the line
           this.Base_layers.render();
+        }
+        this.status = Status.dragging;
+        break;
+      }
+      case Status.dragging: {
+        // move the point
+        if (this.hover?.point) {
+          const point = this.hover.point;
+          point.x = currentPoint.x;
+          point.y = currentPoint.y;
+          this.Base_layers.render();
+        } else {
+          console.log(`mousemove: no point to drag`);
         }
         break;
       }
@@ -789,13 +833,13 @@ class MagicCrop_class extends Base_tools_class {
 
   snapshot(why, cb) {
     console.log(`snapshot: ${why}`);
-    const action = new Update_layer_action(this, cb);
+    const action = new Update_layer_action(this, why, cb);
     app.State.do_action(action);
   }
 
   undoredo(why, doit, undo) {
     console.log(`undoredo: ${why}`);
-    const action = new Generic_action(this, { doit, undo });
+    const action = new Generic_action(this, { why, doit, undo });
     app.State.do_action(action);
   }
 
