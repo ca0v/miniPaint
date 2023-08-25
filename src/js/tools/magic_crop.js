@@ -64,7 +64,7 @@ const Keyboard = {
   Reset: 'Escape',
   ClearInterior: 'Shift+X',
   ClearExterior: 'x',
-  ClosePolygon: 'Enter',
+  ClosePolygon: ' ',
 };
 
 const Settings = {
@@ -407,7 +407,7 @@ class MagicCrop_class extends Base_tools_class {
             }
 
           default: {
-            console.log(`keydown: keyboard state ${keyboardState}`);
+            console.log(`keydown: unknown keyboard state '${keyboardState}'`);
             break;
           }
         }
