@@ -1311,18 +1311,27 @@ class Smooth {
         result.push(p2);
         result.push(this.arcPoint(circle, angle2));
       } catch (ex) {
-        // colinear points
-        result.push(p2);
-        result.push(p2);
+        // ignore this point
       }
     }
 
     const averages = [];
     // find the center of each pair of points
     for (let i = 0; i < result.length; i += 2) {
+      const pBefore = result.at((i - 2 + result.length) % result.length);
       const p1 = result.at((i - 1 + result.length) % result.length);
       const p2 = result.at(i % result.length);
-      averages.push(center(p1, p2));
+      const pAfter = result.at((i + 1) % result.length);
+      const pCenter = center(pBefore, pAfter);
+      const d1 = distance(p1, pCenter);
+      const d2 = distance(p2, pCenter);
+      if (d1 < d2) {
+        averages.push(p1);
+      } else if (d2 < d1) {
+        averages.push(p2);
+      } else {
+        averages.push(center(p1, p2));
+      }
     }
 
     return averages;
