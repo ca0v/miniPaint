@@ -176,9 +176,7 @@ class EventManager {
   }
 
   off() {
-    Object.keys(this.ops).forEach((eventName) =>
-      document.removeEventListener(eventName, this.ops[eventName]),
-    );
+    Object.keys(this.ops).forEach((eventName) => document.removeEventListener(eventName, this.ops[eventName]));
     this.ops = [];
     this.events = {};
   }
@@ -256,9 +254,7 @@ class MagicCrop_class extends Base_tools_class {
     const { x: px, y: py } = point;
     const pos_global = zoomView.toScreen(point);
 
-    console.log(
-      `point at: ${px}, ${py} zoom at: ${dx}, ${dy}, moving to: ${pos_global.x}, ${pos_global.y}`,
-    );
+    console.log(`point at: ${px}, ${py} zoom at: ${dx}, ${dy}, moving to: ${pos_global.x}, ${pos_global.y}`);
 
     // preview top-left of point
     zoomView.move(-pos_global.x, -pos_global.y);
@@ -280,8 +276,7 @@ class MagicCrop_class extends Base_tools_class {
         let indexOffset = 0;
 
         const isMidpoint = this.hover?.midpointIndex >= 0;
-        let pointIndex =
-          this.hover?.pointIndex || this.hover?.midpointIndex || 0;
+        let pointIndex = this.hover?.pointIndex || this.hover?.midpointIndex || 0;
 
         let zoom = 0;
         switch (keyboardState) {
@@ -366,12 +361,7 @@ class MagicCrop_class extends Base_tools_class {
 
           case Keyboard.CenterAt: {
             if (isMidpoint) {
-              this.centerAt(
-                center(
-                  this.data.at(pointIndex),
-                  this.data.at((pointIndex + 1) % this.data.length),
-                ),
-              );
+              this.centerAt(center(this.data.at(pointIndex), this.data.at((pointIndex + 1) % this.data.length)));
             } else {
               this.centerAt(this.data[pointIndex]);
             }
@@ -445,10 +435,7 @@ class MagicCrop_class extends Base_tools_class {
           if (isMidpoint) {
             // create the point an select the new point
             const index = this.hover.midpointIndex;
-            const point = center(
-              this.data.at(index),
-              this.data.at((index + 1) % this.data.length),
-            );
+            const point = center(this.data.at(index), this.data.at((index + 1) % this.data.length));
             point.x += dx;
             point.y += dy;
             this.snapshot('before moving point', () => {
@@ -500,7 +487,7 @@ class MagicCrop_class extends Base_tools_class {
     const currentPoint = this.mousePoint(e);
     if (!currentPoint) return;
 
-    const simplifiedData = smooth(removeColinearPoints(this.data));
+    const simplifiedData = new Smooth().smooth(removeColinearPoints(this.data));
     if (simplifiedData.length != this.data.length) {
       this.snapshot(`before removing colinear points`, () => {
         this.data = deep(simplifiedData);
@@ -521,10 +508,7 @@ class MagicCrop_class extends Base_tools_class {
       case Status.editing:
       case Status.hover: {
         // delete the hover point
-        const hoverPointIndex = computeHover(
-          this.data,
-          currentPoint,
-        )?.pointIndex;
+        const hoverPointIndex = computeHover(this.data, currentPoint)?.pointIndex;
         if (hoverPointIndex >= 0) {
           this.undoredo(
             'before deleting point',
@@ -616,12 +600,7 @@ class MagicCrop_class extends Base_tools_class {
     if (!currentPoint) return;
 
     // is the current point outside the canvas?
-    if (
-      currentPoint.x < 0 ||
-      currentPoint.x > config.WIDTH ||
-      currentPoint.y < 0 ||
-      currentPoint.y > config.HEIGHT
-    ) {
+    if (currentPoint.x < 0 || currentPoint.x > config.WIDTH || currentPoint.y < 0 || currentPoint.y > config.HEIGHT) {
       // if so, then we are not hovering over anything
       return;
     }
@@ -662,16 +641,9 @@ class MagicCrop_class extends Base_tools_class {
             let drawPoint = false;
             const d = distance(priorPoint, currentPoint) * config.ZOOM;
             drawPoint = drawPoint || d > Settings.distanceBetweenPoints;
-            if (
-              !drawPoint &&
-              data.length > 2 &&
-              d > Settings.minimalDistanceBetweenPoints
-            ) {
-              const a =
-                Math.PI - angleOf(data.at(-3), priorPoint, currentPoint);
-              drawPoint =
-                d * a >
-                Settings.radiusThreshold * Settings.distanceBetweenPoints;
+            if (!drawPoint && data.length > 2 && d > Settings.minimalDistanceBetweenPoints) {
+              const a = Math.PI - angleOf(data.at(-3), priorPoint, currentPoint);
+              drawPoint = d * a > Settings.radiusThreshold * Settings.distanceBetweenPoints;
               if (drawPoint) {
                 console.log(`angle: ${a}, distance: ${d}`);
               }
@@ -685,9 +657,7 @@ class MagicCrop_class extends Base_tools_class {
             }
             this.renderData();
 
-            this.delayedSnapshot(
-              `before drawing points at location ${data.length}`,
-            );
+            this.delayedSnapshot(`before drawing points at location ${data.length}`);
           }
         } else {
           this.undoredo(
@@ -1010,9 +980,7 @@ class MagicCrop_class extends Base_tools_class {
 
       //cut required part
       console.log(
-        `cropping image ${link.id} to ${cropWidth}x${cropHeight}, width_ratio=${
-          link.width / link.width_original
-        }`,
+        `cropping image ${link.id} to ${cropWidth}x${cropHeight}, width_ratio=${link.width / link.width_original}`,
       );
       ctx.translate(-cropLeft - x, -cropTop);
       ctx.drawImage(link.link, 0, 0);
@@ -1038,13 +1006,9 @@ class MagicCrop_class extends Base_tools_class {
         background.fillRect(0, 0, canvas.width, canvas.height);
         // now copy the cropped image onto the background
         background.drawImage(canvas, 0, 0);
-        actions.push(
-          new app.Actions.Update_layer_image_action(background.canvas, link.id),
-        );
+        actions.push(new app.Actions.Update_layer_image_action(background.canvas, link.id));
       } else {
-        actions.push(
-          new app.Actions.Update_layer_image_action(canvas, link.id),
-        );
+        actions.push(new app.Actions.Update_layer_image_action(canvas, link.id));
       }
 
       actions.push(
@@ -1082,10 +1046,7 @@ class MagicCrop_class extends Base_tools_class {
         this.data = []; //JSON.parse(localStorage.getItem('magic_crop_data') || '[]');
         this.status = this.data.length ? Status.editing : Status.ready;
         this.events.on('keydown', (event) => this.keydown(event));
-        this.events.on(
-          'mousedown',
-          (event) => event.shiftKey && this.dblclick(event),
-        );
+        this.events.on('mousedown', (event) => event.shiftKey && this.dblclick(event));
         this.events.on('mousedown', (event) => this.mousedown(event));
         this.events.on('mousemove', (event) => this.mousemove(event));
         this.events.on('mouseup', (event) => this.mouseup(event));
@@ -1129,11 +1090,9 @@ class MagicCrop_class extends Base_tools_class {
         color: config.COLOR,
       };
       app.State.do_action(
-        new app.Actions.Bundle_action(
-          'new_magic_crop_layer',
-          'Magic Crop Layer',
-          [new app.Actions.Insert_layer_action(layer)],
-        ),
+        new app.Actions.Bundle_action('new_magic_crop_layer', 'Magic Crop Layer', [
+          new app.Actions.Insert_layer_action(layer),
+        ]),
       );
       this.params_hash = params_hash;
     } else {
@@ -1168,13 +1127,7 @@ class MagicCrop_class extends Base_tools_class {
 export default MagicCrop_class;
 
 async function doActions(actions) {
-  await app.State.do_action(
-    new app.Actions.Bundle_action(
-      'magic_crop_tool',
-      'Magic Crop Tool',
-      actions,
-    ),
-  );
+  await app.State.do_action(new app.Actions.Bundle_action('magic_crop_tool', 'Magic Crop Tool', actions));
 }
 
 function circle(ctx, center, size) {
@@ -1290,16 +1243,12 @@ function angleOf(p1, p2, p3) {
 
 function computeKeyboardState(e) {
   const { key, ctrlKey, altKey, shiftKey } = e;
-  return `${ctrlKey ? 'Ctrl+' : ''}${altKey ? 'Alt+' : ''}${
-    shiftKey ? 'Shift+' : ''
-  }${key}`;
+  return `${ctrlKey ? 'Ctrl+' : ''}${altKey ? 'Alt+' : ''}${shiftKey ? 'Shift+' : ''}${key}`;
 }
 
 function dump(cropper) {
   console.log(`status: ${cropper.status}`);
-  console.log(
-    `data: ${cropper.data.map((d) => `${Math.floor(d.x)},${Math.floor(d.y)}`)}`,
-  );
+  console.log(`data: ${cropper.data.map((d) => `${Math.floor(d.x)},${Math.floor(d.y)}`)}`);
 }
 
 function debounce(func, wait = 50, immediate = false) {
@@ -1334,31 +1283,41 @@ function clockwise(data) {
 }
 
 class Smooth {
-  static smooth(data) {
+  smooth(data) {
     if (data.length < 3) return data;
 
     // generate new points which fit the data using a bezier curve
     const result = [];
 
-    for (let i = 0; i < data.length - 2; i += 2) {
-      const p1 = data.at(i + 0);
-      const p2 = data.at((i + 1) % data.length);
-      const p3 = data.at((i + 2) % data.length);
+    for (let i = 0; i < data.length; i++) {
+      const p1 = data.at((i - 1 + data.length) % data.length);
+      const p2 = data.at((i + 0) % data.length);
+      const p3 = data.at((i + 1) % data.length);
 
-      const circle = this.centerOfCircle(p1, p2, p3);
-      const angle1 = this.radianOfPoint(circle, center(p1, p2));
-      const angle2 = this.radianOfPoint(circle, center(p2, p3));
-      result.push(
-        p1,
-        this.arcPoint(circle, angle1),
-        p2,
-        this.arcPoint(circle, angle2),
-      );
+      try {
+        const circle = this.centerOfCircle(p1, p2, p3);
+        const angle1 = this.radianOfPoint(circle, center(p1, p2));
+        const angle2 = this.radianOfPoint(circle, center(p2, p3));
+        result.push(this.arcPoint(circle, angle1));
+        result.push(p2);
+        result.push(p2);
+        result.push(this.arcPoint(circle, angle2));
+      } catch (ex) {
+        // colinear points
+        result.push(p2);
+        result.push(p2);
+      }
     }
 
-    console.log('diff', data.length, result.length, diff(data, result));
+    const averages = [];
+    // find the center of each pair of points
+    for (let i = 0; i < result.length; i += 2) {
+      const p1 = result.at((i + result.length) % result.length);
+      const p2 = result.at((i + 1) % result.length);
+      averages.push(center(p1, p2));
+    }
 
-    return result;
+    return averages;
   }
 
   centerOfCircle(p1, p2, p3) {
@@ -1375,7 +1334,7 @@ class Smooth {
     const dx = ax - bx;
     const dy = ay - by;
     const vu = vx * uy - vy * ux;
-    if (vu == 0) throw `Points are collinear`;
+    if (vu == 0) throw `Points are collinear: ${JSON.stringify({ p1, p2, p3 })}`;
     const g = (dx * uy - dy * ux) / vu;
     center.x = bx + g * vx;
     center.y = by + g * vy;
@@ -1412,17 +1371,9 @@ class Tests {
       vision.arcPoint; // tests
 
       const circle = { x: 0, y: 0, r: 1 };
-      this.eq(
-        1,
-        vision.arcPoint(circle, 0).x,
-        'A circle at origin with radius 1 at 0 degrees should be at (1,0)',
-      );
+      this.eq(1, vision.arcPoint(circle, 0).x, 'A circle at origin with radius 1 at 0 degrees should be at (1,0)');
 
-      this.eq(
-        0,
-        vision.arcPoint(circle, 0).y,
-        'A circle at origin with radius 1 at 0 degrees should be at (1,0)',
-      );
+      this.eq(0, vision.arcPoint(circle, 0).y, 'A circle at origin with radius 1 at 0 degrees should be at (1,0)');
 
       {
         this.eq(
@@ -1471,20 +1422,39 @@ class Tests {
     {
       vision.centerOfCircle; // tests
 
-      let circle = vision.centerOfCircle(
-        { x: -1, y: 0 },
-        { x: 1, y: 0 },
-        { x: 0, y: 1 },
-      );
+      let circle = vision.centerOfCircle({ x: -1, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 });
+      this.eq(0, circle.x, 'The center of a circle with points (0,0), (1,0), (0,1) should be at (0,_)');
+      this.eq(0, circle.y, 'The center of a circle with points (0,0), (1,0), (0,1) should be at (_,0)');
+    }
+
+    {
+      vision.smooth; // tests
+
+      const p0 = { x: 0, y: 0 };
+      const p1 = { x: 1, y: 0 };
+      const p2 = { x: 0, y: 1 };
+      const p3 = { x: -1, y: 1 };
+      const p4 = { x: -2, y: 1 };
+
+      this.eq(0, vision.smooth([]).length, 'The result should be empty');
+      this.eq(1, vision.smooth([p0]).length, 'The result should be a single point');
+      this.eq(2, vision.smooth([p0, p0]).length, 'The result should be the same two points');
       this.eq(
-        0,
-        circle.x,
-        'The center of a circle with points (0,0), (1,0), (0,1) should be at (0,_)',
+        6,
+        vision.smooth([p0, p1, p2]).length,
+        'Three interpolated points should be injected into the original set of three points',
       );
+
       this.eq(
-        0,
-        circle.y,
-        'The center of a circle with points (0,0), (1,0), (0,1) should be at (_,0)',
+        8,
+        vision.smooth([p0, p1, p2, p3]).length,
+        'An interpolation point was added between every non-colinear pair of points (including between the last and first)',
+      );
+
+      this.eq(
+        9,
+        vision.smooth([p0, p1, p2, p3, p4]).length,
+        'An interpolation point was added between every non-colinear pair of points',
       );
     }
   }
