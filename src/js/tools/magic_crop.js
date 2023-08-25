@@ -1471,9 +1471,9 @@ class Tests {
       );
 
       this.eq(
-        9,
+        8,
         vision.smooth([p0, p1, p2, p3, p4]).length,
-        'An interpolation point was added between every non-colinear pair of points',
+        'An interpolation point was added between every non-colinear pair of points (p4 is thrown out)',
       );
 
       const smooth = vision.smooth([p0, p1, p2]);
