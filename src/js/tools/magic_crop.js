@@ -64,6 +64,7 @@ const Keyboard = Object.freeze({
   Reset: 'Escape',
   ClearInterior: 'Shift+X',
   ClearExterior: 'x',
+  Smooth: 'q',
   ClosePolygon: ' ',
 });
 
@@ -359,6 +360,13 @@ class MagicCrop_class extends Base_tools_class {
             break;
           }
 
+          case Keyboard.Smooth: {
+            this.snapshot('before smoothing', () => {
+              this.data = new Smooth().smooth(this.data);
+            });
+            break;
+          }
+
           case Keyboard.CenterAt: {
             if (isMidpoint) {
               this.centerAt(center(this.data.at(pointIndex), this.data.at((pointIndex + 1) % this.data.length)));
@@ -487,7 +495,7 @@ class MagicCrop_class extends Base_tools_class {
     const currentPoint = this.mousePoint(e);
     if (!currentPoint) return;
 
-    const simplifiedData = new Smooth().smooth(removeColinearPoints(this.data));
+    const simplifiedData = removeColinearPoints(this.data);
     if (simplifiedData.length != this.data.length) {
       this.snapshot(`before removing colinear points`, () => {
         this.data = deep(simplifiedData);
