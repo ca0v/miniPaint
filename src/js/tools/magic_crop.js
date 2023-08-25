@@ -1362,17 +1362,24 @@ class Smooth {
   }
 
   centerOfCircle(p1, p2, p3) {
-    const a = distance(p1, p2);
-    const b = distance(p2, p3);
-    const c = distance(p1, p3);
-    const s = (a + b + c) / 2;
-    const r = (a * b * c) / (4 * Math.sqrt(s * (s - a) * (s - b) * (s - c)));
-    const a1 = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-    const a2 = Math.atan2(p3.y - p2.y, p3.x - p2.x);
-    const a3 = (a1 + a2) / 2;
-    const x = p2.x + r * Math.cos(a3);
-    const y = p2.y + r * Math.sin(a3);
-    return { r, x, y };
+    // from https://stackoverflow.com/questions/4103405/what-is-the-algorithm-for-finding-the-center-of-a-circle-from-three-points
+    const center = { x: 0, y: 0 };
+    const ax = (p1.x + p2.x) / 2;
+    const ay = (p1.y + p2.y) / 2;
+    const ux = p1.y - p2.y;
+    const uy = p2.x - p1.x;
+    const bx = (p2.x + p3.x) / 2;
+    const by = (p2.y + p3.y) / 2;
+    const vx = p2.y - p3.y;
+    const vy = p3.x - p2.x;
+    const dx = ax - bx;
+    const dy = ay - by;
+    const vu = vx * uy - vy * ux;
+    if (vu == 0) throw `Points are collinear`;
+    const g = (dx * uy - dy * ux) / vu;
+    center.x = bx + g * vx;
+    center.y = by + g * vy;
+    return center;
   }
 
   radianOfPoint(circle, point) {
@@ -1470,14 +1477,14 @@ class Tests {
         { x: 0, y: 1 },
       );
       this.eq(
-        0.5,
+        0,
         circle.x,
-        'The center of a circle with points (0,0), (1,0), (0,1) should be at (0.5,0.5)',
+        'The center of a circle with points (0,0), (1,0), (0,1) should be at (0,_)',
       );
       this.eq(
-        0.5,
+        0,
         circle.y,
-        'The center of a circle with points (0,0), (1,0), (0,1) should be at (0.5,0.5)',
+        'The center of a circle with points (0,0), (1,0), (0,1) should be at (_,0)',
       );
     }
   }
