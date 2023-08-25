@@ -93,45 +93,68 @@ class Generic_action extends Base_action {
     super.do();
     console.log(`generic do: ${this._why}`);
     this._doit();
+    this.cropper.Base_layers.render();
+    dump(this.cropper);
   }
 
   async undo() {
     console.log(`generic undo: ${this._why}`);
     this._undo();
     super.undo();
+    this.cropper.Base_layers.render();
+    dump(this.cropper);
   }
 }
 
 class Update_layer_action extends Base_action {
-  constructor(cropper, about, cb) {
+  constructor(cropper, about = 'no description provided', cb = null) {
     super('update_magic_crop_data', 'Magic Crop Changes');
     this.cropper = cropper;
     this.about = about;
     this.cb = cb;
-    this.initialData = deep(this.cropper.data);
+
+    this.cropperState = {
+      isRedo: false,
+      do: {
+        data: deep(this.cropper.data),
+        status: this.cropper.status,
+      },
+      undo: {
+        data: null,
+        status: '',
+      },
+    };
   }
 
   async do() {
     super.do();
     console.log(`do: ${this.about}`);
     if (this.cb) {
-      this.cropper.data = deep(this.initialData);
+      if (this.cropperState.isRedo) {
+        this.cropper.data = deep(this.cropperState.do.data);
+        this.cropper.status = this.cropperState.do.status;
+      }
       this.cb();
       this.cropper.Base_layers.render();
-    } else if (this.dataBeforeUndo) {
+    } else if (this.cropperState.isRedo) {
+      this.cropper.data = deep(this.cropperState.undo.data);
+      this.cropper.status = this.cropperState.undo.status;
       this.cropper.Base_layers.render();
-      this.cropper.data = deep(this.dataBeforeUndo);
     } else {
       // nothing to do
     }
+    dump(this.cropper);
   }
 
   async undo() {
+    this.cropperState.isRedo = true;
     console.log(`undo: ${this.about}`);
-    this.dataBeforeUndo = deep(this.cropper.data);
-    this.cropper.data = deep(this.initialData);
+    this.cropperState.undo.data = deep(this.cropper.data);
+    this.cropperState.undo.status = deep(this.cropper.status);
+    this.cropper.data = deep(this.cropperState.do.data);
     this.cropper.Base_layers.render();
     super.undo();
+    dump(this.cropper);
   }
 
   free() {
@@ -467,21 +490,22 @@ class MagicCrop_class extends Base_tools_class {
     const currentPoint = this.mousePoint(e);
     if (!currentPoint) return;
 
-    this.data = removeColinearPoints(this.data);
+    const simplifiedData = removeColinearPoints(this.data);
+    if (simplifiedData.length < this.data.length) {
+      this.snapshot(`before removing colinear points`, () => {
+        this.data = deep(simplifiedData);
+      });
+    }
 
     switch (this.status) {
       case Status.drawing:
       case Status.placing: {
-        // simplify the path
-        {
-          // mousedown creates a point that mousemove updates
-          // since mousedown fires during a double click, that updated point is getting duplicated
-          // so remove it or stop using dblclick
-          // this.data.pop();
-        }
-
-        this.renderData();
-        this.status = Status.editing;
+        const currentStatus = this.status;
+        this.undoredo(
+          `before entering edit mode`,
+          () => (this.status = Status.editing),
+          () => (this.status = currentStatus),
+        );
         break;
       }
       case Status.editing:
@@ -494,10 +518,10 @@ class MagicCrop_class extends Base_tools_class {
         if (hoverPointIndex >= 0) {
           this.snapshot('before deleting point', () => {
             this.data.splice(hoverPointIndex, 1);
+            if (!this.data.length) {
+              this.status = Status.ready;
+            }
           });
-          if (!this.data.length) {
-            this.status = Status.ready;
-          }
         }
         break;
       }
@@ -530,15 +554,19 @@ class MagicCrop_class extends Base_tools_class {
 
       case Status.done:
       case Status.ready: {
-        this.data = [currentPoint];
-        this.status = Status.drawing;
+        this.snapshot('before placing 1st point', () => {
+          this.data = [currentPoint];
+          this.status = Status.drawing;
+        });
         break;
       }
 
       case Status.placing: {
-        this.snapshot('before placing', () => {
-          this.data.push(currentPoint);
-        });
+        this.undoredo(
+          `before placing point ${this.data.length + 1}`,
+          () => this.data.push(currentPoint),
+          () => this.data.pop(),
+        );
         this.status = Status.drawing;
         break;
       }
@@ -641,8 +669,11 @@ class MagicCrop_class extends Base_tools_class {
             this.renderData();
           }
         } else {
-          data.push(currentPoint);
-          this.renderData();
+          this.undoredo(
+            `before placing 2nd point`,
+            () => this.data.push(currentPoint),
+            () => this.data.pop(),
+          );
         }
         break;
       }
@@ -1215,4 +1246,11 @@ function computeKeyboardState(e) {
   return `${ctrlKey ? 'Ctrl+' : ''}${altKey ? 'Alt+' : ''}${
     shiftKey ? 'Shift+' : ''
   }${key}`;
+}
+
+function dump(cropper) {
+  console.log(`status: ${cropper.status}`);
+  console.log(
+    `data: ${cropper.data.map((d) => `${Math.floor(d.x)},${Math.floor(d.y)}`)}`,
+  );
 }
