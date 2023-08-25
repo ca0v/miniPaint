@@ -1312,8 +1312,8 @@ class Smooth {
     const averages = [];
     // find the center of each pair of points
     for (let i = 0; i < result.length; i += 2) {
-      const p1 = result.at((i + result.length) % result.length);
-      const p2 = result.at((i + 1) % result.length);
+      const p1 = result.at((i - 1 + result.length) % result.length);
+      const p2 = result.at(i % result.length);
       averages.push(center(p1, p2));
     }
 
@@ -1458,6 +1458,9 @@ class Tests {
         vision.smooth([p0, p1, p2, p3, p4]).length,
         'An interpolation point was added between every non-colinear pair of points',
       );
+
+      const smooth = vision.smooth([p0, p1, p2]);
+      this.eq(p0.x, smooth[1].x, 'There is now an interpolated point before the original 1st point');
     }
   }
 
