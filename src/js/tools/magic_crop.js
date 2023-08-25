@@ -1322,7 +1322,7 @@ class Smooth {
 
   centerOfCircle(p1, p2, p3) {
     // from https://stackoverflow.com/questions/4103405/what-is-the-algorithm-for-finding-the-center-of-a-circle-from-three-points
-    const center = { x: 0, y: 0 };
+    const center = { x: 0, y: 0, r: 0 };
     const ax = (p1.x + p2.x) / 2;
     const ay = (p1.y + p2.y) / 2;
     const ux = p1.y - p2.y;
@@ -1338,6 +1338,7 @@ class Smooth {
     const g = (dx * uy - dy * ux) / vu;
     center.x = bx + g * vx;
     center.y = by + g * vy;
+    center.r = Math.sqrt((p1.x - center.x) ** 2 + (p1.y - center.y) ** 2);
     return center;
   }
 
@@ -1425,6 +1426,7 @@ class Tests {
       let circle = vision.centerOfCircle({ x: -1, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 });
       this.eq(0, circle.x, 'The center of a circle with points (0,0), (1,0), (0,1) should be at (0,_)');
       this.eq(0, circle.y, 'The center of a circle with points (0,0), (1,0), (0,1) should be at (_,0)');
+      this.eq(1, circle.r, 'The radius of a circle with points (0,0), (1,0), (0,1) should be 1');
     }
 
     {
