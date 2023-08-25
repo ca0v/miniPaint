@@ -1327,7 +1327,7 @@ function clockwise(data) {
   }, 0);
 
   if (sum < 0) {
-    return [...data].reverse();
+    return data.toReversed();
   }
 
   return data;
