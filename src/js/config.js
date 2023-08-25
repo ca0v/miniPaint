@@ -466,6 +466,7 @@ config.TOOLS = [
       dw_crop: true,
       dw_cut: true,
       dw_reset: true,
+      dw_transparent: true,
     },
   },
   {

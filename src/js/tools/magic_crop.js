@@ -16,9 +16,6 @@
  * - Load an image then move it and the crop is the wrong part of the image...need to compensate for translations, etc.
  * -- Similarly, cut only working for images that have been cropped to the top-left corner, not sure where the problem is
  * -- but the crop.js works correctly, so the solution is in there somewhere
- * - Cut is using correct color but crop is using transparent
- * - Undo/Redo needs tuning (a debounce might work well here when drag drawing points)
- * - Double-clicking is also clicking, so replace dblclick with shift+click
  *
  */
 import app from '../app.js';
@@ -966,9 +963,14 @@ class MagicCrop_class extends Base_tools_class {
       ctx.closePath();
       ctx.clip();
 
-      // fill the canvas with the background color
-      ctx.fillStyle = fillColor;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (!this.getParams().dw_transparent) {
+        // fill the canvas with the background color
+        ctx.fillStyle = fillColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      } else {
+        // clear the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
 
       // update the link with the new image
       actions.push(new app.Actions.Update_layer_image_action(canvas, link.id));
@@ -1028,7 +1030,23 @@ class MagicCrop_class extends Base_tools_class {
       ctx.closePath();
       ctx.fill();
 
-      actions.push(new app.Actions.Update_layer_image_action(canvas, link.id));
+      if (!this.getParams().dw_transparent) {
+        // now create a solid background
+        const background = document.createElement('canvas').getContext('2d');
+        background.canvas.width = canvas.width;
+        background.canvas.height = canvas.height;
+        background.fillStyle = config.COLOR;
+        background.fillRect(0, 0, canvas.width, canvas.height);
+        // now copy the cropped image onto the background
+        background.drawImage(canvas, 0, 0);
+        actions.push(
+          new app.Actions.Update_layer_image_action(background.canvas, link.id),
+        );
+      } else {
+        actions.push(
+          new app.Actions.Update_layer_image_action(canvas, link.id),
+        );
+      }
 
       actions.push(
         new app.Actions.Update_layer_action(link.id, {
