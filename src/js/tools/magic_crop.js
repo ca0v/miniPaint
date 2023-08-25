@@ -317,7 +317,16 @@ class MagicCrop_class extends Base_tools_class {
           }
 
           case Keyboard.CenterAt: {
-            this.centerAt(this.data[pointIndex]);
+            if (isMidpoint) {
+              this.centerAt(
+                center(
+                  this.data.at(pointIndex),
+                  this.data.at((pointIndex + 1) % this.data.length),
+                ),
+              );
+            } else {
+              this.centerAt(this.data[pointIndex]);
+            }
             break;
           }
 
