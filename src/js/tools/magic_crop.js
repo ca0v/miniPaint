@@ -49,7 +49,7 @@ const Drawings = {
   hoverMajor: { color: '#00ff0010', size: 20 },
   hoverMinor: { color: '#00ff0010', size: 20 },
   defaultStrokeColor: '#000000ff',
-  fill: { color: '#ffffff01', exclusionColor: '#c4632bc0' },
+  fill: { color: '#ffffff01', exclusionColor: '#00000020' },
 };
 
 const Keyboard = {
@@ -787,10 +787,9 @@ class MagicCrop_class extends Base_tools_class {
     ctx.fillStyle = Drawings.fill.exclusionColor;
     ctx.beginPath();
     ctx.rect(0, 0, config.WIDTH, config.HEIGHT);
-    ctx.moveTo(pointData[0].x, pointData[0].y);
-    [...pointData].reverse().forEach((point) => {
-      ctx.lineTo(point.x, point.y);
-    });
+    const clockwiseData = clockwise(pointData);
+    ctx.moveTo(clockwiseData[0].x, clockwiseData[0].y);
+    clockwiseData.forEach((point) => ctx.lineTo(point.x, point.y));
     ctx.closePath();
     ctx.fill();
 
@@ -1318,4 +1317,18 @@ function debounce(func, wait = 50, immediate = false) {
     timeout = setTimeout(later, wait);
     if (callNow) func.apply(context, args);
   };
+}
+
+function clockwise(data) {
+  // if the data is counterclockwise, reverse it
+  const sum = data.reduce((sum, point, i) => {
+    const nextPoint = data[(i + 1) % data.length];
+    return sum + (nextPoint.x - point.x) * (nextPoint.y + point.y);
+  }, 0);
+
+  if (sum < 0) {
+    return [...data].reverse();
+  }
+
+  return data;
 }
