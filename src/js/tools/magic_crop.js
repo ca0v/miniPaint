@@ -732,8 +732,11 @@ class MagicCrop_class extends Base_tools_class {
           this.Base_layers.render();
         } else if (this.hover?.midpointIndex >= 0) {
           const index = this.hover.midpointIndex;
-          // insert current point after this index
-          data.splice(index + 1, 0, currentPoint);
+          this.undoredo(
+            `before dragging midpoint ${index}`,
+            () => this.data.splice(index + 1, 0, currentPoint),
+            () => this.data.splice(index + 1, 1),
+          );
           this.hover = { pointIndex: index + 1 };
           this.hover.point = data.at(index + 1);
           // render the line
