@@ -234,6 +234,11 @@ class MagicCrop_class extends Base_tools_class {
     };
     this.mousedown_selection = null;
     this.Base_selection = new Base_selection_class(ctx, sel_config, this.name);
+
+    this.delayedSnapshot = debounce((about) => {
+      console.log(`delayedSnapshot: ${about}`);
+      this.snapshot(about);
+    }, 300);
   }
 
   load() {
@@ -454,11 +459,10 @@ class MagicCrop_class extends Base_tools_class {
             });
             this.hover = { pointIndex: index + 1 };
           } else {
-            this.snapshot('before moving point', () => {
-              const point = this.data.at(pointIndex);
-              point.x += dx;
-              point.y += dy;
-            });
+            this.delayedSnapshot('point moved');
+            const point = this.data.at(pointIndex);
+            point.x += dx;
+            point.y += dy;
           }
           this.metrics.timeOfMove = Date.now();
         }
@@ -1275,4 +1279,21 @@ function dump(cropper) {
   console.log(
     `data: ${cropper.data.map((d) => `${Math.floor(d.x)},${Math.floor(d.y)}`)}`,
   );
+}
+
+function debounce(func, wait = 50, immediate = false) {
+  let timeout;
+  return function () {
+    const context = this,
+      args = arguments;
+    const later = function () {
+      timeout = null;
+      if (!immediate) func.apply(context, args);
+    };
+    const callNow = immediate && !timeout;
+
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) func.apply(context, args);
+  };
 }
