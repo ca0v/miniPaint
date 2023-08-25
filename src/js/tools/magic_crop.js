@@ -687,6 +687,10 @@ class MagicCrop_class extends Base_tools_class {
               p.y = currentPoint.y;
             }
             this.renderData();
+
+            this.delayedSnapshot(
+              `before drawing points at location ${data.length}`,
+            );
           }
         } else {
           this.undoredo(
