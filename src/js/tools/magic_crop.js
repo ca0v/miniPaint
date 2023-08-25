@@ -66,6 +66,10 @@ const Keyboard = {
   Delete: 'Delete',
   ZoomIn: '+',
   ZoomOut: '-',
+  Reset: 'Escape',
+  ClearInterior: 'Shift+X',
+  ClearExterior: 'x',
+  ClosePolygon: 'Enter',
 };
 
 const Settings = {
@@ -217,9 +221,12 @@ class MagicCrop_class extends Base_tools_class {
   }
 
   keydown(e) {
+    const keyboardState = computeKeyboardState(e);
+
     switch (this.status) {
       case Status.editing:
       case Status.hover: {
+        const scale = 1 / config.ZOOM;
         let dx = 0;
         let dy = 0;
         let indexOffset = 0;
@@ -228,112 +235,201 @@ class MagicCrop_class extends Base_tools_class {
         let pointIndex =
           this.hover?.pointIndex || this.hover?.midpointIndex || 0;
 
-        if (e.shiftKey) {
-          switch (e.key) {
-            // arrow left
-            case 'ArrowLeft':
-              --dx;
-              break;
-            case 'ArrowRight':
-              ++dx;
-              break;
-            case 'ArrowUp':
-              --dy;
-              break;
-            case 'ArrowDown':
-              ++dy;
-              break;
-            default:
-              break;
+        let zoom = 0;
+        switch (keyboardState) {
+          case 'Alt+Shift+ArrowLeft':
+            dx -= 1;
+            break;
+
+          case 'Alt+Shift+ArrowRight':
+            dx += 1;
+            break;
+
+          case 'Alt+Shift+ArrowUp':
+            dy -= 1;
+            break;
+
+          case 'Alt+Shift+ArrowDown':
+            dy += 1;
+            break;
+
+          case 'Ctrl+Alt+Shift+ArrowLeft':
+            dx -= 10;
+            break;
+
+          case 'Ctrl+Alt+Shift+ArrowRight':
+            dx += 10;
+            break;
+
+          case 'Ctrl+Alt+Shift+ArrowUp':
+            dy -= 10;
+            break;
+
+          case 'Ctrl+Alt+Shift+ArrowDown':
+            dy += 10;
+            break;
+
+          case 'Shift+ArrowLeft':
+            dx -= scale;
+            break;
+
+          case 'Shift+ArrowRight':
+            dx += scale;
+            break;
+
+          case 'Shift+ArrowUp':
+            dy -= scale;
+            break;
+
+          case 'Shift+ArrowDown':
+            dy += scale;
+            break;
+
+          case 'Ctrl+Shift+ArrowLeft':
+            dx -= 10 * scale;
+            break;
+
+          case 'Ctrl+Shift+ArrowRight':
+            dx += 10 * scale;
+            break;
+
+          case 'Ctrl+Shift+ArrowUp':
+            dy -= 10 * scale;
+            break;
+
+          case 'Ctrl+Shift+ArrowDown':
+            dy += 10 * scale;
+            break;
+
+          case Keyboard.Reset: {
+            this.reset();
+            break;
           }
-          if (dx || dy) {
-            const scale = (e.ctrlKey ? 10 : 1) / (e.altKey ? 1 : config.ZOOM);
-            if (isMidpoint) {
-              // create the point an select the new point
-              const index = this.hover.midpointIndex;
-              const point = center(
-                this.data.at(index),
-                this.data.at((index + 1) % this.data.length),
-              );
-              point.x += dx * scale;
-              point.y += dy * scale;
-              this.snapshot('before moving point', () => {
-                this.data.splice(index + 1, 0, point);
+
+          case Keyboard.ClearInterior: {
+            this.cut();
+            break;
+          }
+
+          case Keyboard.ClearExterior: {
+            this.crop();
+            break;
+          }
+
+          case Keyboard.CenterAt: {
+            this.centerAt(this.data[pointIndex]);
+            break;
+          }
+
+          case Keyboard.ArrowLeft:
+          case Keyboard.ArrowUp:
+            indexOffset--;
+            break;
+          case Keyboard.ArrowRight:
+
+          case Keyboard.ArrowDown:
+            indexOffset++;
+            break;
+
+          case Keyboard.ZoomIn:
+            // zoom in
+            zoom++;
+            break;
+
+          case Keyboard.ZoomOut:
+            // zoom out
+            zoom--;
+            break;
+
+          case Keyboard.Delete:
+            // delete the point
+            if (!isMidpoint) {
+              this.snapshot('before deleting point', () => {
+                this.data.splice(pointIndex, 1);
               });
-              this.hover = { pointIndex: index + 1 };
-            } else {
-              this.snapshot('before moving point', () => {
-                const point = this.data.at(pointIndex);
-                point.x += dx * scale;
-                point.y += dy * scale;
-              });
             }
-            this.metrics.timeOfMove = Date.now();
-          }
-        } else {
-          let zoom = 0;
-          switch (e.key) {
-            case Keyboard.CenterAt: {
-              this.centerAt(this.data[pointIndex]);
-              break;
-            }
-            case Keyboard.ArrowLeft:
-            case Keyboard.ArrowUp:
-              indexOffset--;
-              break;
-            case Keyboard.ArrowRight:
-            case Keyboard.ArrowDown:
-              indexOffset++;
-              break;
-            case Keyboard.ZoomIn:
-              // zoom in
-              zoom++;
-              break;
-            case Keyboard.ZoomOut:
-              // zoom out
-              zoom--;
-              break;
-            case Keyboard.Delete:
-              // delete the point
-              if (!isMidpoint) {
-                this.snapshot('before deleting point', () => {
-                  this.data.splice(pointIndex, 1);
-                });
-              }
-          }
-          if (zoom) {
-            this.undoredo(
-              'before zooming',
-              () => {
-                this.GUI_preview.zoom(zoom);
-              },
-              () => {
-                this.GUI_preview.zoom(-zoom);
-              },
-            );
-          }
 
-          if (indexOffset) {
-            if (isMidpoint) {
-              pointIndex += indexOffset;
-              if (indexOffset < 0) pointIndex++;
-
-              this.hover = {
-                pointIndex: (pointIndex + this.data.length) % this.data.length,
-              };
-            } else {
-              pointIndex += indexOffset;
-              if (indexOffset > 0) pointIndex--;
-
-              this.hover = {
-                midpointIndex:
-                  (pointIndex + this.data.length) % this.data.length,
-              };
-            }
+          default: {
+            console.log(`keydown: keyboard state ${keyboardState}`);
+            break;
           }
-          this.Base_layers.render();
+        }
+        if (zoom) {
+          this.undoredo(
+            'before zooming',
+            () => {
+              this.GUI_preview.zoom(zoom);
+            },
+            () => {
+              this.GUI_preview.zoom(-zoom);
+            },
+          );
         }
 
+        if (indexOffset) {
+          if (isMidpoint) {
+            pointIndex += indexOffset;
+            if (indexOffset < 0) pointIndex++;
+
+            this.hover = {
+              pointIndex: (pointIndex + this.data.length) % this.data.length,
+            };
+          } else {
+            pointIndex += indexOffset;
+            if (indexOffset > 0) pointIndex--;
+
+            this.hover = {
+              midpointIndex: (pointIndex + this.data.length) % this.data.length,
+            };
+          }
+        }
+
+        if (dx || dy) {
+          if (isMidpoint) {
+            // create the point an select the new point
+            const index = this.hover.midpointIndex;
+            const point = center(
+              this.data.at(index),
+              this.data.at((index + 1) % this.data.length),
+            );
+            point.x += dx;
+            point.y += dy;
+            this.snapshot('before moving point', () => {
+              this.data.splice(index + 1, 0, point);
+            });
+            this.hover = { pointIndex: index + 1 };
+          } else {
+            this.snapshot('before moving point', () => {
+              const point = this.data.at(pointIndex);
+              point.x += dx;
+              point.y += dy;
+            });
+          }
+          this.metrics.timeOfMove = Date.now();
+        }
+
+        this.Base_layers.render();
+        break;
+      }
+
+      case Status.drawing:
+      case Status.placing: {
+        switch (keyboardState) {
+          case Keyboard.Reset: {
+            this.reset();
+            break;
+          }
+
+          case Keyboard.ClosePolygon: {
+            this.status = Status.editing;
+            break;
+          }
+
+          default: {
+            console.log(`keydown: keyboard state ${keyboardState}`);
+            break;
+          }
+        }
         break;
       }
       default: {
@@ -706,12 +802,17 @@ class MagicCrop_class extends Base_tools_class {
         await this.crop();
         break;
       case 'dw_reset':
-        this.snapshot('before reset', () => (this.data = []));
-        this.status = Status.ready;
-        this.renderData();
+        this.reset();
+        break;
       default:
         break;
     }
+  }
+
+  reset() {
+    this.snapshot('before reset', () => (this.data = []));
+    this.status = Status.ready;
+    this.renderData();
   }
 
   async cut() {
@@ -763,8 +864,7 @@ class MagicCrop_class extends Base_tools_class {
     });
 
     // clear the data and reset the state
-    this.snapshot('before cutting', () => (this.data = []));
-    this.status = Status.ready;
+    this.reset();
 
     await doActions(actions);
   }
@@ -850,7 +950,7 @@ class MagicCrop_class extends Base_tools_class {
   on_activate() {
     console.log(`on_activate: status '${this.status}'`);
     switch (this.status) {
-      case Status.none:
+      case Status.none: {
         this.data = []; //JSON.parse(localStorage.getItem('magic_crop_data') || '[]');
         this.status = this.data.length ? Status.editing : Status.ready;
         this.events.on('keydown', (event) => this.keydown(event));
@@ -864,6 +964,14 @@ class MagicCrop_class extends Base_tools_class {
 
         this.prior_action_history_max = this.Base_state.action_history_max;
         this.Base_state.action_history_max = 1000;
+        break;
+      }
+
+      case Status.placing:
+      case Status.editing: {
+        this.reset();
+        break;
+      }
     }
 
     const params_hash = this.get_params_hash();
@@ -1047,4 +1155,11 @@ function angleOf(p1, p2, p3) {
   const b = distance(p2, p3);
   const c = distance(p1, p3);
   return Math.acos((a * a + b * b - c * c) / (2 * a * b));
+}
+
+function computeKeyboardState(e) {
+  const { key, ctrlKey, altKey, shiftKey } = e;
+  return `${ctrlKey ? 'Ctrl+' : ''}${altKey ? 'Alt+' : ''}${
+    shiftKey ? 'Shift+' : ''
+  }${key}`;
 }
