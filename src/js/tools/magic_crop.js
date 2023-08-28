@@ -63,7 +63,7 @@ const Keyboard = Object.freeze({
   ZoomOut: '-',
   Reset: 'Escape',
   ClearInterior: 'Shift+X',
-  ClearExterior: 'x',
+  ClearExterior: 'Ctrl+Shift+X',
   Smooth: 'q',
   ClosePolygon: ' ',
 });
@@ -490,6 +490,7 @@ class MagicCrop_class extends Base_tools_class {
     }
   }
 
+  // this is actually a shift-click as double-click does now work well with click - it can both delete and close the polygon
   dblclick(e) {
     console.log(`doubleClick: status '${this.status}'`);
     const currentPoint = this.mousePoint(e);
