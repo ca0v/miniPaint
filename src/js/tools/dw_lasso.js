@@ -81,6 +81,9 @@ class DwLasso_class extends Base_tools_class {
       timeOfMove: Date.now(),
     };
     this.state = new StateMachine(Object.values(Status));
+    this.state.on('stateChanged', (state) => {
+      alertify.success(`state: ${state}`);
+    });
 
     this.state.register({
       start: () => console.log('start'),
@@ -131,12 +134,59 @@ class DwLasso_class extends Base_tools_class {
 
       zoomIn: () => zoomViewport(this, computeKeyboardState(this.state.keyboardEvent)),
       zoomOut: () => zoomViewport(this, computeKeyboardState(this.state.keyboardEvent)),
+
+      reset: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
+      cut: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
+      crop: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
+      smooth: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
+      centerAt: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
     });
 
     this.state.from(Status.none).goto(Status.ready).when(null).do(this.state.actions.noDataPoints);
     this.state.from(Status.none).goto(Status.editing).when(null).do(this.state.actions.dataPoints);
 
-    // when hover and mousedown, then we are before_dragging
+    this.state
+      .from(Status.drawing)
+      .goto(Status.ready)
+      .when(this.state.keyboardState(Keyboard.Reset))
+      .do(this.state.actions.reset);
+
+    this.state
+      .from(Status.placing)
+      .goto(Status.ready)
+      .when(this.state.keyboardState(Keyboard.Reset))
+      .do(this.state.actions.reset);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.ready)
+      .when(this.state.keyboardState(Keyboard.ClearInterior))
+      .do(this.state.actions.cut);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.ready)
+      .when(this.state.keyboardState(Keyboard.ClearExterior))
+      .do(this.state.actions.crop);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.ready)
+      .when(this.state.keyboardState(Keyboard.Smooth))
+      .do(this.state.actions.smooth);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.ready)
+      .when(this.state.keyboardState(Keyboard.CenterAt))
+      .do(this.state.actions.centerAt);
+
+    this.state
+      .from(Status.drawing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState(Keyboard.ClosePolygon))
+      .do(this.state.actions.closePolygon);
+
     this.state
       .from(Status.hover)
       .goto(Status.before_dragging)
@@ -373,37 +423,6 @@ class DwLasso_class extends Base_tools_class {
 
     // scale
     zoomView.apply();
-  }
-
-  keydown(e) {
-    const keyboardState = computeKeyboardState(e);
-
-    switch (this.status) {
-      case Status.drawing:
-      case Status.placing: {
-        switch (keyboardState) {
-          case Keyboard.Reset: {
-            this.reset();
-            break;
-          }
-
-          case Keyboard.ClosePolygon: {
-            this.status = Status.editing;
-            break;
-          }
-
-          default: {
-            console.log(`keydown: keyboard state ${keyboardState}`);
-            break;
-          }
-        }
-        break;
-      }
-      default: {
-        console.log(`keydown: unknown status ${this.status}`);
-        break;
-      }
-    }
   }
 
   // this is actually a shift-click as double-click does now work well with click - it can both delete and close the polygon
@@ -970,7 +989,6 @@ class DwLasso_class extends Base_tools_class {
       case Status.none: {
         this.data = []; //JSON.parse(localStorage.getItem('dw_lasso_data') || '[]');
         this.status = this.data.length ? Status.editing : Status.ready;
-        this.events.on('keydown', (event) => this.keydown(event));
         this.events.on('mousedown', (event) => event.shiftKey && this.dblclick(event));
         this.events.on('mousedown', (event) => this.mousedown(event));
         this.events.on('mousemove', (event) => this.mousemove(event));
@@ -1081,6 +1099,9 @@ function computeHover(data, currentPoint) {
 new Tests().tests();
 
 function otherKeyboardCommands(lasso, keyboardState) {
+  const isMidpoint = lasso.hover?.midpointIndex >= 0;
+  let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
+
   switch (keyboardState) {
     case Keyboard.Reset: {
       lasso.reset();

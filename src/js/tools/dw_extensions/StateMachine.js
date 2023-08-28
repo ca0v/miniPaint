@@ -78,12 +78,16 @@ export class StateMachine {
     this.events.off();
   }
 
+  on(eventName, callback) {
+    this.events.on(eventName, callback);
+  }
+
   setCurrentState(state) {
     if (!this.states[state]) throw `State ${state} is not a valid state`;
     if (state === this.currentState) return;
-    console.log('StateMachine', 'setCurrentState', state);
     this.currentState = state;
     this.execute((e) => e.from === this.currentState && !e.when);
+    this.events.trigger('stateChanged', this.currentState);
   }
 
   execute(filter) {

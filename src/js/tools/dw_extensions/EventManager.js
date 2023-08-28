@@ -23,4 +23,11 @@ export class EventManager {
     this.ops = [];
     this.events = {};
   }
+
+  trigger(event, data) {
+    const events = this.events[event] || [];
+    events.forEach((callback) => {
+      callback(data);
+    });
+  }
 }
