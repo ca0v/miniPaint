@@ -38,17 +38,28 @@ export class StateMachine {
     this.contexts = [];
     this.actions = {};
 
+    this.mouseEvent = null;
+    this.keyboardEvent = null;
+
     this.events = new EventManager();
 
-    this.events.on('mousedown', (mouseEvent) => {
+    this.events.on('mousemove', (mouseEvent) => {
+      this.mouseEvent = mouseEvent;
       const mouseState = computeMouseState(mouseEvent);
-      console.log('mouseState', mouseState);
+      this.execute((e) => e.from === this.currentState && e.when === mouseState);
+    });
+
+    this.events.on('mousedown', (mouseEvent) => {
+      this.mouseEvent = mouseEvent;
+      const mouseState = computeMouseState(mouseEvent);
+      console.log('StateMachine', 'mousedown', 'mouseState', mouseState);
       this.execute((e) => e.from === this.currentState && e.when === mouseState);
     });
 
     this.events.on('keydown', (keyboardEvent) => {
+      this.keyboardEvent = keyboardEvent;
       const keyboardState = computeKeyboardState(keyboardEvent);
-      console.log('keyboardState', keyboardState);
+      console.log('StateMachine', 'keydown', 'keyboardState', keyboardState);
       this.execute((e) => e.from === this.currentState && e.when === keyboardState);
     });
 
@@ -60,6 +71,9 @@ export class StateMachine {
   }
 
   setCurrentState(state) {
+    if (!this.states[state]) throw `State ${state} is not a valid state`;
+    if (state === this.currentState) return;
+    console.log('StateMachine', 'setCurrentState', state);
     this.currentState = state;
     this.execute((e) => e.from === this.currentState && !e.when);
   }
@@ -70,7 +84,7 @@ export class StateMachine {
     if (targetEvents.length > 1) throw `Multiple events match state ${this.currentState}`;
     const targetEvent = targetEvents[0];
     if (targetEvent.do) {
-      targetEvent.do.call(this);
+      if (false === targetEvent.do.call(this)) return;
     }
     if (targetEvent.goto) {
       this.setCurrentState(targetEvent.goto);

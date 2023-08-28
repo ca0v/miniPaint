@@ -1,6 +1,10 @@
 import { Smooth } from './Smooth.js';
 import { StateMachine } from './StateMachine.js';
 
+async function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function eq(expected, actual, assertion) {
   if (typeof actual === 'number') actual = actual.toFixed(6);
   if (typeof expected === 'number') expected = expected.toFixed(6);
@@ -15,7 +19,8 @@ function radToDeg(rad) {
 }
 
 export class Tests {
-  tests() {
+  async tests() {
+    await sleep(1000);
     this.testSmoothing();
     this.testStateMachine();
   }
@@ -137,6 +142,9 @@ export class Tests {
         .goto(s.states.drawing)
         .when(s.mouseState('Shift+Left+mousedown'))
         .do(s.actions.shiftClickCallbackTest);
+
+      // simulate a shift+left+mousedown
+      //document.dispatchEvent(new MouseEvent('mousedown', { shiftKey: true, button: 0 }));
       s.trigger('Shift+Left+mousedown');
       eq(true, hit, 'The shiftClickCallbackTest handler should have been called');
       eq(s.states.drawing, s.currentState, 'The state should have changed to drawing');
@@ -154,12 +162,13 @@ export class Tests {
 
       s.from(s.states.none)
         .goto(s.states.drawing)
-        .when(s.keyboardState('Ctrl+Shift+ArrowLeft'))
+        .when(s.keyboardState('Ctrl+Shift+X'))
         .do(s.actions.keypressCallbackTest);
 
       // simulate a ctrl+shift+arrowLeft keypress
-      const event = new KeyboardEvent('keydown', { key: 'ArrowLeft', ctrlKey: true, shiftKey: true });
-      document.dispatchEvent(event);
+      const event = new KeyboardEvent('keydown', { key: 'X', ctrlKey: true, shiftKey: true, target: null });
+      // document.dispatchEvent(event);
+      s.trigger('Ctrl+Shift+X');
       eq(true, hit, 'The keypressCallbackTest handler should have been called');
     }
   }

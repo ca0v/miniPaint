@@ -55,6 +55,7 @@ import { debounce } from './dw_extensions/debounce.js';
 import { clockwise } from './dw_extensions/clockwise.js';
 import { Smooth } from './dw_extensions/Smooth.js';
 import { Tests } from './dw_extensions/Tests.js';
+import { StateMachine } from './dw_extensions/StateMachine.js';
 
 class DwLasso_class extends Base_tools_class {
   // define getter and setter for status
@@ -77,6 +78,130 @@ class DwLasso_class extends Base_tools_class {
       timeOfMove: Date.now(),
     };
     this.status = Status.none;
+    this.state = new StateMachine(Object.values(Status));
+    this.state.register({
+      start: () => console.log('start'),
+      placePointAtClickLocation: () => console.log('stateMachine', 'placePointAtClickLocation'),
+      movePointLeft1Units: () => console.log('stateMachine', 'movePointLeft1Units'),
+      movePointRight1Units: () => console.log('stateMachine', 'movePointRight1Units'),
+      movePointUp1Units: () => console.log('stateMachine', 'movePointUp1Units'),
+      movePointDown1Units: () => console.log('stateMachine', 'movePointDown1Units'),
+
+      movePointLeft10Units: () => console.log('stateMachine', 'movePointLeft10Units'),
+      movePointRight10Units: () => console.log('stateMachine', 'movePointRight10Units'),
+      movePointUp10Units: () => console.log('stateMachine', 'movePointUp10Units'),
+      movePointDown10Units: () => console.log('stateMachine', 'movePointDown10Units'),
+
+      closePolygon: () => console.log('stateMachine', 'closePolygon'),
+      deleteHoverPoint: () => {
+        const hover = !!this.hover?.pointIndex || !!this.hover?.midpointIndex;
+        console.log('stateMachine', 'deleteHoverPoint', hover);
+        return hover;
+      },
+      isHoveringOverPoint: () => {
+        const hover = !!computeHover(this.data, this.mousePoint(this.state.mouseEvent));
+        console.log('stateMachine', 'isHoveringOverPoint', hover);
+        return hover;
+      },
+      isNotHoveringOverPoint: () => !this.state.actions.isHoveringOverPoint(),
+    });
+
+    this.state
+      .from(Status.none)
+      .goto(Status.drawing)
+      .when(this.state.mouseState('Left+mousedown'))
+      .do(this.state.actions.placePointAtClickLocation);
+
+    this.state
+      .from(Status.drawing)
+      .goto(Status.drawing)
+      .when(this.state.mouseState('Left+mousedown'))
+      .do(this.state.actions.placePointAtClickLocation);
+
+    this.state
+      .from(Status.drawing)
+      .goto(Status.editing)
+      .when(this.state.mouseState('Shift+Left+mousedown'))
+      .do(this.state.actions.closePolygon);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('Shift+ArrowLeft'))
+      .do(this.state.actions.movePointLeft1Units);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('Shift+ArrowRight'))
+      .do(this.state.actions.movePointRight1Units);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('Shift+ArrowUp'))
+      .do(this.state.actions.movePointUp1Units);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('Shift+ArrowDown'))
+      .do(this.state.actions.movePointDown1Units);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('Ctrl+Shift+ArrowLeft'))
+      .do(this.state.actions.movePointLeft10Units);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('Ctrl+Shift+ArrowRight'))
+      .do(this.state.actions.movePointRight10Units);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('Ctrl+Shift+ArrowUp'))
+      .do(this.state.actions.movePointUp10Units);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('Ctrl+Shift+ArrowDown'))
+      .do(this.state.actions.movePointDown10Units);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState(Keyboard.Delete))
+      .do(this.state.actions.deleteHoverPoint);
+
+    this.state
+      .from(Status.hover)
+      .goto(Status.editing)
+      .when(this.state.keyboardState(Keyboard.Delete))
+      .do(this.state.actions.deleteHoverPoint);
+
+    this.state
+      .from(Status.hover)
+      .goto(Status.editing)
+      .when(this.state.mouseState('Shift+Left+mousedown'))
+      .do(this.state.actions.deleteHoverPoint);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.hover)
+      .when(this.state.mouseState('mousemove'))
+      .do(this.state.actions.isHoveringOverPoint);
+
+    this.state
+      .from(Status.hover)
+      .goto(Status.editing)
+      .when(this.state.mouseState('mousemove'))
+      .do(this.state.actions.isNotHoveringOverPoint);
+
     this.events = new EventManager();
     this.Base_layers = new Base_layers_class();
     this.Base_state = new Base_state_class();
