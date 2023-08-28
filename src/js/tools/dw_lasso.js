@@ -87,11 +87,110 @@ class DwLasso_class extends Base_tools_class {
 
     this.state.register({
       start: () => console.log('start'),
-      beforeDraggingHoverPoint: () => console.log('stateMachine', 'beforeDraggingHoverPoint'),
-      draggingHoverPoint: () => console.log('stateMachine', 'draggingHoverPoint'),
+      beforeDraggingHoverPoint: () => {
+        const currentPoint = this.mousePoint(this.state.mouseEvent);
+        if (this.hover?.pointIndex >= 0) {
+          const index = this.hover.pointIndex;
+          this.hover.point = this.data.at(index);
+
+          const { x: original_x, y: original_y } = this.data.at(index);
+          let { x: redo_x, y: redo_y } = currentPoint;
+          this.undoredo(
+            `before dragging point ${index} from ${original_x}, ${original_y}`,
+            () => {
+              const point = this.data.at(index);
+              point.x = redo_x;
+              point.y = redo_y;
+            },
+            () => {
+              const point = this.data.at(index);
+              redo_x = point.x;
+              redo_y = point.y;
+              point.x = original_x;
+              point.y = original_y;
+            },
+          );
+          // render the line
+          this.Base_layers.render();
+        } else if (this.hover?.midpointIndex >= 0) {
+          const index = this.hover.midpointIndex;
+          this.undoredo(
+            `before dragging midpoint ${index}`,
+            () => this.data.splice(index + 1, 0, currentPoint),
+            () => this.data.splice(index + 1, 1),
+          );
+          this.hover = { pointIndex: index + 1 };
+          this.hover.point = this.data.at(index + 1);
+          // render the line
+          this.Base_layers.render();
+        }
+      },
+      draggingHoverPoint: () => {
+        const currentPoint = this.mousePoint(this.state.mouseEvent);
+        if (this.hover?.point) {
+          const point = this.hover.point;
+          point.x = currentPoint.x;
+          point.y = currentPoint.y;
+          this.Base_layers.render();
+        } else {
+          console.log(`mousemove: no point to drag`);
+        }
+      },
       endDraggingHoverPoint: () => console.log('stateMachine', 'endDraggingHoverPoint'),
-      placePointAtClickLocation: () => console.log('stateMachine', 'placePointAtClickLocation'),
-      placePointAtMouseLocation: () => console.log('stateMachine', 'placePointAtMouseLocation'),
+
+      drawPoints: () => {
+        const currentPoint = this.mousePoint(this.state.mouseEvent);
+        const data = this.data;
+        const priorPoint = data.at(-2);
+        let drawPoint = false;
+        const d = distance(priorPoint, currentPoint) * config.ZOOM;
+        drawPoint = drawPoint || d > Settings.distanceBetweenPoints;
+        if (!drawPoint && data.length > 2 && d > Settings.minimalDistanceBetweenPoints) {
+          const a = Math.PI - angleOf(data.at(-3), priorPoint, currentPoint);
+          drawPoint = d * a > Settings.radiusThreshold * Settings.distanceBetweenPoints;
+          if (drawPoint) {
+            console.log(`angle: ${a}, distance: ${d}`);
+          }
+        }
+        if (drawPoint) {
+          data.push(currentPoint);
+        } else {
+          const p = data.at(-1);
+          p.x = currentPoint.x;
+          p.y = currentPoint.y;
+        }
+        this.renderData();
+        this.delayedSnapshot(`before drawing points at location ${data.length}`);
+      },
+
+      hasTwoOrMorePoints: () => {
+        return this.data.length > 1;
+      },
+
+      placeFirstPointAtMouseLocation: () => {
+        const currentPoint = this.mousePoint(this.state.mouseEvent);
+        this.snapshot('before placing 1st point', () => {
+          this.data = [currentPoint];
+        });
+      },
+
+      placePointAtClickLocation: () => {
+        const currentPoint = this.mousePoint(this.state.mouseEvent);
+        this.undoredo(
+          `before placing point ${this.data.length + 1}`,
+          () => this.data.push(currentPoint),
+          () => this.data.pop(),
+        );
+      },
+
+      movingLastPointToMouseLocation: () => {
+        const currentPoint = this.mousePoint(this.state.mouseEvent);
+        if (!this.data.length) return;
+        const p = this.data.at(-1);
+        p.x = currentPoint.x;
+        p.y = currentPoint.y;
+        this.renderData();
+      },
 
       moveToPriorPoint: () => moveToNextVertex(this, computeKeyboardState(this.state.keyboardEvent)),
       moveToNextPoint: () => moveToNextVertex(this, computeKeyboardState(this.state.keyboardEvent)),
@@ -106,7 +205,9 @@ class DwLasso_class extends Base_tools_class {
       movePointUp10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
       movePointDown10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
 
-      closePolygon: () => console.log('stateMachine', 'closePolygon'),
+      closePolygon: () => {
+        // nothing to do
+      },
 
       dataPoints: () => {
         const hasDataPoints = !!this.data.length;
@@ -124,10 +225,14 @@ class DwLasso_class extends Base_tools_class {
         }
         return hover;
       },
+
       hoveringOverPoint: () => {
-        const hover = !!computeHover(this.data, this.mousePoint(this.state.mouseEvent));
-        console.log('stateMachine', 'hoveringOverPoint', hover);
-        return hover;
+        const priorHover = JSON.stringify(this.hover || null);
+        const hover = (this.hover = computeHover(this.data, this.mousePoint(this.state.mouseEvent)));
+        if (priorHover != JSON.stringify(this.hover)) {
+          this.Base_layers.render();
+        }
+        return !!hover;
       },
 
       notHoveringOverPoint: () => !this.state.actions.hoveringOverPoint(),
@@ -146,24 +251,35 @@ class DwLasso_class extends Base_tools_class {
     this.state.from(Status.none).goto(Status.editing).when(null).do(this.state.actions.dataPoints);
 
     this.state
+      .about('reset the tool when drawing')
       .from(Status.drawing)
       .goto(Status.ready)
       .when(this.state.keyboardState(Keyboard.Reset))
       .do(this.state.actions.reset);
 
     this.state
+      .about('reset the tool when editing')
+      .from(Status.editing)
+      .goto(Status.ready)
+      .when(this.state.keyboardState(Keyboard.Reset))
+      .do(this.state.actions.reset);
+
+    this.state
+      .about('reset the tool when placing')
       .from(Status.placing)
       .goto(Status.ready)
       .when(this.state.keyboardState(Keyboard.Reset))
       .do(this.state.actions.reset);
 
     this.state
+      .about('clear the interior during an edit')
       .from(Status.editing)
       .goto(Status.ready)
       .when(this.state.keyboardState(Keyboard.ClearInterior))
       .do(this.state.actions.cut);
 
     this.state
+      .about('clear the exterior during an edit')
       .from(Status.editing)
       .goto(Status.ready)
       .when(this.state.keyboardState(Keyboard.ClearExterior))
@@ -201,6 +317,18 @@ class DwLasso_class extends Base_tools_class {
 
     this.state
       .from(Status.dragging)
+      .goto(Status.dragging)
+      .when(this.state.mouseState('Left+mousemove'))
+      .do(this.state.actions.draggingHoverPoint);
+
+    this.state
+      .from(Status.drawing)
+      .goto(Status.drawing)
+      .when(this.state.mouseState('Left+mousemove'))
+      .do(this.state.actions.drawPoints);
+
+    this.state
+      .from(Status.dragging)
       .goto(Status.editing)
       .when(this.state.mouseState('Left+mouseup'))
       .do(this.state.actions.endDraggingHoverPoint);
@@ -209,19 +337,25 @@ class DwLasso_class extends Base_tools_class {
       .from(Status.ready)
       .goto(Status.drawing)
       .when(this.state.mouseState('Left+mousedown'))
-      .do(this.state.actions.placePointAtClickLocation);
+      .do(this.state.actions.placeFirstPointAtMouseLocation);
 
     this.state
       .from(Status.drawing)
       .goto(Status.placing)
       .when(this.state.mouseState('mousemove'))
-      .do(this.state.actions.placePointAtMouseLocation);
+      .do(this.state.actions.hasTwoOrMorePoints);
 
     this.state
       .from(Status.placing)
       .goto(Status.drawing)
       .when(this.state.mouseState('Left+mousedown'))
       .do(this.state.actions.placePointAtClickLocation);
+
+    this.state
+      .from(Status.placing)
+      .goto(Status.placing)
+      .when(this.state.mouseState('mousemove'))
+      .do(this.state.actions.movingLastPointToMouseLocation);
 
     this.state
       .from(Status.drawing)
@@ -397,7 +531,6 @@ class DwLasso_class extends Base_tools_class {
   }
 
   load() {
-    this.status = Status.none;
     this.state.setCurrentState(Status.none);
   }
 
@@ -423,265 +556,6 @@ class DwLasso_class extends Base_tools_class {
 
     // scale
     zoomView.apply();
-  }
-
-  // this is actually a shift-click as double-click does now work well with click - it can both delete and close the polygon
-  dblclick(e) {
-    console.log(`doubleClick: status '${this.status}'`);
-    const currentPoint = this.mousePoint(e);
-    if (!currentPoint) return;
-
-    const simplifiedData = removeColinearPoints(this.data);
-    if (simplifiedData.length != this.data.length) {
-      this.snapshot(`before removing colinear points`, () => {
-        this.data = deep(simplifiedData);
-      });
-    }
-
-    switch (this.status) {
-      case Status.drawing:
-      case Status.placing: {
-        const currentStatus = this.status;
-        this.undoredo(
-          `before entering edit mode`,
-          () => (this.status = Status.editing),
-          () => (this.status = currentStatus),
-        );
-        break;
-      }
-      case Status.editing:
-      case Status.hover: {
-        // delete the hover point
-        const hoverPointIndex = computeHover(this.data, currentPoint)?.pointIndex;
-        if (hoverPointIndex >= 0) {
-          this.undoredo(
-            'before deleting point',
-            () => {
-              this.data.splice(hoverPointIndex, 1);
-              if (!this.data.length) {
-                this.status = Status.ready;
-              }
-            },
-            () => {
-              this.data.splice(hoverPointIndex, 0, currentPoint);
-              this.status = Status.editing;
-            },
-          );
-        }
-        break;
-      }
-      default: {
-        console.log(`doubleClick: unknown status ${this.status}`);
-        break;
-      }
-    }
-    // save data
-    localStorage.setItem('dw_lasso_data', JSON.stringify(this.data));
-  }
-
-  mousedown(e) {
-    {
-      const timeSinceLastClick = Date.now() - this.metrics.timeOfClick;
-      this.metrics.timeOfClick = Date.now();
-      if (timeSinceLastClick < 300) return;
-    }
-
-    console.log(`mousedown: status '${this.status}'`);
-
-    const currentPoint = this.mousePoint(e);
-    if (!currentPoint) return;
-
-    switch (this.status) {
-      case Status.hover: {
-        this.status = Status.before_dragging;
-        break;
-      }
-
-      case Status.done:
-      case Status.ready: {
-        this.snapshot('before placing 1st point', () => {
-          this.data = [currentPoint];
-          this.status = Status.drawing;
-        });
-        break;
-      }
-
-      case Status.placing: {
-        this.undoredo(
-          `before placing point ${this.data.length + 1}`,
-          () => this.data.push(currentPoint),
-          () => this.data.pop(),
-        );
-        this.status = Status.drawing;
-        break;
-      }
-
-      default: {
-        console.log(`mousedown: unknown status '${this.status}'`);
-        break;
-      }
-    }
-  }
-
-  mouseup(e) {
-    const currentPoint = this.mousePoint(e);
-    if (!currentPoint) return;
-
-    switch (this.status) {
-      case Status.dragging: {
-        this.status = Status.editing;
-        break;
-      }
-      default: {
-        console.log(`mouseup: unknown status '${this.status}'`);
-        break;
-      }
-    }
-  }
-
-  mousemove(e) {
-    const currentPoint = this.mousePoint(e);
-    if (!currentPoint) return;
-
-    // is the current point outside the canvas?
-    if (currentPoint.x < 0 || currentPoint.x > config.WIDTH || currentPoint.y < 0 || currentPoint.y > config.HEIGHT) {
-      // if so, then we are not hovering over anything
-      return;
-    }
-
-    const data = this.data;
-
-    const isMouseKeyPressed = e.buttons > 0;
-
-    switch (this.status) {
-      case Status.hover: {
-        const priorHover = JSON.stringify(this.hover);
-        this.hover = computeHover(data, currentPoint);
-        if (!this.hover) {
-          this.status = Status.editing;
-          this.Base_layers.render();
-        }
-        if (priorHover != JSON.stringify(this.hover)) {
-          this.Base_layers.render();
-        }
-        break;
-      }
-
-      case Status.editing: {
-        this.hover = computeHover(data, currentPoint);
-        if (this.hover) {
-          this.status = Status.hover;
-          this.Base_layers.render();
-        }
-        break;
-      }
-
-      case Status.drawing: {
-        if (data.length > 1) {
-          if (!isMouseKeyPressed) {
-            this.status = Status.placing;
-          } else {
-            const priorPoint = data.at(-2);
-            let drawPoint = false;
-            const d = distance(priorPoint, currentPoint) * config.ZOOM;
-            drawPoint = drawPoint || d > Settings.distanceBetweenPoints;
-            if (!drawPoint && data.length > 2 && d > Settings.minimalDistanceBetweenPoints) {
-              const a = Math.PI - angleOf(data.at(-3), priorPoint, currentPoint);
-              drawPoint = d * a > Settings.radiusThreshold * Settings.distanceBetweenPoints;
-              if (drawPoint) {
-                console.log(`angle: ${a}, distance: ${d}`);
-              }
-            }
-            if (drawPoint) {
-              data.push(currentPoint);
-            } else {
-              const p = data.at(-1);
-              p.x = currentPoint.x;
-              p.y = currentPoint.y;
-            }
-            this.renderData();
-
-            this.delayedSnapshot(`before drawing points at location ${data.length}`);
-          }
-        } else {
-          this.undoredo(
-            `before placing 2nd point`,
-            () => this.data.push(currentPoint),
-            () => this.data.pop(),
-          );
-        }
-        break;
-      }
-
-      case Status.placing: {
-        if (data.length) {
-          const p = data.at(-1);
-          p.x = currentPoint.x;
-          p.y = currentPoint.y;
-          // render the line
-          this.renderData();
-        }
-        break;
-      }
-
-      case Status.before_dragging: {
-        if (this.hover?.pointIndex >= 0) {
-          const index = this.hover.pointIndex;
-          this.hover.point = this.data.at(index);
-
-          const { x: original_x, y: original_y } = this.data.at(index);
-          let { x: redo_x, y: redo_y } = currentPoint;
-          this.undoredo(
-            `before dragging point ${index} from ${original_x}, ${original_y}`,
-            () => {
-              const point = this.data.at(index);
-              point.x = redo_x;
-              point.y = redo_y;
-            },
-            () => {
-              const point = this.data.at(index);
-              redo_x = point.x;
-              redo_y = point.y;
-              point.x = original_x;
-              point.y = original_y;
-            },
-          );
-
-          // render the line
-          this.Base_layers.render();
-        } else if (this.hover?.midpointIndex >= 0) {
-          const index = this.hover.midpointIndex;
-          this.undoredo(
-            `before dragging midpoint ${index}`,
-            () => this.data.splice(index + 1, 0, currentPoint),
-            () => this.data.splice(index + 1, 1),
-          );
-          this.hover = { pointIndex: index + 1 };
-          this.hover.point = data.at(index + 1);
-          // render the line
-          this.Base_layers.render();
-        }
-        this.status = Status.dragging;
-        break;
-      }
-      case Status.dragging: {
-        // move the point
-        if (this.hover?.point) {
-          const point = this.hover.point;
-          point.x = currentPoint.x;
-          point.y = currentPoint.y;
-          this.Base_layers.render();
-        } else {
-          console.log(`mousemove: no point to drag`);
-        }
-        break;
-      }
-
-      default: {
-        console.log(`mousemove: unknown status ${this.status}`);
-        break;
-      }
-    }
   }
 
   renderData() {
@@ -823,7 +697,7 @@ class DwLasso_class extends Base_tools_class {
         await this.crop();
         break;
       case 'dw_reset':
-        this.reset();
+        this.state.trigger(Keyboard.Reset);
         break;
       default:
         break;
@@ -832,7 +706,6 @@ class DwLasso_class extends Base_tools_class {
 
   reset() {
     this.snapshot('before reset', () => (this.data = []));
-    this.status = Status.ready;
     this.renderData();
   }
 
@@ -970,8 +843,6 @@ class DwLasso_class extends Base_tools_class {
     this.snapshot('before cropping', () => (this.data = []));
 
     await doActions(actions);
-
-    this.status = Status.done;
   }
 
   addDeleteToolAction(actions) {
@@ -984,19 +855,11 @@ class DwLasso_class extends Base_tools_class {
   }
 
   on_activate() {
-    console.log(`on_activate: status '${this.status}'`);
-    switch (this.status) {
+    const status = this.state.currentState;
+    console.log(`on_activate: status '${status}'`);
+    switch (status) {
       case Status.none: {
-        this.data = []; //JSON.parse(localStorage.getItem('dw_lasso_data') || '[]');
-        this.status = this.data.length ? Status.editing : Status.ready;
-        this.events.on('mousedown', (event) => event.shiftKey && this.dblclick(event));
-        this.events.on('mousedown', (event) => this.mousedown(event));
-        this.events.on('mousemove', (event) => this.mousemove(event));
-        this.events.on('mouseup', (event) => this.mouseup(event));
-        this.events.on('touchstart', (event) => this.mousedown(event));
-        this.events.on('touchmove', (event) => this.mousemove(event));
-        this.events.on('touchend', (event) => this.mouseup(event));
-
+        this.state.trigger(Keyboard.Reset);
         this.prior_action_history_max = this.Base_state.action_history_max;
         this.Base_state.action_history_max = 1000;
         break;
@@ -1004,7 +867,7 @@ class DwLasso_class extends Base_tools_class {
 
       case Status.placing:
       case Status.editing: {
-        this.reset();
+        this.state.trigger(Keyboard.Reset);
         break;
       }
     }
@@ -1044,9 +907,8 @@ class DwLasso_class extends Base_tools_class {
   }
 
   on_leave() {
-    console.log(`on_leave: status '${this.status}'`);
     this.events.off();
-    this.status = Status.none;
+    this.state.off();
 
     this.Base_state.action_history_max = this.prior_action_history_max;
 

@@ -118,15 +118,27 @@ export class StateMachine {
     Object.assign(this.actions, actions);
   }
 
-  from(state) {
+  about(about) {
+    const context = {
+      about,
+    };
+
+    return {
+      from: (state) => {
+        return this.from(state, context);
+      },
+    };
+  }
+
+  from(state, _context = {}) {
     if (!this.states[state]) throw `State ${state} is not a valid state`;
 
-    const context = {
+    const context = Object.assign(_context, {
       from: state,
       goto: state,
       when: () => false,
       do: () => {},
-    };
+    });
 
     this.contexts.push(context);
 
