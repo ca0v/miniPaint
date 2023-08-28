@@ -16,8 +16,8 @@
   grid-template-columns: auto 1fr auto;
 
   grid-template-areas:
-    "submenu submenu submenu"
-    "sidebar_left main sidebar_right";
+    'submenu submenu submenu'
+    'sidebar_left main sidebar_right';
 }
 .trn {
 }
@@ -95,7 +95,7 @@
 .block h2.toggle:before {
   /* icon */
   position: absolute;
-  content: "";
+  content: '';
   width: 0;
   height: 0;
   right: 10px;
@@ -157,12 +157,12 @@ body .sp-preview {
 }
 .logo:after {
   position: absolute;
-  content: "";
+  content: '';
   left: 0;
   top: 0;
   width: 31px;
   height: 30px;
-  background: url("images/logo.svg") no-repeat center center;
+  background: url('images/logo.svg') no-repeat center center;
   background-size: auto 28px;
   filter: var(--mobile-menu-toggle-filter);
 }
@@ -235,11 +235,11 @@ body .sp-preview {
 .attributes .item > label {
   margin: 0 0.5rem 0 0;
 }
-.attributes input[type="number"] {
+.attributes input[type='number'] {
   width: 60px;
   margin-right: 5px;
 }
-.attributes input[type="color"] {
+.attributes input[type='color'] {
   cursor: pointer;
   padding: 0;
   border: 0.2rem solid var(--input-background-color);
@@ -280,7 +280,7 @@ body .sp-preview {
 }
 .sidebar_left .item:after {
   position: absolute;
-  content: "";
+  content: '';
   left: 0;
   top: 0;
   bottom: 0;
@@ -305,67 +305,67 @@ body .sp-preview {
 IMPORTANT: any new icon should also must be added on /service-worker.js + its version should be updated - FEATURE DISABLED
  */
 .sidebar_left .select:after {
-  background-image: url("images/icons/select.svg");
+  background-image: url('images/icons/select.svg');
 }
 .sidebar_left .selection:after {
-  background-image: url("images/icons/selection.svg");
+  background-image: url('images/icons/selection.svg');
 }
 .sidebar_left .brush:after {
-  background-image: url("images/icons/brush.svg");
+  background-image: url('images/icons/brush.svg');
 }
 .sidebar_left .pencil:after {
-  background-image: url("images/icons/pencil.svg");
+  background-image: url('images/icons/pencil.svg');
 }
 .sidebar_left .pick_color:after {
-  background-image: url("images/icons/pick_color.svg");
+  background-image: url('images/icons/pick_color.svg');
 }
 .sidebar_left .erase:after {
-  background-image: url("images/icons/erase.svg");
+  background-image: url('images/icons/erase.svg');
 }
 .sidebar_left .magic_erase:after {
-  background-image: url("images/icons/magic_erase.svg");
+  background-image: url('images/icons/magic_erase.svg');
 }
 .sidebar_left .fill:after {
-  background-image: url("images/icons/fill.svg");
+  background-image: url('images/icons/fill.svg');
 }
 .sidebar_left .media:after {
-  background-image: url("images/icons/media.svg");
+  background-image: url('images/icons/media.svg');
 }
 .sidebar_left .shape:after {
-  background-image: url("images/icons/shape.svg");
+  background-image: url('images/icons/shape.svg');
 }
 .sidebar_left .text:after {
-  background-image: url("images/icons/text.svg");
+  background-image: url('images/icons/text.svg');
   background-size: 16px auto;
 }
 .sidebar_left .gradient:after {
-  background-image: url("images/icons/gradient.png");
+  background-image: url('images/icons/gradient.png');
   background-size: 18px 12px;
   filter: none;
 }
 .sidebar_left .clone:after {
-  background-image: url("images/icons/clone.svg");
+  background-image: url('images/icons/clone.svg');
 }
 .sidebar_left .crop:after {
-  background-image: url("images/icons/crop.svg");
+  background-image: url('images/icons/crop.svg');
 }
-.sidebar_left .magic_crop:after {
-  background-image: url("images/icons/crop.svg");
+.sidebar_left .dw_lasso:after {
+  background-image: url('images/icons/crop.svg');
 }
 .sidebar_left .blur:after {
-  background-image: url("images/icons/blur.svg");
+  background-image: url('images/icons/blur.svg');
 }
 .sidebar_left .sharpen:after {
-  background-image: url("images/icons/sharpen.svg");
+  background-image: url('images/icons/sharpen.svg');
 }
 .sidebar_left .desaturate:after {
-  background-image: url("images/icons/desaturate.svg");
+  background-image: url('images/icons/desaturate.svg');
 }
 .sidebar_left .bulge_pinch:after {
-  background-image: url("images/icons/bulge_pinch.svg");
+  background-image: url('images/icons/bulge_pinch.svg');
 }
 .sidebar_left .animation:after {
-  background-image: url("images/icons/animation.svg");
+  background-image: url('images/icons/animation.svg');
 }
 
 @media screen and (max-width: 550px) {
@@ -492,13 +492,13 @@ IMPORTANT: any new icon should also must be added on /service-worker.js + its ve
 }
 .layers_list .arrow_down:after {
   position: absolute;
-  content: "";
+  content: '';
   left: 0;
   top: 0;
   bottom: 0;
   right: 0;
   filter: var(--menu-icons-filter);
-  background: url("images/icons/arrow-down.svg") no-repeat center center;
+  background: url('images/icons/arrow-down.svg') no-repeat center center;
   background-size: 12px auto;
 }
 .layers_list .visibility {
@@ -516,13 +516,13 @@ IMPORTANT: any new icon should also must be added on /service-worker.js + its ve
 }
 .layers_list .visibility:after {
   position: absolute;
-  content: "";
+  content: '';
   left: 0;
   top: 0;
   bottom: 0;
   right: 0;
   filter: var(--menu-icons-filter);
-  background: url("images/icons/view.svg") no-repeat center center;
+  background: url('images/icons/view.svg') no-repeat center center;
   background-size: 18px auto;
 }
 .layers_list .visible {
@@ -554,7 +554,7 @@ IMPORTANT: any new icon should also must be added on /service-worker.js + its ve
 }
 .layers_list .filter .layer_name:after {
   position: absolute;
-  content: "fx";
+  content: 'fx';
   right: -4px;
   top: 1px;
   bottom: 0;
@@ -571,7 +571,7 @@ IMPORTANT: any new icon should also must be added on /service-worker.js + its ve
   margin-bottom: 4px;
   min-height: 23px;
 }
-.block.details input[type="number"] {
+.block.details input[type='number'] {
   width: 70px;
   padding: 3px 5px;
   float: right;
@@ -609,7 +609,7 @@ IMPORTANT: any new icon should also must be added on /service-worker.js + its ve
 }
 .block.details button.reset:after {
   position: absolute;
-  content: "";
+  content: '';
   left: 0;
   top: 0;
   bottom: 0;
@@ -725,7 +725,7 @@ IMPORTANT: any new icon should also must be added on /service-worker.js + its ve
   position: absolute;
   pointer-events: none;
   /*background: url(images/icons/grid.png) repeat top left;*/
-  background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAQElEQVQ4T2N89+7dfwYigKCgIBGqGBgYRw3EGU6jYYgzaIZAsvn//z9ROeX9+/fE5ZRRA3GG02gY4s4pgz7ZAAAnSWvHPkHXaAAAAABJRU5ErkJggg==")
+  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAQElEQVQ4T2N89+7dfwYigKCgIBGqGBgYRw3EGU6jYYgzaIZAsvn//z9ROeX9+/fE5ZRRA3GG02gY4s4pgz7ZAAAnSWvHPkHXaAAAAABJRU5ErkJggg==')
     repeat top left;
   z-index: 1;
   image-rendering: pixelated; /* disable antialiasing */

@@ -1,0 +1,15 @@
+export const Keyboard = Object.freeze({
+  ArrowLeft: 'ArrowLeft',
+  ArrowRight: 'ArrowRight',
+  ArrowUp: 'ArrowUp',
+  ArrowDown: 'ArrowDown',
+  CenterAt: 'c',
+  Delete: 'Delete',
+  ZoomIn: '+',
+  ZoomOut: '-',
+  Reset: 'Escape',
+  ClearInterior: 'Shift+X',
+  ClearExterior: 'Ctrl+Shift+X',
+  Smooth: 'q',
+  ClosePolygon: ' ',
+});

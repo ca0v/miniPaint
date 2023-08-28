@@ -381,13 +381,7 @@ config.TOOLS = [
         value: 'Arial',
         values() {
           const user_font_names = Object.keys(config.user_fonts);
-          return [
-            '',
-            '[Add Font...]',
-            ...Array.from(
-              new Set([...config.FONTS, ...user_font_names].sort()),
-            ),
-          ];
+          return ['', '[Add Font...]', ...Array.from(new Set([...config.FONTS, ...user_font_names].sort()))];
         },
       },
       size: 40,
@@ -458,7 +452,7 @@ config.TOOLS = [
     },
   },
   {
-    name: 'magic_crop',
+    name: 'dw_lasso',
     on_activate: 'on_activate',
     on_update: 'on_params_update',
     on_leave: 'on_leave',
