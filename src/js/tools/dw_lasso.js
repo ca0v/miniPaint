@@ -58,444 +58,18 @@ import { Tests } from './dw_extensions/Tests.js';
 import { StateMachine } from './dw_extensions/StateMachine.js';
 
 class DwLasso_class extends Base_tools_class {
-  // define getter and setter for status
-  get status() {
-    return this._status;
-  }
-
-  set status(value) {
-    console.log(`status: ${this._status} -> ${value}`);
-    if (this._status !== value) {
-      this._status = value;
-    }
-
-    if (this._status !== this.state.currentState) {
-      alertify.success(`incorrect status: ${this._status} is not ${this.state.currentState}`);
-    }
-  }
-
   constructor(ctx) {
     super();
+
+    this.name = 'dw_lasso';
+    this.ctx = ctx;
+    this.data = [];
+
     this.metrics = {
-      timeOfClick: Date.now(),
       timeOfMove: Date.now(),
     };
-    this.state = new StateMachine(Object.values(Status));
-    this.state.on('stateChanged', (state) => {
-      alertify.success(`state: ${state}`);
-    });
 
-    this.state.register({
-      start: () => console.log('start'),
-      beforeDraggingHoverPoint: () => {
-        const currentPoint = this.mousePoint(this.state.mouseEvent);
-        if (this.hover?.pointIndex >= 0) {
-          const index = this.hover.pointIndex;
-          this.hover.point = this.data.at(index);
-
-          const { x: original_x, y: original_y } = this.data.at(index);
-          let { x: redo_x, y: redo_y } = currentPoint;
-          this.undoredo(
-            `before dragging point ${index} from ${original_x}, ${original_y}`,
-            () => {
-              const point = this.data.at(index);
-              point.x = redo_x;
-              point.y = redo_y;
-            },
-            () => {
-              const point = this.data.at(index);
-              redo_x = point.x;
-              redo_y = point.y;
-              point.x = original_x;
-              point.y = original_y;
-            },
-          );
-          // render the line
-          this.Base_layers.render();
-        } else if (this.hover?.midpointIndex >= 0) {
-          const index = this.hover.midpointIndex;
-          this.undoredo(
-            `before dragging midpoint ${index}`,
-            () => this.data.splice(index + 1, 0, currentPoint),
-            () => this.data.splice(index + 1, 1),
-          );
-          this.hover = { pointIndex: index + 1 };
-          this.hover.point = this.data.at(index + 1);
-          // render the line
-          this.Base_layers.render();
-        }
-      },
-      draggingHoverPoint: () => {
-        const currentPoint = this.mousePoint(this.state.mouseEvent);
-        if (this.hover?.point) {
-          const point = this.hover.point;
-          point.x = currentPoint.x;
-          point.y = currentPoint.y;
-          this.Base_layers.render();
-        } else {
-          console.log(`mousemove: no point to drag`);
-        }
-      },
-      endDraggingHoverPoint: () => console.log('stateMachine', 'endDraggingHoverPoint'),
-
-      drawPoints: () => {
-        const currentPoint = this.mousePoint(this.state.mouseEvent);
-        const data = this.data;
-        const priorPoint = data.at(-2);
-        let drawPoint = false;
-        const d = distance(priorPoint, currentPoint) * config.ZOOM;
-        drawPoint = drawPoint || d > Settings.distanceBetweenPoints;
-        if (!drawPoint && data.length > 2 && d > Settings.minimalDistanceBetweenPoints) {
-          const a = Math.PI - angleOf(data.at(-3), priorPoint, currentPoint);
-          drawPoint = d * a > Settings.radiusThreshold * Settings.distanceBetweenPoints;
-          if (drawPoint) {
-            console.log(`angle: ${a}, distance: ${d}`);
-          }
-        }
-        if (drawPoint) {
-          data.push(currentPoint);
-        } else {
-          const p = data.at(-1);
-          p.x = currentPoint.x;
-          p.y = currentPoint.y;
-        }
-        this.renderData();
-        this.delayedSnapshot(`before drawing points at location ${data.length}`);
-      },
-
-      hasTwoOrMorePoints: () => {
-        return this.data.length > 1;
-      },
-
-      placeFirstPointAtMouseLocation: () => {
-        const currentPoint = this.mousePoint(this.state.mouseEvent);
-        this.snapshot('before placing 1st point', () => {
-          this.data = [currentPoint];
-        });
-      },
-
-      placePointAtClickLocation: () => {
-        const currentPoint = this.mousePoint(this.state.mouseEvent);
-        this.undoredo(
-          `before placing point ${this.data.length + 1}`,
-          () => this.data.push(currentPoint),
-          () => this.data.pop(),
-        );
-      },
-
-      movingLastPointToMouseLocation: () => {
-        const currentPoint = this.mousePoint(this.state.mouseEvent);
-        if (!this.data.length) return;
-        const p = this.data.at(-1);
-        p.x = currentPoint.x;
-        p.y = currentPoint.y;
-        this.renderData();
-      },
-
-      moveToPriorPoint: () => moveToNextVertex(this, computeKeyboardState(this.state.keyboardEvent)),
-      moveToNextPoint: () => moveToNextVertex(this, computeKeyboardState(this.state.keyboardEvent)),
-
-      movePointLeft1Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
-      movePointRight1Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
-      movePointUp1Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
-      movePointDown1Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
-
-      movePointLeft10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
-      movePointRight10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
-      movePointUp10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
-      movePointDown10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
-
-      closePolygon: () => {
-        // nothing to do
-      },
-
-      dataPoints: () => {
-        const hasDataPoints = !!this.data.length;
-        console.log('stateMachine', 'dataPoints', hasDataPoints);
-        return hasDataPoints;
-      },
-
-      noDataPoints: () => !this.state.actions.dataPoints(),
-
-      deleteHoverPoint: () => {
-        const hover = !!this.hover?.pointIndex || !!this.hover?.midpointIndex;
-        console.log('stateMachine', 'deleteHoverPoint', hover);
-        if (hover) {
-          deletePoint(this, computeKeyboardState(this.state.keyboardEvent));
-        }
-        return hover;
-      },
-
-      hoveringOverPoint: () => {
-        const priorHover = JSON.stringify(this.hover || null);
-        const hover = (this.hover = computeHover(this.data, this.mousePoint(this.state.mouseEvent)));
-        if (priorHover != JSON.stringify(this.hover)) {
-          this.Base_layers.render();
-        }
-        return !!hover;
-      },
-
-      notHoveringOverPoint: () => !this.state.actions.hoveringOverPoint(),
-
-      zoomIn: () => zoomViewport(this, computeKeyboardState(this.state.keyboardEvent)),
-      zoomOut: () => zoomViewport(this, computeKeyboardState(this.state.keyboardEvent)),
-
-      reset: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
-      cut: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
-      crop: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
-      smooth: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
-      centerAt: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
-    });
-
-    this.state.from(Status.none).goto(Status.ready).when(null).do(this.state.actions.noDataPoints);
-    this.state.from(Status.none).goto(Status.editing).when(null).do(this.state.actions.dataPoints);
-
-    this.state
-      .about('reset the tool when drawing')
-      .from(Status.drawing)
-      .goto(Status.ready)
-      .when(this.state.keyboardState(Keyboard.Reset))
-      .do(this.state.actions.reset);
-
-    this.state
-      .about('reset the tool when editing')
-      .from(Status.editing)
-      .goto(Status.ready)
-      .when(this.state.keyboardState(Keyboard.Reset))
-      .do(this.state.actions.reset);
-
-    this.state
-      .about('reset the tool when placing')
-      .from(Status.placing)
-      .goto(Status.ready)
-      .when(this.state.keyboardState(Keyboard.Reset))
-      .do(this.state.actions.reset);
-
-    this.state
-      .about('clear the interior during an edit')
-      .from(Status.editing)
-      .goto(Status.ready)
-      .when(this.state.keyboardState(Keyboard.ClearInterior))
-      .do(this.state.actions.cut);
-
-    this.state
-      .about('clear the exterior during an edit')
-      .from(Status.editing)
-      .goto(Status.ready)
-      .when(this.state.keyboardState(Keyboard.ClearExterior))
-      .do(this.state.actions.crop);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.ready)
-      .when(this.state.keyboardState(Keyboard.Smooth))
-      .do(this.state.actions.smooth);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.ready)
-      .when(this.state.keyboardState(Keyboard.CenterAt))
-      .do(this.state.actions.centerAt);
-
-    this.state
-      .from(Status.drawing)
-      .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.ClosePolygon))
-      .do(this.state.actions.closePolygon);
-
-    this.state
-      .from(Status.hover)
-      .goto(Status.before_dragging)
-      .when(this.state.mouseState('Left+mousedown'))
-      .do(this.state.actions.beforeDraggingHoverPoint);
-
-    this.state
-      .from(Status.before_dragging)
-      .goto(Status.dragging)
-      .when(this.state.mouseState('Left+mousemove'))
-      .do(this.state.actions.draggingHoverPoint);
-
-    this.state
-      .from(Status.dragging)
-      .goto(Status.dragging)
-      .when(this.state.mouseState('Left+mousemove'))
-      .do(this.state.actions.draggingHoverPoint);
-
-    this.state
-      .from(Status.drawing)
-      .goto(Status.drawing)
-      .when(this.state.mouseState('Left+mousemove'))
-      .do(this.state.actions.drawPoints);
-
-    this.state
-      .from(Status.dragging)
-      .goto(Status.editing)
-      .when(this.state.mouseState('Left+mouseup'))
-      .do(this.state.actions.endDraggingHoverPoint);
-
-    this.state
-      .from(Status.ready)
-      .goto(Status.drawing)
-      .when(this.state.mouseState('Left+mousedown'))
-      .do(this.state.actions.placeFirstPointAtMouseLocation);
-
-    this.state
-      .from(Status.drawing)
-      .goto(Status.placing)
-      .when(this.state.mouseState('mousemove'))
-      .do(this.state.actions.hasTwoOrMorePoints);
-
-    this.state
-      .from(Status.placing)
-      .goto(Status.drawing)
-      .when(this.state.mouseState('Left+mousedown'))
-      .do(this.state.actions.placePointAtClickLocation);
-
-    this.state
-      .from(Status.placing)
-      .goto(Status.placing)
-      .when(this.state.mouseState('mousemove'))
-      .do(this.state.actions.movingLastPointToMouseLocation);
-
-    this.state
-      .from(Status.drawing)
-      .goto(Status.drawing)
-      .when(this.state.mouseState('Left+mousedown'))
-      .do(this.state.actions.placePointAtClickLocation);
-
-    this.state
-      .from(Status.placing)
-      .goto(Status.editing)
-      .when(this.state.mouseState('Shift+Left+mousedown'))
-      .do(this.state.actions.closePolygon);
-
-    this.state
-      .from(Status.drawing)
-      .goto(Status.drawing)
-      .when(this.state.keyboardState(Keyboard.ZoomIn))
-      .do(this.state.actions.zoomIn);
-
-    this.state
-      .from(Status.drawing)
-      .goto(Status.drawing)
-      .when(this.state.keyboardState(Keyboard.ZoomOut))
-      .do(this.state.actions.zoomOut);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.ZoomIn))
-      .do(this.state.actions.zoomIn);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.ZoomOut))
-      .do(this.state.actions.zoomOut);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.editing)
-      .when(this.state.keyboardState('ArrowLeft'))
-      .do(this.state.actions.moveToPriorPoint);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.editing)
-      .when(this.state.keyboardState('ArrowRight'))
-      .do(this.state.actions.moveToNextPoint);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.editing)
-      .when(this.state.keyboardState('Shift+ArrowLeft'))
-      .do(this.state.actions.movePointLeft1Units);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.editing)
-      .when(this.state.keyboardState('Shift+ArrowRight'))
-      .do(this.state.actions.movePointRight1Units);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.editing)
-      .when(this.state.keyboardState('Shift+ArrowUp'))
-      .do(this.state.actions.movePointUp1Units);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.editing)
-      .when(this.state.keyboardState('Shift+ArrowDown'))
-      .do(this.state.actions.movePointDown1Units);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.editing)
-      .when(this.state.keyboardState('Ctrl+Shift+ArrowLeft'))
-      .do(this.state.actions.movePointLeft10Units);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.editing)
-      .when(this.state.keyboardState('Ctrl+Shift+ArrowRight'))
-      .do(this.state.actions.movePointRight10Units);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.editing)
-      .when(this.state.keyboardState('Ctrl+Shift+ArrowUp'))
-      .do(this.state.actions.movePointUp10Units);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.editing)
-      .when(this.state.keyboardState('Ctrl+Shift+ArrowDown'))
-      .do(this.state.actions.movePointDown10Units);
-
-    this.state.from(Status.editing).goto(Status.ready).when(null).do(this.state.actions.noDataPoints);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.Delete))
-      .do(this.state.actions.deleteHoverPoint);
-
-    this.state
-      .from(Status.hover)
-      .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.Delete))
-      .do(this.state.actions.deleteHoverPoint);
-
-    this.state
-      .from(Status.hover)
-      .goto(Status.editing)
-      .when(this.state.mouseState('Shift+Left+mousedown'))
-      .do(this.state.actions.deleteHoverPoint);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.hover)
-      .when(this.state.mouseState('mousemove'))
-      .do(this.state.actions.hoveringOverPoint);
-
-    this.state
-      .from(Status.editing)
-      .goto(Status.hover)
-      .when(this.state.mouseState('Shift+mousemove'))
-      .do(this.state.actions.hoveringOverPoint);
-
-    this.state
-      .from(Status.hover)
-      .goto(Status.editing)
-      .when(this.state.mouseState('mousemove'))
-      .do(this.state.actions.notHoveringOverPoint);
-
-    this.state
-      .from(Status.hover)
-      .goto(Status.editing)
-      .when(this.state.mouseState('Shift+mousemove'))
-      .do(this.state.actions.notHoveringOverPoint);
+    this.defineStateMachine();
 
     this.events = new EventManager();
     this.Base_layers = new Base_layers_class();
@@ -503,9 +77,6 @@ class DwLasso_class extends Base_tools_class {
     this.GUI_preview = new GUI_preview_class();
     this.Base_gui = new Base_gui_class();
     this.GUI_tools = new GUI_tools_class();
-    this.ctx = ctx;
-    this.data = [];
-    this.name = 'dw_lasso';
     this.selection = {
       x: null,
       y: null,
@@ -521,7 +92,6 @@ class DwLasso_class extends Base_tools_class {
       enable_move: false,
       data_function: () => this.selection,
     };
-    this.mousedown_selection = null;
     this.Base_selection = new Base_selection_class(ctx, sel_config, this.name);
 
     this.delayedSnapshot = debounce((about) => {
@@ -856,10 +426,8 @@ class DwLasso_class extends Base_tools_class {
 
   on_activate() {
     const status = this.state.currentState;
-    console.log(`on_activate: status '${status}'`);
     switch (status) {
       case Status.none: {
-        this.state.trigger(Keyboard.Reset);
         this.prior_action_history_max = this.Base_state.action_history_max;
         this.Base_state.action_history_max = 1000;
         break;
@@ -927,6 +495,441 @@ class DwLasso_class extends Base_tools_class {
       y: mouse.y,
     };
   }
+
+  placePointAtClickLocation() {
+    const currentPoint = this.mousePoint(this.state.mouseEvent);
+    if (!currentPoint) return false;
+    this.undoredo(
+      `before placing point ${this.data.length + 1}`,
+      () => this.data.push(currentPoint),
+      () => this.data.pop(),
+    );
+  }
+
+  movingLastPointToMouseLocation() {
+    const currentPoint = this.mousePoint(this.state.mouseEvent);
+    if (!currentPoint) return false;
+    if (!this.data.length) return;
+    const p = this.data.at(-1);
+    p.x = currentPoint.x;
+    p.y = currentPoint.y;
+    this.renderData();
+  }
+
+  defineStateMachine() {
+    this.state = new StateMachine(Object.values(Status));
+    this.state.on('stateChanged', (state) => {
+      alertify.success(`state: ${state}`);
+    });
+
+    this.state.register({
+      start: () => console.log('start'),
+      beforeDraggingHoverPoint: () => {
+        const currentPoint = this.mousePoint(this.state.mouseEvent);
+        if (!currentPoint) return false;
+
+        if (this.hover?.pointIndex >= 0) {
+          const index = this.hover.pointIndex;
+          this.hover.point = this.data.at(index);
+
+          const { x: original_x, y: original_y } = this.data.at(index);
+          let { x: redo_x, y: redo_y } = currentPoint;
+          this.undoredo(
+            `before dragging point ${index} from ${original_x}, ${original_y}`,
+            () => {
+              const point = this.data.at(index);
+              point.x = redo_x;
+              point.y = redo_y;
+            },
+            () => {
+              const point = this.data.at(index);
+              redo_x = point.x;
+              redo_y = point.y;
+              point.x = original_x;
+              point.y = original_y;
+            },
+          );
+          // render the line
+          this.Base_layers.render();
+        } else if (this.hover?.midpointIndex >= 0) {
+          const index = this.hover.midpointIndex;
+          this.undoredo(
+            `before dragging midpoint ${index}`,
+            () => this.data.splice(index + 1, 0, currentPoint),
+            () => this.data.splice(index + 1, 1),
+          );
+          this.hover = { pointIndex: index + 1 };
+          this.hover.point = this.data.at(index + 1);
+          // render the line
+          this.Base_layers.render();
+        }
+      },
+      draggingHoverPoint: () => {
+        const currentPoint = this.mousePoint(this.state.mouseEvent);
+        if (!currentPoint) return false;
+
+        if (this.hover?.point) {
+          const point = this.hover.point;
+          point.x = currentPoint.x;
+          point.y = currentPoint.y;
+          this.Base_layers.render();
+        } else {
+          console.log(`mousemove: no point to drag`);
+        }
+      },
+      endDraggingHoverPoint: () => console.log('stateMachine', 'endDraggingHoverPoint'),
+
+      drawPoints: () => {
+        const currentPoint = this.mousePoint(this.state.mouseEvent);
+        if (!currentPoint) return false;
+
+        const data = this.data;
+        const priorPoint = data.at(-2);
+        if (!priorPoint) {
+          this.placePointAtClickLocation();
+          return false;
+        }
+        let drawPoint = false;
+        const d = distance(priorPoint, currentPoint) * config.ZOOM;
+        drawPoint = drawPoint || d > Settings.distanceBetweenPoints;
+        if (!drawPoint && data.length > 2 && d > Settings.minimalDistanceBetweenPoints) {
+          const a = Math.PI - angleOf(data.at(-3), priorPoint, currentPoint);
+          drawPoint = d * a > Settings.radiusThreshold * Settings.distanceBetweenPoints;
+          if (drawPoint) {
+            console.log(`angle: ${a}, distance: ${d}`);
+          }
+        }
+        if (drawPoint) {
+          data.push(currentPoint);
+        } else {
+          const p = data.at(-1);
+          p.x = currentPoint.x;
+          p.y = currentPoint.y;
+        }
+        this.renderData();
+        this.delayedSnapshot(`before drawing points at location ${data.length}`);
+      },
+
+      placeFirstPointAtMouseLocation: () => {
+        const currentPoint = this.mousePoint(this.state.mouseEvent);
+        if (!currentPoint) return false;
+        this.snapshot('before placing 1st point', () => {
+          this.data = [currentPoint];
+        });
+      },
+
+      placePointAtClickLocation: () => this.placePointAtClickLocation(),
+      movingLastPointToMouseLocation: () => this.movingLastPointToMouseLocation(),
+
+      moveToPriorPoint: () => moveToNextVertex(this, computeKeyboardState(this.state.keyboardEvent)),
+      moveToNextPoint: () => moveToNextVertex(this, computeKeyboardState(this.state.keyboardEvent)),
+
+      movePointLeft1Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+      movePointRight1Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+      movePointUp1Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+      movePointDown1Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+
+      movePointLeft10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+      movePointRight10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+      movePointUp10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+      movePointDown10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+
+      closePolygon: () => {
+        // nothing to do
+      },
+
+      dataPoints: () => {
+        const hasDataPoints = !!this.data.length;
+        console.log('stateMachine', 'dataPoints', hasDataPoints);
+        return hasDataPoints;
+      },
+
+      noDataPoints: () => !this.state.actions.dataPoints(),
+
+      deleteHoverPoint: () => {
+        const hover = !!this.hover?.pointIndex || !!this.hover?.midpointIndex;
+        console.log('stateMachine', 'deleteHoverPoint', hover);
+        if (hover) {
+          deletePoint(this, computeKeyboardState(this.state.keyboardEvent));
+        }
+        return hover;
+      },
+
+      hoveringOverPoint: () => {
+        const currentPoint = this.mousePoint(this.state.mouseEvent);
+        if (!currentPoint) return false;
+        const priorHover = JSON.stringify(this.hover || null);
+        const hover = (this.hover = computeHover(this.data, currentPoint));
+        if (priorHover != JSON.stringify(this.hover)) {
+          this.Base_layers.render();
+        }
+        return !!hover;
+      },
+
+      notHoveringOverPoint: () => !this.state.actions.hoveringOverPoint(),
+
+      zoomIn: () => zoomViewport(this, computeKeyboardState(this.state.keyboardEvent)),
+      zoomOut: () => zoomViewport(this, computeKeyboardState(this.state.keyboardEvent)),
+
+      reset: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
+      cut: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
+      crop: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
+      smooth: () => this.snapshot('before smoothing', () => (this.data = new Smooth().smooth(this.data))),
+      centerAt: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
+    });
+
+    this.state.from(Status.none).goto(Status.ready).when(null).do(this.state.actions.noDataPoints);
+    this.state.from(Status.none).goto(Status.editing).when(null).do(this.state.actions.dataPoints);
+
+    this.state
+      .about('reset the tool when drawing')
+      .from(Status.drawing)
+      .goto(Status.ready)
+      .when(this.state.keyboardState(Keyboard.Reset))
+      .do(this.state.actions.reset);
+
+    this.state
+      .about('reset the tool when editing')
+      .from(Status.editing)
+      .goto(Status.ready)
+      .when(this.state.keyboardState(Keyboard.Reset))
+      .do(this.state.actions.reset);
+
+    this.state
+      .about('reset the tool when placing')
+      .from(Status.placing)
+      .goto(Status.ready)
+      .when(this.state.keyboardState(Keyboard.Reset))
+      .do(this.state.actions.reset);
+
+    this.state
+      .about('clear the interior during an edit')
+      .from(Status.editing)
+      .goto(Status.ready)
+      .when(this.state.keyboardState(Keyboard.ClearInterior))
+      .do(this.state.actions.cut);
+
+    this.state
+      .about('clear the exterior during an edit')
+      .from(Status.editing)
+      .goto(Status.ready)
+      .when(this.state.keyboardState(Keyboard.ClearExterior))
+      .do(this.state.actions.crop);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState(Keyboard.Smooth))
+      .do(this.state.actions.smooth);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.ready)
+      .when(this.state.keyboardState(Keyboard.CenterAt))
+      .do(this.state.actions.centerAt);
+
+    this.state
+      .from(Status.drawing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState(Keyboard.ClosePolygon))
+      .do(this.state.actions.closePolygon);
+
+    this.state
+      .from(Status.hover)
+      .goto(Status.before_dragging)
+      .when(this.state.mouseState('Left+mousedown'))
+      .do(this.state.actions.beforeDraggingHoverPoint);
+
+    this.state
+      .from(Status.before_dragging)
+      .goto(Status.dragging)
+      .when(this.state.mouseState('Left+mousemove'))
+      .do(this.state.actions.draggingHoverPoint);
+
+    this.state
+      .from(Status.dragging)
+      .goto(Status.dragging)
+      .when(this.state.mouseState('Left+mousemove'))
+      .do(this.state.actions.draggingHoverPoint);
+
+    this.state
+      .about('automatically create vertices as mouse moves')
+      .from(Status.drawing)
+      .goto(Status.drawing)
+      .when(this.state.mouseState('Left+mousemove'))
+      .do(this.state.actions.drawPoints);
+
+    this.state
+      .about('when moving the mouse, move the last point to the mouse location')
+      .from(Status.drawing)
+      .goto(Status.placing)
+      .when(this.state.mouseState('mousemove'))
+      .do(this.state.actions.placePointAtClickLocation);
+
+    this.state
+      .from(Status.dragging)
+      .goto(Status.editing)
+      .when(this.state.mouseState('Left+mouseup'))
+      .do(this.state.actions.endDraggingHoverPoint);
+
+    this.state
+      .from(Status.ready)
+      .goto(Status.drawing)
+      .when(this.state.mouseState('Left+mousedown'))
+      .do(this.state.actions.placeFirstPointAtMouseLocation);
+
+    this.state
+      .from(Status.placing)
+      .goto(Status.drawing)
+      .when(this.state.mouseState('Left+mousedown'))
+      .do(this.state.actions.placePointAtClickLocation);
+
+    this.state
+      .from(Status.placing)
+      .goto(Status.placing)
+      .when(this.state.mouseState('mousemove'))
+      .do(this.state.actions.movingLastPointToMouseLocation);
+
+    this.state
+      .from(Status.drawing)
+      .goto(Status.drawing)
+      .when(this.state.mouseState('Left+mousedown'))
+      .do(this.state.actions.placePointAtClickLocation);
+
+    this.state
+      .from(Status.placing)
+      .goto(Status.editing)
+      .when(this.state.mouseState('Shift+Left+mousedown'))
+      .do(this.state.actions.closePolygon);
+
+    this.state
+      .from(Status.drawing)
+      .goto(Status.drawing)
+      .when(this.state.keyboardState(Keyboard.ZoomIn))
+      .do(this.state.actions.zoomIn);
+
+    this.state
+      .from(Status.drawing)
+      .goto(Status.drawing)
+      .when(this.state.keyboardState(Keyboard.ZoomOut))
+      .do(this.state.actions.zoomOut);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState(Keyboard.ZoomIn))
+      .do(this.state.actions.zoomIn);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState(Keyboard.ZoomOut))
+      .do(this.state.actions.zoomOut);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('ArrowLeft'))
+      .do(this.state.actions.moveToPriorPoint);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('ArrowRight'))
+      .do(this.state.actions.moveToNextPoint);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('Shift+ArrowLeft'))
+      .do(this.state.actions.movePointLeft1Units);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('Shift+ArrowRight'))
+      .do(this.state.actions.movePointRight1Units);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('Shift+ArrowUp'))
+      .do(this.state.actions.movePointUp1Units);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('Shift+ArrowDown'))
+      .do(this.state.actions.movePointDown1Units);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('Ctrl+Shift+ArrowLeft'))
+      .do(this.state.actions.movePointLeft10Units);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('Ctrl+Shift+ArrowRight'))
+      .do(this.state.actions.movePointRight10Units);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('Ctrl+Shift+ArrowUp'))
+      .do(this.state.actions.movePointUp10Units);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('Ctrl+Shift+ArrowDown'))
+      .do(this.state.actions.movePointDown10Units);
+
+    this.state.from(Status.editing).goto(Status.ready).when(null).do(this.state.actions.noDataPoints);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState(Keyboard.Delete))
+      .do(this.state.actions.deleteHoverPoint);
+
+    this.state
+      .from(Status.hover)
+      .goto(Status.editing)
+      .when(this.state.keyboardState(Keyboard.Delete))
+      .do(this.state.actions.deleteHoverPoint);
+
+    this.state
+      .from(Status.hover)
+      .goto(Status.editing)
+      .when(this.state.mouseState('Shift+Left+mousedown'))
+      .do(this.state.actions.deleteHoverPoint);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.hover)
+      .when(this.state.mouseState('mousemove'))
+      .do(this.state.actions.hoveringOverPoint);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.hover)
+      .when(this.state.mouseState('Shift+mousemove'))
+      .do(this.state.actions.hoveringOverPoint);
+
+    this.state
+      .from(Status.hover)
+      .goto(Status.editing)
+      .when(this.state.mouseState('mousemove'))
+      .do(this.state.actions.notHoveringOverPoint);
+
+    this.state
+      .from(Status.hover)
+      .goto(Status.editing)
+      .when(this.state.mouseState('Shift+mousemove'))
+      .do(this.state.actions.notHoveringOverPoint);
+  }
 }
 
 export default DwLasso_class;
@@ -977,13 +980,6 @@ function otherKeyboardCommands(lasso, keyboardState) {
 
     case Keyboard.ClearExterior: {
       lasso.crop();
-      break;
-    }
-
-    case Keyboard.Smooth: {
-      lasso.snapshot('before smoothing', () => {
-        lasso.data = new Smooth().smooth(lasso.data);
-      });
       break;
     }
 
@@ -1113,13 +1109,10 @@ function moveToNextVertex(lasso, keyboardState) {
   let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
 
   switch (keyboardState) {
-    case Keyboard.ArrowLeft:
-    case Keyboard.ArrowUp:
+    case Keyboard.PriorVertex:
       indexOffset--;
       break;
-    case Keyboard.ArrowRight:
-
-    case Keyboard.ArrowDown:
+    case Keyboard.NextVertex:
       indexOffset++;
       break;
 

@@ -1,4 +1,6 @@
 export const Keyboard = Object.freeze({
+  PriorVertex: 'ArrowLeft',
+  NextVertex: 'ArrowRight',
   ArrowLeft: 'ArrowLeft',
   ArrowRight: 'ArrowRight',
   ArrowUp: 'ArrowUp',
