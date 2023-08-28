@@ -89,15 +89,19 @@ class DwLasso_class extends Base_tools_class {
       endDraggingHoverPoint: () => console.log('stateMachine', 'endDraggingHoverPoint'),
       placePointAtClickLocation: () => console.log('stateMachine', 'placePointAtClickLocation'),
       placePointAtMouseLocation: () => console.log('stateMachine', 'placePointAtMouseLocation'),
-      movePointLeft1Units: () => console.log('stateMachine', 'movePointLeft1Units'),
-      movePointRight1Units: () => console.log('stateMachine', 'movePointRight1Units'),
-      movePointUp1Units: () => console.log('stateMachine', 'movePointUp1Units'),
-      movePointDown1Units: () => console.log('stateMachine', 'movePointDown1Units'),
 
-      movePointLeft10Units: () => console.log('stateMachine', 'movePointLeft10Units'),
-      movePointRight10Units: () => console.log('stateMachine', 'movePointRight10Units'),
-      movePointUp10Units: () => console.log('stateMachine', 'movePointUp10Units'),
-      movePointDown10Units: () => console.log('stateMachine', 'movePointDown10Units'),
+      moveToPriorPoint: () => moveToNextVertex(this, computeKeyboardState(this.state.keyboardEvent)),
+      moveToNextPoint: () => moveToNextVertex(this, computeKeyboardState(this.state.keyboardEvent)),
+
+      movePointLeft1Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+      movePointRight1Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+      movePointUp1Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+      movePointDown1Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+
+      movePointLeft10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+      movePointRight10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+      movePointUp10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+      movePointDown10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
 
       closePolygon: () => console.log('stateMachine', 'closePolygon'),
 
@@ -112,6 +116,9 @@ class DwLasso_class extends Base_tools_class {
       deleteHoverPoint: () => {
         const hover = !!this.hover?.pointIndex || !!this.hover?.midpointIndex;
         console.log('stateMachine', 'deleteHoverPoint', hover);
+        if (hover) {
+          deletePoint(this, computeKeyboardState(this.state.keyboardEvent));
+        }
         return hover;
       },
       hoveringOverPoint: () => {
@@ -122,15 +129,8 @@ class DwLasso_class extends Base_tools_class {
 
       notHoveringOverPoint: () => !this.state.actions.hoveringOverPoint(),
 
-      zoomIn: () => {
-        console.log('stateMachine', 'zoomIn');
-        return true;
-      },
-
-      zoomOut: () => {
-        console.log('stateMachine', 'zoomIn');
-        return true;
-      },
+      zoomIn: () => zoomViewport(this, computeKeyboardState(this.state.keyboardEvent)),
+      zoomOut: () => zoomViewport(this, computeKeyboardState(this.state.keyboardEvent)),
     });
 
     this.state.from(Status.none).goto(Status.ready).when(null).do(this.state.actions.noDataPoints);
@@ -208,6 +208,18 @@ class DwLasso_class extends Base_tools_class {
       .goto(Status.editing)
       .when(this.state.keyboardState(Keyboard.ZoomOut))
       .do(this.state.actions.zoomOut);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('ArrowLeft'))
+      .do(this.state.actions.moveToPriorPoint);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState('ArrowRight'))
+      .do(this.state.actions.moveToNextPoint);
 
     this.state
       .from(Status.editing)
@@ -367,200 +379,6 @@ class DwLasso_class extends Base_tools_class {
     const keyboardState = computeKeyboardState(e);
 
     switch (this.status) {
-      case Status.editing:
-      case Status.hover: {
-        const scale = 1 / config.ZOOM;
-        let dx = 0;
-        let dy = 0;
-        let indexOffset = 0;
-
-        const isMidpoint = this.hover?.midpointIndex >= 0;
-        let pointIndex = this.hover?.pointIndex || this.hover?.midpointIndex || 0;
-
-        let zoom = 0;
-        switch (keyboardState) {
-          case 'Alt+Shift+ArrowLeft':
-            dx -= 1;
-            break;
-
-          case 'Alt+Shift+ArrowRight':
-            dx += 1;
-            break;
-
-          case 'Alt+Shift+ArrowUp':
-            dy -= 1;
-            break;
-
-          case 'Alt+Shift+ArrowDown':
-            dy += 1;
-            break;
-
-          case 'Ctrl+Alt+Shift+ArrowLeft':
-            dx -= 10;
-            break;
-
-          case 'Ctrl+Alt+Shift+ArrowRight':
-            dx += 10;
-            break;
-
-          case 'Ctrl+Alt+Shift+ArrowUp':
-            dy -= 10;
-            break;
-
-          case 'Ctrl+Alt+Shift+ArrowDown':
-            dy += 10;
-            break;
-
-          case 'Shift+ArrowLeft':
-            dx -= scale;
-            break;
-
-          case 'Shift+ArrowRight':
-            dx += scale;
-            break;
-
-          case 'Shift+ArrowUp':
-            dy -= scale;
-            break;
-
-          case 'Shift+ArrowDown':
-            dy += scale;
-            break;
-
-          case 'Ctrl+Shift+ArrowLeft':
-            dx -= 10 * scale;
-            break;
-
-          case 'Ctrl+Shift+ArrowRight':
-            dx += 10 * scale;
-            break;
-
-          case 'Ctrl+Shift+ArrowUp':
-            dy -= 10 * scale;
-            break;
-
-          case 'Ctrl+Shift+ArrowDown':
-            dy += 10 * scale;
-            break;
-
-          case Keyboard.Reset: {
-            this.reset();
-            break;
-          }
-
-          case Keyboard.ClearInterior: {
-            this.cut();
-            break;
-          }
-
-          case Keyboard.ClearExterior: {
-            this.crop();
-            break;
-          }
-
-          case Keyboard.Smooth: {
-            this.snapshot('before smoothing', () => {
-              this.data = new Smooth().smooth(this.data);
-            });
-            break;
-          }
-
-          case Keyboard.CenterAt: {
-            if (isMidpoint) {
-              this.centerAt(center(this.data.at(pointIndex), this.data.at((pointIndex + 1) % this.data.length)));
-            } else {
-              this.centerAt(this.data[pointIndex]);
-            }
-            break;
-          }
-
-          case Keyboard.ArrowLeft:
-          case Keyboard.ArrowUp:
-            indexOffset--;
-            break;
-          case Keyboard.ArrowRight:
-
-          case Keyboard.ArrowDown:
-            indexOffset++;
-            break;
-
-          case Keyboard.ZoomIn:
-            // zoom in
-            zoom++;
-            break;
-
-          case Keyboard.ZoomOut:
-            // zoom out
-            zoom--;
-            break;
-
-          case Keyboard.Delete:
-            // delete the point
-            if (!isMidpoint) {
-              this.snapshot('before deleting point', () => {
-                this.data.splice(pointIndex, 1);
-              });
-            }
-
-          default: {
-            console.log(`keydown: unknown keyboard state '${keyboardState}'`);
-            break;
-          }
-        }
-        if (zoom) {
-          this.undoredo(
-            'before zooming',
-            () => {
-              this.GUI_preview.zoom(zoom);
-            },
-            () => {
-              this.GUI_preview.zoom(-zoom);
-            },
-          );
-        }
-
-        if (indexOffset) {
-          if (isMidpoint) {
-            pointIndex += indexOffset;
-            if (indexOffset < 0) pointIndex++;
-
-            this.hover = {
-              pointIndex: (pointIndex + this.data.length) % this.data.length,
-            };
-          } else {
-            pointIndex += indexOffset;
-            if (indexOffset > 0) pointIndex--;
-
-            this.hover = {
-              midpointIndex: (pointIndex + this.data.length) % this.data.length,
-            };
-          }
-        }
-
-        if (dx || dy) {
-          if (isMidpoint) {
-            // create the point an select the new point
-            const index = this.hover.midpointIndex;
-            const point = center(this.data.at(index), this.data.at((index + 1) % this.data.length));
-            point.x += dx;
-            point.y += dy;
-            this.snapshot('before moving point', () => {
-              this.data.splice(index + 1, 0, point);
-            });
-            this.hover = { pointIndex: index + 1 };
-          } else {
-            this.delayedSnapshot('point moved');
-            const point = this.data.at(pointIndex);
-            point.x += dx;
-            point.y += dy;
-          }
-          this.metrics.timeOfMove = Date.now();
-        }
-
-        this.Base_layers.render();
-        break;
-      }
-
       case Status.drawing:
       case Status.placing: {
         switch (keyboardState) {
@@ -1261,3 +1079,245 @@ function computeHover(data, currentPoint) {
 }
 
 new Tests().tests();
+
+function otherKeyboardCommands(lasso, keyboardState) {
+  switch (keyboardState) {
+    case Keyboard.Reset: {
+      lasso.reset();
+      break;
+    }
+
+    case Keyboard.ClearInterior: {
+      lasso.cut();
+      break;
+    }
+
+    case Keyboard.ClearExterior: {
+      lasso.crop();
+      break;
+    }
+
+    case Keyboard.Smooth: {
+      lasso.snapshot('before smoothing', () => {
+        lasso.data = new Smooth().smooth(lasso.data);
+      });
+      break;
+    }
+
+    case Keyboard.CenterAt: {
+      if (isMidpoint) {
+        lasso.centerAt(center(lasso.data.at(pointIndex), lasso.data.at((pointIndex + 1) % lasso.data.length)));
+      } else {
+        lasso.centerAt(lasso.data[pointIndex]);
+      }
+      break;
+    }
+
+    default: {
+      console.log(`otherKeyboardCommands: unknown keyboard state '${keyboardState}'`);
+      break;
+    }
+  }
+
+  lasso.Base_layers.render();
+}
+
+function movePoint(lasso, keyboardState) {
+  const scale = 1 / config.ZOOM;
+  let dx = 0;
+  let dy = 0;
+
+  const isMidpoint = lasso.hover?.midpointIndex >= 0;
+  let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
+
+  switch (keyboardState) {
+    case 'Alt+Shift+ArrowLeft':
+      dx -= 1;
+      break;
+
+    case 'Alt+Shift+ArrowRight':
+      dx += 1;
+      break;
+
+    case 'Alt+Shift+ArrowUp':
+      dy -= 1;
+      break;
+
+    case 'Alt+Shift+ArrowDown':
+      dy += 1;
+      break;
+
+    case 'Ctrl+Alt+Shift+ArrowLeft':
+      dx -= 10;
+      break;
+
+    case 'Ctrl+Alt+Shift+ArrowRight':
+      dx += 10;
+      break;
+
+    case 'Ctrl+Alt+Shift+ArrowUp':
+      dy -= 10;
+      break;
+
+    case 'Ctrl+Alt+Shift+ArrowDown':
+      dy += 10;
+      break;
+
+    case 'Shift+ArrowLeft':
+      dx -= scale;
+      break;
+
+    case 'Shift+ArrowRight':
+      dx += scale;
+      break;
+
+    case 'Shift+ArrowUp':
+      dy -= scale;
+      break;
+
+    case 'Shift+ArrowDown':
+      dy += scale;
+      break;
+
+    case 'Ctrl+Shift+ArrowLeft':
+      dx -= 10 * scale;
+      break;
+
+    case 'Ctrl+Shift+ArrowRight':
+      dx += 10 * scale;
+      break;
+
+    case 'Ctrl+Shift+ArrowUp':
+      dy -= 10 * scale;
+      break;
+
+    case 'Ctrl+Shift+ArrowDown':
+      dy += 10 * scale;
+      break;
+
+    default: {
+      console.log(`movePoint: unknown keyboard state '${keyboardState}'`);
+      break;
+    }
+  }
+
+  if (dx || dy) {
+    if (isMidpoint) {
+      // create the point an select the new point
+      const index = lasso.hover.midpointIndex;
+      const point = center(lasso.data.at(index), lasso.data.at((index + 1) % lasso.data.length));
+      point.x += dx;
+      point.y += dy;
+      lasso.snapshot('before moving point', () => {
+        lasso.data.splice(index + 1, 0, point);
+      });
+      lasso.hover = { pointIndex: index + 1 };
+    } else {
+      lasso.delayedSnapshot('point moved');
+      const point = lasso.data.at(pointIndex);
+      point.x += dx;
+      point.y += dy;
+    }
+    lasso.metrics.timeOfMove = Date.now();
+    lasso.Base_layers.render();
+  }
+}
+
+function moveToNextVertex(lasso, keyboardState) {
+  let indexOffset = 0;
+
+  const isMidpoint = lasso.hover?.midpointIndex >= 0;
+  let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
+
+  switch (keyboardState) {
+    case Keyboard.ArrowLeft:
+    case Keyboard.ArrowUp:
+      indexOffset--;
+      break;
+    case Keyboard.ArrowRight:
+
+    case Keyboard.ArrowDown:
+      indexOffset++;
+      break;
+
+    default: {
+      console.log(`keydown: unknown keyboard state '${keyboardState}'`);
+      break;
+    }
+  }
+
+  if (indexOffset) {
+    if (isMidpoint) {
+      pointIndex += indexOffset;
+      if (indexOffset < 0) pointIndex++;
+
+      lasso.hover = {
+        pointIndex: (pointIndex + lasso.data.length) % lasso.data.length,
+      };
+    } else {
+      pointIndex += indexOffset;
+      if (indexOffset > 0) pointIndex--;
+
+      lasso.hover = {
+        midpointIndex: (pointIndex + lasso.data.length) % lasso.data.length,
+      };
+    }
+    lasso.Base_layers.render();
+  }
+}
+
+function zoomViewport(lasso, keyboardState) {
+  let zoom = 0;
+  switch (keyboardState) {
+    case Keyboard.ZoomIn:
+      // zoom in
+      zoom++;
+      break;
+
+    case Keyboard.ZoomOut:
+      // zoom out
+      zoom--;
+      break;
+
+    default: {
+      console.log(`zoomViewport: unknown keyboard state '${keyboardState}'`);
+      break;
+    }
+  }
+  if (zoom) {
+    lasso.undoredo(
+      'before zooming',
+      () => {
+        lasso.GUI_preview.zoom(zoom);
+      },
+      () => {
+        lasso.GUI_preview.zoom(-zoom);
+      },
+    );
+  }
+
+  lasso.Base_layers.render();
+}
+
+function deletePoint(lasso, keyboardState) {
+  const isMidpoint = lasso.hover?.midpointIndex >= 0;
+  if (isMidpoint) {
+    console.log(`deletePoint: cannot delete midpoint`);
+  }
+
+  let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
+
+  switch (keyboardState) {
+    case Keyboard.Delete:
+      // delete the point
+      lasso.snapshot('before deleting point', () => {
+        lasso.data.splice(pointIndex, 1);
+      });
+      lasso.Base_layers.render();
+      break;
+    default: {
+      console.log(`deletePoint: unknown keyboard state '${keyboardState}'`);
+      break;
+    }
+  }
+}

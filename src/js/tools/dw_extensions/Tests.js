@@ -150,6 +150,8 @@ export class Tests {
       s.trigger('Shift+Left+mousedown');
       eq(true, hit, 'The shiftClickCallbackTest handler should have been called');
       eq(s.states.drawing, s.currentState, 'The state should have changed to drawing');
+
+      s.off();
     }
 
     {
@@ -174,6 +176,8 @@ export class Tests {
       // document.dispatchEvent(event);
       s.trigger('Ctrl+Shift+X');
       eq(true, hit, 'The keypressCallbackTest handler should have been called');
+
+      s.off();
     }
   }
 }
