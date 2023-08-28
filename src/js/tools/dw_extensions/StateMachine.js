@@ -1,4 +1,6 @@
 import { EventManager } from './EventManager.js';
+import { computeKeyboardState } from './computeKeyboardState.js';
+import { computeMouseState } from './computeMouseState.js';
 
 /**
  * The ideal would be to make state changes intuitive and easy to modify.  For example, shift+click closes the polygon as does [Space].  The [Space] is sort of intuitive because
@@ -40,8 +42,14 @@ export class StateMachine {
 
     this.events.on('mousedown', (mouseEvent) => {
       const mouseState = computeMouseState(mouseEvent);
-      const targetEvents = this.events.filter((e) => e.from === this.currentState && e.when === mouseState);
-      this.execute(targetEvents);
+      console.log('mouseState', mouseState);
+      this.execute((e) => e.from === this.currentState && e.when === mouseState);
+    });
+
+    this.events.on('keydown', (keyboardEvent) => {
+      const keyboardState = computeKeyboardState(keyboardEvent);
+      console.log('keyboardState', keyboardState);
+      this.execute((e) => e.from === this.currentState && e.when === keyboardState);
     });
 
     this.setCurrentState(states[0]);
@@ -53,11 +61,11 @@ export class StateMachine {
 
   setCurrentState(state) {
     this.currentState = state;
-    const targetEvents = Object.values(this.events).filter((e) => e.from === this.currentState && !e.when);
-    this.execute(targetEvents);
+    this.execute((e) => e.from === this.currentState && !e.when);
   }
 
-  execute(targetEvents) {
+  execute(filter) {
+    const targetEvents = this.contexts.filter(filter);
     if (!targetEvents.length) return;
     if (targetEvents.length > 1) throw `Multiple events match state ${this.currentState}`;
     const targetEvent = targetEvents[0];
@@ -83,7 +91,8 @@ export class StateMachine {
   }
 
   register(actions) {
-    this.actions = actions;
+    // mixin the actions into this.actions
+    Object.assign(this.actions, actions);
   }
 
   from(state) {
@@ -107,7 +116,8 @@ export class StateMachine {
             return {
               do: (action) => {
                 // if action is not a value of events, throw
-                if (!Object.values(this.actions).includes(action)) throw `Action ${action} is not a valid action`;
+                if (!Object.values(this.actions).includes(action))
+                  throw `Action not found in actions: ${Object.keys(this.actions).join(', ')}`;
                 context.do = action;
               },
             };
@@ -121,11 +131,8 @@ export class StateMachine {
   mouseState(condition) {
     return condition;
   }
-}
 
-function computeMouseState(e) {
-  const { ctrlKey, altKey, shiftKey } = e;
-  // is left or right mouse button down?
-  const button = e.button === 0 ? 'Left' : e.button === 2 ? 'Right' : '';
-  return `${ctrlKey ? 'Ctrl+' : ''}${altKey ? 'Alt+' : ''}${shiftKey ? 'Shift+' : ''}${button}${e.type}`;
+  keyboardState(condition) {
+    return condition;
+  }
 }

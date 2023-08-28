@@ -120,25 +120,47 @@ export class Tests {
   }
 
   testStateMachine() {
-    const s = new StateMachine(['none', 'ready', 'drawing', 'editing', 'placing']);
+    {
+      const s = new StateMachine(['none', 'drawing']);
+      let hit = false;
 
-    let hit = false;
+      // register the event handlers
+      s.register({
+        shiftClickCallbackTest: () => {
+          console.log(`shiftClickCallbackTest`);
+          hit = true;
+        },
+      });
 
-    // register the event handlers
-    s.register({
-      placePointAtClickLocation: () => {
-        hit = true;
-      },
-    });
+      // register the events to be handled
+      s.from(s.states.none)
+        .goto(s.states.drawing)
+        .when(s.mouseState('Shift+Left+mousedown'))
+        .do(s.actions.shiftClickCallbackTest);
+      s.trigger('Shift+Left+mousedown');
+      eq(true, hit, 'The shiftClickCallbackTest handler should have been called');
+      eq(s.states.drawing, s.currentState, 'The state should have changed to drawing');
+    }
 
-    // register the events to be handled
-    s.from(s.states.none)
-      .goto(s.states.drawing)
-      .when(s.mouseState('Shift+Click'))
-      .do(s.actions.placePointAtClickLocation);
+    {
+      const s = new StateMachine(['none', 's1']);
+      let hit = false;
+      s.register({
+        keypressCallbackTest: () => {
+          console.log(`keypressCallbackTest`);
+          hit = true;
+        },
+      });
 
-    s.trigger('Shift+Click');
+      s.from(s.states.none)
+        .goto(s.states.drawing)
+        .when(s.keyboardState('Ctrl+Shift+ArrowLeft'))
+        .do(s.actions.keypressCallbackTest);
 
-    eq(true, hit, 'The event handler should have been called');
+      // simulate a ctrl+shift+arrowLeft keypress
+      const event = new KeyboardEvent('keydown', { key: 'ArrowLeft', ctrlKey: true, shiftKey: true });
+      document.dispatchEvent(event);
+      eq(true, hit, 'The keypressCallbackTest handler should have been called');
+    }
   }
 }
