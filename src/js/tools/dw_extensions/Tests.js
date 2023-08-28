@@ -127,6 +127,8 @@ export class Tests {
   testStateMachine() {
     {
       const s = new StateMachine(['none', 'drawing']);
+      s.setCurrentState(s.states.none);
+
       let hit = false;
 
       // register the event handlers
@@ -152,6 +154,8 @@ export class Tests {
 
     {
       const s = new StateMachine(['none', 's1']);
+      s.setCurrentState(s.states.none);
+
       let hit = false;
       s.register({
         keypressCallbackTest: () => {

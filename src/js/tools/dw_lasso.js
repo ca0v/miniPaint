@@ -66,8 +66,11 @@ class DwLasso_class extends Base_tools_class {
   set status(value) {
     console.log(`status: ${this._status} -> ${value}`);
     if (this._status !== value) {
-      alertify.success(`status: ${this._status} -> ${value}`);
       this._status = value;
+    }
+
+    if (this._status !== this.state.currentState) {
+      alertify.success(`incorrect status: ${this._status} is not ${this.state.currentState}`);
     }
   }
 
@@ -77,11 +80,14 @@ class DwLasso_class extends Base_tools_class {
       timeOfClick: Date.now(),
       timeOfMove: Date.now(),
     };
-    this.status = Status.none;
     this.state = new StateMachine(Object.values(Status));
+
     this.state.register({
       start: () => console.log('start'),
+      beforeDraggingHoverPoint: () => console.log('stateMachine', 'beforeDraggingHoverPoint'),
+      draggingHoverPoint: () => console.log('stateMachine', 'draggingHoverPoint'),
       placePointAtClickLocation: () => console.log('stateMachine', 'placePointAtClickLocation'),
+      placePointAtMouseLocation: () => console.log('stateMachine', 'placePointAtMouseLocation'),
       movePointLeft1Units: () => console.log('stateMachine', 'movePointLeft1Units'),
       movePointRight1Units: () => console.log('stateMachine', 'movePointRight1Units'),
       movePointUp1Units: () => console.log('stateMachine', 'movePointUp1Units'),
@@ -93,21 +99,69 @@ class DwLasso_class extends Base_tools_class {
       movePointDown10Units: () => console.log('stateMachine', 'movePointDown10Units'),
 
       closePolygon: () => console.log('stateMachine', 'closePolygon'),
+
+      dataPoints: () => {
+        const hasDataPoints = !!this.data.length;
+        console.log('stateMachine', 'dataPoints', hasDataPoints);
+        return hasDataPoints;
+      },
+
+      noDataPoints: () => !this.state.actions.dataPoints(),
+
       deleteHoverPoint: () => {
         const hover = !!this.hover?.pointIndex || !!this.hover?.midpointIndex;
         console.log('stateMachine', 'deleteHoverPoint', hover);
         return hover;
       },
-      isHoveringOverPoint: () => {
+      hoveringOverPoint: () => {
         const hover = !!computeHover(this.data, this.mousePoint(this.state.mouseEvent));
-        console.log('stateMachine', 'isHoveringOverPoint', hover);
+        console.log('stateMachine', 'hoveringOverPoint', hover);
         return hover;
       },
-      isNotHoveringOverPoint: () => !this.state.actions.isHoveringOverPoint(),
+
+      notHoveringOverPoint: () => !this.state.actions.hoveringOverPoint(),
+
+      zoomIn: () => {
+        console.log('stateMachine', 'zoomIn');
+        return true;
+      },
+
+      zoomOut: () => {
+        console.log('stateMachine', 'zoomIn');
+        return true;
+      },
     });
 
+    this.state.from(Status.none).goto(Status.ready).when(null).do(this.state.actions.noDataPoints);
+    this.state.from(Status.none).goto(Status.editing).when(null).do(this.state.actions.dataPoints);
+
+    // when hover and mousedown, then we are before_dragging
     this.state
-      .from(Status.none)
+      .from(Status.hover)
+      .goto(Status.before_dragging)
+      .when(this.state.mouseState('Left+mousedown'))
+      .do(this.state.actions.beforeDraggingHoverPoint);
+
+    this.state
+      .from(Status.before_dragging)
+      .goto(Status.dragging)
+      .when(this.state.mouseState('Left+mousemove'))
+      .do(this.state.actions.draggingHoverPoint);
+
+    this.state
+      .from(Status.ready)
+      .goto(Status.drawing)
+      .when(this.state.mouseState('Left+mousedown'))
+      .do(this.state.actions.placePointAtClickLocation);
+
+    this.state
+      .from(Status.drawing)
+      .goto(Status.placing)
+      .when(this.state.mouseState('mousemove'))
+      .do(this.state.actions.placePointAtMouseLocation);
+
+    this.state
+      .from(Status.placing)
       .goto(Status.drawing)
       .when(this.state.mouseState('Left+mousedown'))
       .do(this.state.actions.placePointAtClickLocation);
@@ -119,10 +173,34 @@ class DwLasso_class extends Base_tools_class {
       .do(this.state.actions.placePointAtClickLocation);
 
     this.state
-      .from(Status.drawing)
+      .from(Status.placing)
       .goto(Status.editing)
       .when(this.state.mouseState('Shift+Left+mousedown'))
       .do(this.state.actions.closePolygon);
+
+    this.state
+      .from(Status.drawing)
+      .goto(Status.drawing)
+      .when(this.state.keyboardState(Keyboard.ZoomIn))
+      .do(this.state.actions.zoomIn);
+
+    this.state
+      .from(Status.drawing)
+      .goto(Status.drawing)
+      .when(this.state.keyboardState(Keyboard.ZoomOut))
+      .do(this.state.actions.zoomOut);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState(Keyboard.ZoomIn))
+      .do(this.state.actions.zoomIn);
+
+    this.state
+      .from(Status.editing)
+      .goto(Status.editing)
+      .when(this.state.keyboardState(Keyboard.ZoomOut))
+      .do(this.state.actions.zoomOut);
 
     this.state
       .from(Status.editing)
@@ -172,6 +250,8 @@ class DwLasso_class extends Base_tools_class {
       .when(this.state.keyboardState('Ctrl+Shift+ArrowDown'))
       .do(this.state.actions.movePointDown10Units);
 
+    this.state.from(Status.editing).goto(Status.ready).when(null).do(this.state.actions.noDataPoints);
+
     this.state
       .from(Status.editing)
       .goto(Status.editing)
@@ -194,13 +274,13 @@ class DwLasso_class extends Base_tools_class {
       .from(Status.editing)
       .goto(Status.hover)
       .when(this.state.mouseState('mousemove'))
-      .do(this.state.actions.isHoveringOverPoint);
+      .do(this.state.actions.hoveringOverPoint);
 
     this.state
       .from(Status.hover)
       .goto(Status.editing)
       .when(this.state.mouseState('mousemove'))
-      .do(this.state.actions.isNotHoveringOverPoint);
+      .do(this.state.actions.notHoveringOverPoint);
 
     this.events = new EventManager();
     this.Base_layers = new Base_layers_class();
@@ -237,6 +317,7 @@ class DwLasso_class extends Base_tools_class {
 
   load() {
     this.status = Status.none;
+    this.state.setCurrentState(Status.none);
   }
 
   default_dragStart(event) {

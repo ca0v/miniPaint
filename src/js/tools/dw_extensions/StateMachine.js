@@ -52,18 +52,16 @@ export class StateMachine {
     this.events.on('mousedown', (mouseEvent) => {
       this.mouseEvent = mouseEvent;
       const mouseState = computeMouseState(mouseEvent);
-      console.log('StateMachine', 'mousedown', 'mouseState', mouseState);
+      console.log('StateMachine', this.currentState, 'mousedown', 'mouseState', mouseState);
       this.execute((e) => e.from === this.currentState && e.when === mouseState);
     });
 
     this.events.on('keydown', (keyboardEvent) => {
       this.keyboardEvent = keyboardEvent;
       const keyboardState = computeKeyboardState(keyboardEvent);
-      console.log('StateMachine', 'keydown', 'keyboardState', keyboardState);
+      console.log('StateMachine', this.currentState, 'keydown', 'keyboardState', keyboardState);
       this.execute((e) => e.from === this.currentState && e.when === keyboardState);
     });
-
-    this.setCurrentState(states[0]);
   }
 
   off() {
@@ -81,27 +79,24 @@ export class StateMachine {
   execute(filter) {
     const targetEvents = this.contexts.filter(filter);
     if (!targetEvents.length) return;
-    if (targetEvents.length > 1) throw `Multiple events match state ${this.currentState}`;
-    const targetEvent = targetEvents[0];
-    if (targetEvent.do) {
-      if (false === targetEvent.do.call(this)) return;
-    }
-    if (targetEvent.goto) {
-      this.setCurrentState(targetEvent.goto);
-    }
+    let stateChanged = false;
+    targetEvents.forEach((targetEvent) => {
+      if (targetEvent.do) {
+        if (false === targetEvent.do.call(this)) return;
+        if (stateChanged)
+          throw new Error(
+            `A handler already exists for state ${targetEvent.from} and event ${targetEvent.when} so this do statement should have returned false`,
+          );
+      }
+      if (targetEvent.goto) {
+        stateChanged = this.currentState !== targetEvent.goto;
+        this.setCurrentState(targetEvent.goto);
+      }
+    });
   }
 
   trigger(event) {
-    const targetEvents = this.contexts.filter((e) => e.from === this.currentState && e.when === event);
-    if (!targetEvents.length) return;
-    if (targetEvents.length > 1) throw `Multiple events match event ${event} from state ${this.currentState}`;
-    const targetEvent = targetEvents[0];
-    if (targetEvent.do) {
-      targetEvent.do.call(this);
-    }
-    if (targetEvent.goto) {
-      this.setCurrentState(targetEvent.goto);
-    }
+    this.execute((e) => e.from === this.currentState && e.when === event);
   }
 
   register(actions) {
