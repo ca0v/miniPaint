@@ -16,7 +16,11 @@
  * - Load an image then move it and the crop is the wrong part of the image...need to compensate for translations, etc.
  * -- Similarly, cut only working for images that have been cropped to the top-left corner, not sure where the problem is
  * -- but the crop.js works correctly, so the solution is in there somewhere
- * - FIXED: Undo/redo is not well-tuned.  Draw with mouse down and then undo...the undo is not what you expect -- all the points disappear unless you draw very slowly
+ * - Presently shift+click or [Space] closes the polygon, but it is not obvious that this is the case
+ * -- [Escape] deletes it entirely
+ *
+ * ** TODO **
+ * - [Delete] deletes the selected point, or last point if there is none
  *
  */
 import app from '../app.js';
