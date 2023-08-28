@@ -52,7 +52,17 @@ export class StateMachine {
     this.events.on('mousedown', (mouseEvent) => {
       this.mouseEvent = mouseEvent;
       const mouseState = computeMouseState(mouseEvent);
-      console.log('StateMachine', this.currentState, 'mousedown', 'mouseState', mouseState);
+      console.log('StateMachine', this.currentState, 'mouseState', mouseState);
+      this.execute((e) => e.from === this.currentState && e.when === mouseState);
+    });
+
+    this.events.on('mouseup', (mouseEvent) => {
+      const priorButtons = this.mouseEvent.buttons;
+      this.mouseEvent = mouseEvent;
+      let mouseState = computeMouseState(mouseEvent);
+      if (priorButtons === 1) mouseState = `Left+${mouseState}`;
+      if (priorButtons === 2) mouseState = `Right+${mouseState}`;
+      console.log('StateMachine', this.currentState, 'mouseState', mouseState);
       this.execute((e) => e.from === this.currentState && e.when === mouseState);
     });
 

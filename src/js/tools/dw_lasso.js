@@ -86,6 +86,7 @@ class DwLasso_class extends Base_tools_class {
       start: () => console.log('start'),
       beforeDraggingHoverPoint: () => console.log('stateMachine', 'beforeDraggingHoverPoint'),
       draggingHoverPoint: () => console.log('stateMachine', 'draggingHoverPoint'),
+      endDraggingHoverPoint: () => console.log('stateMachine', 'endDraggingHoverPoint'),
       placePointAtClickLocation: () => console.log('stateMachine', 'placePointAtClickLocation'),
       placePointAtMouseLocation: () => console.log('stateMachine', 'placePointAtMouseLocation'),
       movePointLeft1Units: () => console.log('stateMachine', 'movePointLeft1Units'),
@@ -147,6 +148,12 @@ class DwLasso_class extends Base_tools_class {
       .goto(Status.dragging)
       .when(this.state.mouseState('Left+mousemove'))
       .do(this.state.actions.draggingHoverPoint);
+
+    this.state
+      .from(Status.dragging)
+      .goto(Status.editing)
+      .when(this.state.mouseState('Left+mouseup'))
+      .do(this.state.actions.endDraggingHoverPoint);
 
     this.state
       .from(Status.ready)
@@ -277,9 +284,21 @@ class DwLasso_class extends Base_tools_class {
       .do(this.state.actions.hoveringOverPoint);
 
     this.state
+      .from(Status.editing)
+      .goto(Status.hover)
+      .when(this.state.mouseState('Shift+mousemove'))
+      .do(this.state.actions.hoveringOverPoint);
+
+    this.state
       .from(Status.hover)
       .goto(Status.editing)
       .when(this.state.mouseState('mousemove'))
+      .do(this.state.actions.notHoveringOverPoint);
+
+    this.state
+      .from(Status.hover)
+      .goto(Status.editing)
+      .when(this.state.mouseState('Shift+mousemove'))
       .do(this.state.actions.notHoveringOverPoint);
 
     this.events = new EventManager();
