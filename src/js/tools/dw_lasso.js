@@ -42,7 +42,7 @@ import { Generic_action } from './dw_extensions/Generic_action.js';
 import { Update_layer_action } from './dw_extensions/Update_layer_action.js';
 import { EventManager } from './dw_extensions/EventManager.js';
 import { circle } from './dw_extensions/circle.js';
-import { dot } from './dw_extensions/dot.js';
+import { dot, cross } from './dw_extensions/dot.js';
 import { center } from './dw_extensions/center.js';
 import { removeColinearPoints } from './dw_extensions/removeColinearPoints.js';
 import { getBoundingBox } from './dw_extensions/getBoundingBox.js';
@@ -98,6 +98,14 @@ class DwLasso_class extends Base_tools_class {
       console.log(`delayedSnapshot: ${about}`);
       this.snapshot(about);
     }, Settings.delayedSnapshotTimeout);
+  }
+
+  get status() {
+    return this.state.currentState;
+  }
+
+  set status(value) {
+    this.state.setCurrentState(value);
   }
 
   load() {
@@ -205,7 +213,7 @@ class DwLasso_class extends Base_tools_class {
 
       if (this.hover?.pointIndex === i) {
         if (age(this.metrics.timeOfMove) < 1000) {
-          dot(ctx, currentPoint, { color: Drawings.major.color });
+          cross(ctx, currentPoint, { color: Drawings.major.color, size: 12 });
         } else {
           size = Drawings.hoverMajor.size / config.ZOOM;
           ctx.fillStyle = Drawings.hoverMajor.color;
@@ -425,8 +433,7 @@ class DwLasso_class extends Base_tools_class {
   }
 
   on_activate() {
-    const status = this.state.currentState;
-    switch (status) {
+    switch (this.state.currentState) {
       case Status.none: {
         this.prior_action_history_max = this.Base_state.action_history_max;
         this.Base_state.action_history_max = 1000;
@@ -518,9 +525,8 @@ class DwLasso_class extends Base_tools_class {
 
   defineStateMachine() {
     this.state = new StateMachine(Object.values(Status));
-    this.state.on('stateChanged', (state) => {
-      alertify.success(`state: ${state}`);
-    });
+    this.state.on('stateChanged', (state) => log(`state: ${state}`));
+    this.state.on('execute', (context) => context.about && log(`context: ${context.about}`));
 
     this.state.register({
       start: () => console.log('start'),
@@ -624,15 +630,15 @@ class DwLasso_class extends Base_tools_class {
       moveToPriorPoint: () => moveToNextVertex(this, computeKeyboardState(this.state.keyboardEvent)),
       moveToNextPoint: () => moveToNextVertex(this, computeKeyboardState(this.state.keyboardEvent)),
 
-      movePointLeft1Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
-      movePointRight1Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
-      movePointUp1Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
-      movePointDown1Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+      movePointLeft1Units: () => movePoint(this, -1, 0),
+      movePointRight1Units: () => movePoint(this, 1, 0),
+      movePointUp1Units: () => movePoint(this, 0, -1),
+      movePointDown1Units: () => movePoint(this, 0, 1),
 
-      movePointLeft10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
-      movePointRight10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
-      movePointUp10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
-      movePointDown10Units: () => movePoint(this, computeKeyboardState(this.state.keyboardEvent)),
+      movePointLeft10Units: () => movePoint(this, -10, 0),
+      movePointRight10Units: () => movePoint(this, 10, 0),
+      movePointUp10Units: () => movePoint(this, 0, -10),
+      movePointDown10Units: () => movePoint(this, 0, 10),
 
       closePolygon: () => {
         // nothing to do
@@ -671,11 +677,21 @@ class DwLasso_class extends Base_tools_class {
       zoomIn: () => zoomViewport(this, computeKeyboardState(this.state.keyboardEvent)),
       zoomOut: () => zoomViewport(this, computeKeyboardState(this.state.keyboardEvent)),
 
-      reset: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
-      cut: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
-      crop: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
+      reset: () => this.reset(),
+      cut: () => this.cut(),
+      crop: () => this.crop(),
       smooth: () => this.snapshot('before smoothing', () => (this.data = new Smooth().smooth(this.data))),
-      centerAt: () => otherKeyboardCommands(this, computeKeyboardState(this.state.keyboardEvent)),
+      centerAt: () => {
+        const isMidpoint = this.hover?.midpointIndex >= 0;
+        let pointIndex = this.hover?.pointIndex || this.hover?.midpointIndex || this.data.length - 1;
+
+        if (isMidpoint) {
+          this.centerAt(center(this.data.at(pointIndex), this.data.at((pointIndex + 1) % this.data.length)));
+        } else {
+          this.centerAt(this.data[pointIndex]);
+        }
+        this.Base_layers.render();
+      },
     });
 
     this.state.from(Status.none).goto(Status.ready).when(null).do(this.state.actions.noDataPoints);
@@ -717,36 +733,70 @@ class DwLasso_class extends Base_tools_class {
       .do(this.state.actions.crop);
 
     this.state
+      .about('inject smoothing points into the polygon')
       .from(Status.editing)
       .goto(Status.editing)
       .when(this.state.keyboardState(Keyboard.Smooth))
       .do(this.state.actions.smooth);
 
     this.state
+      .about('center about the current point')
       .from(Status.editing)
-      .goto(Status.ready)
+      .goto(Status.editing)
       .when(this.state.keyboardState(Keyboard.CenterAt))
       .do(this.state.actions.centerAt);
 
     this.state
+      .about('center about the current point')
+      .from(Status.drawing)
+      .goto(Status.drawing)
+      .when(this.state.keyboardState(Keyboard.CenterAt))
+      .do(this.state.actions.centerAt);
+
+    this.state
+      .about('center about the current point')
+      .from(Status.placing)
+      .goto(Status.placing)
+      .when(this.state.keyboardState(Keyboard.CenterAt))
+      .do(this.state.actions.centerAt);
+
+    this.state
+      .about('complete the polygon')
       .from(Status.drawing)
       .goto(Status.editing)
       .when(this.state.keyboardState(Keyboard.ClosePolygon))
       .do(this.state.actions.closePolygon);
 
     this.state
+      .about('complete the polygon')
+      .from(Status.placing)
+      .goto(Status.editing)
+      .when(this.state.mouseState('Shift+Left+mousedown'))
+      .do(this.state.actions.closePolygon);
+
+    this.state
+      .about('prepare to drag this point')
       .from(Status.hover)
       .goto(Status.before_dragging)
       .when(this.state.mouseState('Left+mousedown'))
       .do(this.state.actions.beforeDraggingHoverPoint);
 
     this.state
+      .about('begin dragging this point')
+      .from(Status.before_dragging)
+      .goto(Status.hover)
+      .when(this.state.mouseState('Left+mouseup'))
+      .do(this.state.actions.beforeDraggingHoverPoint);
+
+    this.state
+      .about('begin dragging this point')
       .from(Status.before_dragging)
       .goto(Status.dragging)
       .when(this.state.mouseState('Left+mousemove'))
       .do(this.state.actions.draggingHoverPoint);
 
     this.state
+      .about('drag this point')
       .from(Status.dragging)
       .goto(Status.dragging)
       .when(this.state.mouseState('Left+mousemove'))
@@ -767,164 +817,195 @@ class DwLasso_class extends Base_tools_class {
       .do(this.state.actions.placePointAtClickLocation);
 
     this.state
+      .about('stop dragging this point')
       .from(Status.dragging)
       .goto(Status.editing)
       .when(this.state.mouseState('Left+mouseup'))
       .do(this.state.actions.endDraggingHoverPoint);
 
     this.state
+      .about('create the 1st point of the polygon')
       .from(Status.ready)
       .goto(Status.drawing)
       .when(this.state.mouseState('Left+mousedown'))
       .do(this.state.actions.placeFirstPointAtMouseLocation);
 
     this.state
+      .about('stop placing and enter drawing mode')
       .from(Status.placing)
       .goto(Status.drawing)
-      .when(this.state.mouseState('Left+mousedown'))
-      .do(this.state.actions.placePointAtClickLocation);
+      .when(this.state.mouseState('Left+mousedown'));
 
     this.state
+      .about('continue moving the last point to the mouse location')
       .from(Status.placing)
       .goto(Status.placing)
       .when(this.state.mouseState('mousemove'))
       .do(this.state.actions.movingLastPointToMouseLocation);
 
     this.state
+      .about('continue moving the last point to the mouse location (shift key is pressed)')
+      .from(Status.placing)
+      .goto(Status.placing)
+      .when(this.state.mouseState('Shift+mousemove'))
+      .do(this.state.actions.movingLastPointToMouseLocation);
+
+    this.state
+      .about('add a point to the polygon')
       .from(Status.drawing)
       .goto(Status.drawing)
       .when(this.state.mouseState('Left+mousedown'))
       .do(this.state.actions.placePointAtClickLocation);
 
     this.state
-      .from(Status.placing)
-      .goto(Status.editing)
-      .when(this.state.mouseState('Shift+Left+mousedown'))
-      .do(this.state.actions.closePolygon);
-
-    this.state
+      .about('zoom in when drawing')
       .from(Status.drawing)
       .goto(Status.drawing)
       .when(this.state.keyboardState(Keyboard.ZoomIn))
       .do(this.state.actions.zoomIn);
 
     this.state
+      .about('zoom out when drawing')
       .from(Status.drawing)
       .goto(Status.drawing)
       .when(this.state.keyboardState(Keyboard.ZoomOut))
       .do(this.state.actions.zoomOut);
 
     this.state
+      .about('zoom in when editing')
       .from(Status.editing)
       .goto(Status.editing)
       .when(this.state.keyboardState(Keyboard.ZoomIn))
       .do(this.state.actions.zoomIn);
 
     this.state
+      .about('zoom out when drawing')
       .from(Status.editing)
       .goto(Status.editing)
       .when(this.state.keyboardState(Keyboard.ZoomOut))
       .do(this.state.actions.zoomOut);
 
     this.state
+      .about('set focus the the prior vertex')
       .from(Status.editing)
       .goto(Status.editing)
       .when(this.state.keyboardState('ArrowLeft'))
       .do(this.state.actions.moveToPriorPoint);
 
     this.state
+      .about('set focus the the next vertex')
       .from(Status.editing)
       .goto(Status.editing)
       .when(this.state.keyboardState('ArrowRight'))
       .do(this.state.actions.moveToNextPoint);
 
     this.state
+      .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
       .when(this.state.keyboardState('Shift+ArrowLeft'))
       .do(this.state.actions.movePointLeft1Units);
 
     this.state
+      .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
       .when(this.state.keyboardState('Shift+ArrowRight'))
       .do(this.state.actions.movePointRight1Units);
 
     this.state
+      .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
       .when(this.state.keyboardState('Shift+ArrowUp'))
       .do(this.state.actions.movePointUp1Units);
 
     this.state
+      .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
       .when(this.state.keyboardState('Shift+ArrowDown'))
       .do(this.state.actions.movePointDown1Units);
 
     this.state
+      .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
       .when(this.state.keyboardState('Ctrl+Shift+ArrowLeft'))
       .do(this.state.actions.movePointLeft10Units);
 
     this.state
+      .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
       .when(this.state.keyboardState('Ctrl+Shift+ArrowRight'))
       .do(this.state.actions.movePointRight10Units);
 
     this.state
+      .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
       .when(this.state.keyboardState('Ctrl+Shift+ArrowUp'))
       .do(this.state.actions.movePointUp10Units);
 
     this.state
+      .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
       .when(this.state.keyboardState('Ctrl+Shift+ArrowDown'))
       .do(this.state.actions.movePointDown10Units);
 
-    this.state.from(Status.editing).goto(Status.ready).when(null).do(this.state.actions.noDataPoints);
+    this.state
+      .about('after deleting the last point indicate we are ready for the 1st point')
+      .from(Status.editing)
+      .goto(Status.ready)
+      .when(Keyboard.Delete)
+      .do(this.state.actions.noDataPoints);
 
     this.state
+      .about('delete the hover point while editing (impossible?)')
       .from(Status.editing)
       .goto(Status.editing)
       .when(this.state.keyboardState(Keyboard.Delete))
       .do(this.state.actions.deleteHoverPoint);
 
     this.state
+      .about('delete the hover point')
       .from(Status.hover)
       .goto(Status.editing)
       .when(this.state.keyboardState(Keyboard.Delete))
       .do(this.state.actions.deleteHoverPoint);
 
     this.state
+      .about('delete the hover point')
       .from(Status.hover)
       .goto(Status.editing)
       .when(this.state.mouseState('Shift+Left+mousedown'))
       .do(this.state.actions.deleteHoverPoint);
 
     this.state
+      .about('mouse has moved over a point')
       .from(Status.editing)
       .goto(Status.hover)
       .when(this.state.mouseState('mousemove'))
       .do(this.state.actions.hoveringOverPoint);
 
     this.state
+      .about('mouse has moved over a point (shift key is pressed)')
       .from(Status.editing)
       .goto(Status.hover)
       .when(this.state.mouseState('Shift+mousemove'))
       .do(this.state.actions.hoveringOverPoint);
 
     this.state
+      .about('mouse is no longer over a point')
       .from(Status.hover)
       .goto(Status.editing)
       .when(this.state.mouseState('mousemove'))
       .do(this.state.actions.notHoveringOverPoint);
 
     this.state
+      .about('mouse is no longer over a point (shift key is pressed)')
       .from(Status.hover)
       .goto(Status.editing)
       .when(this.state.mouseState('Shift+mousemove'))
@@ -961,132 +1042,19 @@ function computeHover(data, currentPoint) {
   return null;
 }
 
-new Tests().tests();
-
-function otherKeyboardCommands(lasso, keyboardState) {
-  const isMidpoint = lasso.hover?.midpointIndex >= 0;
-  let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
-
-  switch (keyboardState) {
-    case Keyboard.Reset: {
-      lasso.reset();
-      break;
-    }
-
-    case Keyboard.ClearInterior: {
-      lasso.cut();
-      break;
-    }
-
-    case Keyboard.ClearExterior: {
-      lasso.crop();
-      break;
-    }
-
-    case Keyboard.CenterAt: {
-      if (isMidpoint) {
-        lasso.centerAt(center(lasso.data.at(pointIndex), lasso.data.at((pointIndex + 1) % lasso.data.length)));
-      } else {
-        lasso.centerAt(lasso.data[pointIndex]);
-      }
-      break;
-    }
-
-    default: {
-      console.log(`otherKeyboardCommands: unknown keyboard state '${keyboardState}'`);
-      break;
-    }
-  }
-
-  lasso.Base_layers.render();
-}
-
-function movePoint(lasso, keyboardState) {
+function movePoint(lasso, dx, dy) {
   const scale = 1 / config.ZOOM;
-  let dx = 0;
-  let dy = 0;
 
   const isMidpoint = lasso.hover?.midpointIndex >= 0;
   let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
-
-  switch (keyboardState) {
-    case 'Alt+Shift+ArrowLeft':
-      dx -= 1;
-      break;
-
-    case 'Alt+Shift+ArrowRight':
-      dx += 1;
-      break;
-
-    case 'Alt+Shift+ArrowUp':
-      dy -= 1;
-      break;
-
-    case 'Alt+Shift+ArrowDown':
-      dy += 1;
-      break;
-
-    case 'Ctrl+Alt+Shift+ArrowLeft':
-      dx -= 10;
-      break;
-
-    case 'Ctrl+Alt+Shift+ArrowRight':
-      dx += 10;
-      break;
-
-    case 'Ctrl+Alt+Shift+ArrowUp':
-      dy -= 10;
-      break;
-
-    case 'Ctrl+Alt+Shift+ArrowDown':
-      dy += 10;
-      break;
-
-    case 'Shift+ArrowLeft':
-      dx -= scale;
-      break;
-
-    case 'Shift+ArrowRight':
-      dx += scale;
-      break;
-
-    case 'Shift+ArrowUp':
-      dy -= scale;
-      break;
-
-    case 'Shift+ArrowDown':
-      dy += scale;
-      break;
-
-    case 'Ctrl+Shift+ArrowLeft':
-      dx -= 10 * scale;
-      break;
-
-    case 'Ctrl+Shift+ArrowRight':
-      dx += 10 * scale;
-      break;
-
-    case 'Ctrl+Shift+ArrowUp':
-      dy -= 10 * scale;
-      break;
-
-    case 'Ctrl+Shift+ArrowDown':
-      dy += 10 * scale;
-      break;
-
-    default: {
-      console.log(`movePoint: unknown keyboard state '${keyboardState}'`);
-      break;
-    }
-  }
 
   if (dx || dy) {
     if (isMidpoint) {
       // create the point an select the new point
       const index = lasso.hover.midpointIndex;
       const point = center(lasso.data.at(index), lasso.data.at((index + 1) % lasso.data.length));
-      point.x += dx;
-      point.y += dy;
+      point.x += dx * scale;
+      point.y += dy * scale;
       lasso.snapshot('before moving point', () => {
         lasso.data.splice(index + 1, 0, point);
       });
@@ -1094,8 +1062,8 @@ function movePoint(lasso, keyboardState) {
     } else {
       lasso.delayedSnapshot('point moved');
       const point = lasso.data.at(pointIndex);
-      point.x += dx;
-      point.y += dy;
+      point.x += dx * scale;
+      point.y += dy * scale;
     }
     lasso.metrics.timeOfMove = Date.now();
     lasso.Base_layers.render();
@@ -1197,3 +1165,12 @@ function deletePoint(lasso, keyboardState) {
     }
   }
 }
+
+let __priorLogMessage = '';
+function log(message) {
+  if (__priorLogMessage === message) return;
+  __priorLogMessage = message;
+  alertify.success(message);
+}
+
+new Tests().tests();

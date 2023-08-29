@@ -97,6 +97,7 @@ export class StateMachine {
     targetEvents.forEach((targetEvent) => {
       if (targetEvent.do) {
         if (false === targetEvent.do.call(this)) return;
+        this.events.trigger('execute', targetEvent);
         if (stateChanged)
           throw new Error(
             `A handler already exists for state ${targetEvent.from} and event ${targetEvent.when} so this do statement should have returned false`,
@@ -133,12 +134,15 @@ export class StateMachine {
   from(state, _context = {}) {
     if (!this.states[state]) throw `State ${state} is not a valid state`;
 
-    const context = Object.assign(_context, {
-      from: state,
-      goto: state,
-      when: () => false,
-      do: () => {},
-    });
+    const context = Object.assign(
+      {
+        from: state,
+        goto: state,
+        when: () => false,
+        do: () => {},
+      },
+      _context,
+    );
 
     this.contexts.push(context);
 
