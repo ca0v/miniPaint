@@ -510,7 +510,10 @@ class DwLasso_class extends Base_tools_class {
     if (!currentPoint) return false;
     this.undoredo(
       `before placing point ${this.data.length + 1}`,
-      () => this.data.push(currentPoint),
+      () => {
+        this.data.push(currentPoint);
+        this.hover = { pointIndex: this.data.length - 1 };
+      },
       () => this.data.pop(),
     );
   }
@@ -776,7 +779,7 @@ class DwLasso_class extends Base_tools_class {
 
     this.state
       .about('inject smoothing points into the polygon')
-      .from([Status.editing, Status.hover])
+      .from([Status.editing, Status.hover, Status.placing])
       .when(Keyboard.Smooth)
       .do(this.state.actions.smooth);
 
