@@ -660,7 +660,7 @@ class DwLasso_class extends Base_tools_class {
         const hover = !!this.hover?.pointIndex || !!this.hover?.midpointIndex;
         console.log('stateMachine', 'deleteHoverPoint', hover);
         if (hover) {
-          deletePoint(this, computeKeyboardState(this.state.keyboardEvent));
+          deletePoint(this);
         }
         return hover;
       },
@@ -678,8 +678,8 @@ class DwLasso_class extends Base_tools_class {
 
       notHoveringOverPoint: () => !this.state.actions.hoveringOverPoint(),
 
-      zoomIn: () => zoomViewport(this, computeKeyboardState(this.state.keyboardEvent)),
-      zoomOut: () => zoomViewport(this, computeKeyboardState(this.state.keyboardEvent)),
+      zoomIn: () => zoomViewport(this, 1),
+      zoomOut: () => zoomViewport(this, -1),
 
       reset: () => this.reset(),
       cut: () => this.cut(),
@@ -907,56 +907,56 @@ class DwLasso_class extends Base_tools_class {
       .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState('Shift+ArrowLeft'))
+      .when(this.state.keyboardState(Keyboard.MovePointLeft))
       .do(this.state.actions.movePointLeft1Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState('Shift+ArrowRight'))
+      .when(this.state.keyboardState(Keyboard.MovePointRight))
       .do(this.state.actions.movePointRight1Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState('Shift+ArrowUp'))
+      .when(this.state.keyboardState(Keyboard.MovePointUp))
       .do(this.state.actions.movePointUp1Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState('Shift+ArrowDown'))
+      .when(this.state.keyboardState(Keyboard.MovePointDown))
       .do(this.state.actions.movePointDown1Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState('Ctrl+Shift+ArrowLeft'))
+      .when(this.state.keyboardState(Keyboard.MovePointLeft10))
       .do(this.state.actions.movePointLeft10Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState('Ctrl+Shift+ArrowRight'))
+      .when(this.state.keyboardState(Keyboard.MovePointRight10))
       .do(this.state.actions.movePointRight10Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState('Ctrl+Shift+ArrowUp'))
+      .when(this.state.keyboardState(Keyboard.MovePointUp10))
       .do(this.state.actions.movePointUp10Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState('Ctrl+Shift+ArrowDown'))
+      .when(this.state.keyboardState(Keyboard.MovePointDown10))
       .do(this.state.actions.movePointDown10Units);
 
     this.state
@@ -1097,40 +1097,21 @@ function moveToNextVertex(lasso, indexOffset) {
   lasso.Base_layers.render();
 }
 
-function zoomViewport(lasso, keyboardState) {
-  let zoom = 0;
-  switch (keyboardState) {
-    case Keyboard.ZoomIn:
-      // zoom in
-      zoom++;
-      break;
-
-    case Keyboard.ZoomOut:
-      // zoom out
-      zoom--;
-      break;
-
-    default: {
-      console.log(`zoomViewport: unknown keyboard state '${keyboardState}'`);
-      break;
-    }
-  }
-  if (zoom) {
-    lasso.undoredo(
-      'before zooming',
-      () => {
-        lasso.GUI_preview.zoom(zoom);
-      },
-      () => {
-        lasso.GUI_preview.zoom(-zoom);
-      },
-    );
-  }
-
+function zoomViewport(lasso, zoom) {
+  if (!zoom) return;
+  lasso.undoredo(
+    'before zooming',
+    () => {
+      lasso.GUI_preview.zoom(zoom);
+    },
+    () => {
+      lasso.GUI_preview.zoom(-zoom);
+    },
+  );
   lasso.Base_layers.render();
 }
 
-function deletePoint(lasso, keyboardState) {
+function deletePoint(lasso) {
   const isMidpoint = lasso.hover?.midpointIndex >= 0;
   if (isMidpoint) {
     console.log(`deletePoint: cannot delete midpoint`);
@@ -1138,19 +1119,10 @@ function deletePoint(lasso, keyboardState) {
 
   let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
 
-  switch (keyboardState) {
-    case Keyboard.Delete:
-      // delete the point
-      lasso.snapshot('before deleting point', () => {
-        lasso.data.splice(pointIndex, 1);
-      });
-      lasso.Base_layers.render();
-      break;
-    default: {
-      console.log(`deletePoint: unknown keyboard state '${keyboardState}'`);
-      break;
-    }
-  }
+  lasso.snapshot('before deleting point', () => {
+    lasso.data.splice(pointIndex, 1);
+  });
+  lasso.Base_layers.render();
 }
 
 let __priorLogMessage = '';

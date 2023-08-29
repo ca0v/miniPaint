@@ -46,14 +46,13 @@ export class StateMachine {
     this.events.on('mousemove', (mouseEvent) => {
       this.mouseEvent = mouseEvent;
       const mouseState = computeMouseState(mouseEvent);
-      this.execute((e) => e.from === this.currentState && e.when === mouseState);
+      this.execute(mouseState);
     });
 
     this.events.on('mousedown', (mouseEvent) => {
       this.mouseEvent = mouseEvent;
       const mouseState = computeMouseState(mouseEvent);
-      console.log('StateMachine', this.currentState, 'mouseState', mouseState);
-      this.execute((e) => e.from === this.currentState && e.when === mouseState);
+      this.execute(mouseState);
     });
 
     this.events.on('mouseup', (mouseEvent) => {
@@ -62,15 +61,13 @@ export class StateMachine {
       let mouseState = computeMouseState(mouseEvent);
       if (priorButtons === 1) mouseState = `Left+${mouseState}`;
       if (priorButtons === 2) mouseState = `Right+${mouseState}`;
-      console.log('StateMachine', this.currentState, 'mouseState', mouseState);
-      this.execute((e) => e.from === this.currentState && e.when === mouseState);
+      this.execute(mouseState);
     });
 
     this.events.on('keydown', (keyboardEvent) => {
       this.keyboardEvent = keyboardEvent;
       const keyboardState = computeKeyboardState(keyboardEvent);
-      console.log('StateMachine', this.currentState, 'keydown', 'keyboardState', keyboardState);
-      this.execute((e) => e.from === this.currentState && e.when === keyboardState);
+      this.execute(keyboardState);
     });
   }
 
@@ -86,12 +83,14 @@ export class StateMachine {
     if (!this.states[state]) throw `State ${state} is not a valid state`;
     if (state === this.currentState) return;
     this.currentState = state;
-    this.execute((e) => e.from === this.currentState && !e.when);
+    this.execute();
     this.events.trigger('stateChanged', this.currentState);
   }
 
-  execute(filter) {
-    const targetEvents = this.contexts.filter(filter);
+  execute(when) {
+    const targetEvents = this.contexts
+      .filter((e) => e.from === this.currentState)
+      .filter((e) => !e.when || e.when.includes(when));
     if (!targetEvents.length) return;
     let stateChanged = false;
     targetEvents.forEach((targetEvent) => {
@@ -111,7 +110,7 @@ export class StateMachine {
   }
 
   trigger(event) {
-    this.execute((e) => e.from === this.currentState && e.when === event);
+    this.execute(event);
   }
 
   register(actions) {
@@ -138,7 +137,7 @@ export class StateMachine {
       {
         from: state,
         goto: state,
-        when: () => false,
+        when: [],
         do: () => {},
       },
       _context,
@@ -151,6 +150,7 @@ export class StateMachine {
         context.goto = newState;
         return {
           when: (condition) => {
+            if (typeof condition === 'string') condition = [condition];
             context.when = condition;
             return {
               do: (action) => {
