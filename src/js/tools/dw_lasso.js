@@ -685,6 +685,16 @@ class DwLasso_class extends Base_tools_class {
       cut: () => this.cut(),
       crop: () => this.crop(),
       smooth: () => this.snapshot('before smoothing', () => (this.data = new Smooth().smooth(this.data))),
+
+      smoothAroundVertex: () => {
+        const index = this.hover.pointIndex;
+        if (typeof index !== 'number') return false;
+        this.snapshot(`before smoothing around vertex ${index}`, () => {
+          const smooth = new Smooth();
+          smooth.smoothAroundVertex(this.data, index);
+        });
+      },
+
       centerAt: () => {
         const isMidpoint = this.hover?.midpointIndex >= 0;
         let pointIndex = this.hover?.pointIndex || this.hover?.midpointIndex || this.data.length - 1;
@@ -746,6 +756,12 @@ class DwLasso_class extends Base_tools_class {
       .from(Status.editing)
       .when(Keyboard.Smooth)
       .do(this.state.actions.smooth);
+
+    this.state
+      .about('inject smoothing points around vertex')
+      .from(Status.hover)
+      .when(Keyboard.Smooth)
+      .do(this.state.actions.smoothAroundVertex);
 
     this.state
       .about('center about the current point')
