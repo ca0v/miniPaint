@@ -16,11 +16,8 @@
  * - Load an image then move it and the crop is the wrong part of the image...need to compensate for translations, etc.
  * -- Similarly, cut only working for images that have been cropped to the top-left corner, not sure where the problem is
  * -- but the crop.js works correctly, so the solution is in there somewhere
- * - Cannot restore state when switching to another tool and back
  *
  * ** TODO **
- * - [Delete] deletes the selected point, or last point if there is none
- *
  */
 import app from '../app.js';
 import config from '../config.js';

@@ -350,7 +350,7 @@ IMPORTANT: any new icon should also must be added on /service-worker.js + its ve
   background-image: url('images/icons/crop.svg');
 }
 .sidebar_left .dw_lasso:after {
-  background-image: url('images/icons/crop.svg');
+  background-image: url('images/icons/dw_lasso.svg');
 }
 .sidebar_left .blur:after {
   background-image: url('images/icons/blur.svg');
