@@ -264,10 +264,14 @@ export default class DwLasso_class extends Base_tools_class {
         cross(ctx, currentPoint, {
           color: Drawings.lastMoveStrokeColor,
           size: Drawings.hoverMajor.size * this.scale,
-          lineWidth: 1 * this.scale,
+          lineWidth: 2 * this.scale,
         });
       } else if (this.hover?.pointIndex === i) {
-        cross(ctx, currentPoint, { color: Drawings.hoverMajor.color, size: Drawings.hoverMajor.size * this.scale });
+        cross(ctx, currentPoint, {
+          color: Drawings.hoverMajor.color,
+          size: Drawings.hoverMajor.size * this.scale,
+          lineWidth: 1 * this.scale,
+        });
       } else {
         // draw a circle
         circle(ctx, currentPoint, { size, lineWidth: this.scale, color: Drawings.defaultStrokeColor });
@@ -591,7 +595,7 @@ export default class DwLasso_class extends Base_tools_class {
           return false;
         }
         let drawPoint = false;
-        const d = distance(priorPoint, currentPoint) * this.scale;
+        const d = distance(priorPoint, currentPoint) / this.scale;
         drawPoint = drawPoint || d > Settings.distanceBetweenPoints;
         if (!drawPoint && data.length > 2 && d > Settings.minimalDistanceBetweenPoints) {
           const a = Math.PI - angleOf(data.at(-3), priorPoint, currentPoint);
