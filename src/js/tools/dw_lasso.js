@@ -782,7 +782,7 @@ class DwLasso_class extends Base_tools_class {
 
     this.state
       .about('center about the current point')
-      .from([Status.editing, Status.drawing, Status.placing])
+      .from([Status.editing, Status.drawing, Status.placing, Status.hover])
       .when(Keyboard.CenterAt)
       .do(this.state.actions.centerAt);
 
@@ -879,13 +879,15 @@ class DwLasso_class extends Base_tools_class {
 
     this.state
       .about('set focus the the prior vertex')
-      .from(Status.editing)
+      .from([Status.editing, Status.hover])
+      .goto(Status.editing)
       .when(Keyboard.PriorVertex)
       .do(this.state.actions.moveToPriorPoint);
 
     this.state
       .about('set focus the the next vertex')
-      .from(Status.editing)
+      .from([Status.editing, Status.hover])
+      .goto(Status.editing)
       .when(Keyboard.NextVertex)
       .do(this.state.actions.moveToNextPoint);
 
@@ -1106,7 +1108,7 @@ let __priorLogMessage = '';
 function log(message) {
   if (__priorLogMessage === message) return;
   __priorLogMessage = message;
-  alertify.success(message);
+  //alertify.success(message);
 }
 
 new Tests().tests();
