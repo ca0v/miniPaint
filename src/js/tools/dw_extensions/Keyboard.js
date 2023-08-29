@@ -13,9 +13,9 @@ export const Keyboard = Object.freeze({
   Delete: 'Delete',
   ZoomIn: ['+', 'Shift++'],
   ZoomOut: ['-', 'Shift+_'],
-  Reset: 'Escape',
+  Reset: 'Shift+Escape',
   ClearInterior: 'Shift+X',
   ClearExterior: 'Ctrl+Shift+X',
   Smooth: 'q',
-  ClosePolygon: [' ', 'Shift+Left+mousedown'],
+  ClosePolygon: ['Escape', 'Shift+Left+mousedown'],
 });

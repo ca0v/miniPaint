@@ -46,13 +46,15 @@ export class StateMachine {
     this.events.on('mousemove', (mouseEvent) => {
       this.mouseEvent = mouseEvent;
       const mouseState = computeMouseState(mouseEvent);
-      this.execute(mouseState);
+      const preventBubble = false !== this.execute(mouseState);
+      if (preventBubble) mouseEvent.preventDefault();
     });
 
     this.events.on('mousedown', (mouseEvent) => {
       this.mouseEvent = mouseEvent;
       const mouseState = computeMouseState(mouseEvent);
-      this.execute(mouseState);
+      const preventBubble = false !== this.execute(mouseState);
+      if (preventBubble) mouseEvent.preventDefault();
     });
 
     this.events.on('mouseup', (mouseEvent) => {
@@ -61,13 +63,15 @@ export class StateMachine {
       let mouseState = computeMouseState(mouseEvent);
       if (priorButtons === 1) mouseState = `Left+${mouseState}`;
       if (priorButtons === 2) mouseState = `Right+${mouseState}`;
-      this.execute(mouseState);
+      const preventBubble = false !== this.execute(mouseState);
+      if (preventBubble) mouseEvent.preventDefault();
     });
 
     this.events.on('keydown', (keyboardEvent) => {
       this.keyboardEvent = keyboardEvent;
       const keyboardState = computeKeyboardState(keyboardEvent);
-      this.execute(keyboardState);
+      const preventBubble = false !== this.execute(keyboardState);
+      if (preventBubble) keyboardEvent.preventDefault();
     });
   }
 
