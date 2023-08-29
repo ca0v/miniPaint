@@ -744,28 +744,12 @@ class DwLasso_class extends Base_tools_class {
     this.state
       .about('inject smoothing points into the polygon')
       .from(Status.editing)
-      .goto(Status.editing)
       .when(Keyboard.Smooth)
       .do(this.state.actions.smooth);
 
     this.state
       .about('center about the current point')
-      .from(Status.editing)
-      .goto(Status.editing)
-      .when(Keyboard.CenterAt)
-      .do(this.state.actions.centerAt);
-
-    this.state
-      .about('center about the current point')
-      .from(Status.drawing)
-      .goto(Status.drawing)
-      .when(Keyboard.CenterAt)
-      .do(this.state.actions.centerAt);
-
-    this.state
-      .about('center about the current point')
-      .from(Status.placing)
-      .goto(Status.placing)
+      .from([Status.editing, Status.drawing, Status.placing])
       .when(Keyboard.CenterAt)
       .do(this.state.actions.centerAt);
 
@@ -800,14 +784,12 @@ class DwLasso_class extends Base_tools_class {
     this.state
       .about('drag this point')
       .from(Status.dragging)
-      .goto(Status.dragging)
       .when('Left+mousemove')
       .do(this.state.actions.draggingHoverPoint);
 
     this.state
       .about('automatically create vertices as mouse moves')
       .from(Status.drawing)
-      .goto(Status.drawing)
       .when('Left+mousemove')
       .do(this.state.actions.drawPoints);
 
@@ -841,21 +823,18 @@ class DwLasso_class extends Base_tools_class {
     this.state
       .about('continue moving the last point to the mouse location')
       .from(Status.placing)
-      .goto(Status.placing)
       .when('mousemove')
       .do(this.state.actions.movingLastPointToMouseLocation);
 
     this.state
       .about('continue moving the last point to the mouse location (shift key is pressed)')
       .from(Status.placing)
-      .goto(Status.placing)
       .when('Shift+mousemove')
       .do(this.state.actions.movingLastPointToMouseLocation);
 
     this.state
       .about('add a point to the polygon')
       .from(Status.drawing)
-      .goto(Status.drawing)
       .when('Left+mousedown')
       .do(this.state.actions.placePointAtClickLocation);
 
@@ -867,85 +846,67 @@ class DwLasso_class extends Base_tools_class {
 
     this.state
       .about('zoom out when drawing')
-      .from(Status.drawing)
-      .goto(Status.drawing)
-      .when(Keyboard.ZoomOut)
-      .do(this.state.actions.zoomOut);
-
-    this.state
-      .about('zoom out when drawing')
-      .from(Status.editing)
-      .goto(Status.editing)
+      .from([Status.drawing, Status.editing])
       .when(Keyboard.ZoomOut)
       .do(this.state.actions.zoomOut);
 
     this.state
       .about('set focus the the prior vertex')
       .from(Status.editing)
-      .goto(Status.editing)
-      .when('ArrowLeft')
+      .when(Keyboard.PriorVertex)
       .do(this.state.actions.moveToPriorPoint);
 
     this.state
       .about('set focus the the next vertex')
       .from(Status.editing)
-      .goto(Status.editing)
-      .when('ArrowRight')
+      .when(Keyboard.NextVertex)
       .do(this.state.actions.moveToNextPoint);
 
     this.state
       .about('move the point')
       .from(Status.editing)
-      .goto(Status.editing)
       .when(Keyboard.MovePointLeft)
       .do(this.state.actions.movePointLeft1Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
-      .goto(Status.editing)
       .when(Keyboard.MovePointRight)
       .do(this.state.actions.movePointRight1Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
-      .goto(Status.editing)
       .when(Keyboard.MovePointUp)
       .do(this.state.actions.movePointUp1Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
-      .goto(Status.editing)
       .when(Keyboard.MovePointDown)
       .do(this.state.actions.movePointDown1Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
-      .goto(Status.editing)
       .when(Keyboard.MovePointLeft10)
       .do(this.state.actions.movePointLeft10Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
-      .goto(Status.editing)
       .when(Keyboard.MovePointRight10)
       .do(this.state.actions.movePointRight10Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
-      .goto(Status.editing)
       .when(Keyboard.MovePointUp10)
       .do(this.state.actions.movePointUp10Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
-      .goto(Status.editing)
       .when(Keyboard.MovePointDown10)
       .do(this.state.actions.movePointDown10Units);
 
@@ -959,7 +920,6 @@ class DwLasso_class extends Base_tools_class {
     this.state
       .about('delete the hover point while editing (impossible?)')
       .from(Status.editing)
-      .goto(Status.editing)
       .when(Keyboard.Delete)
       .do(this.state.actions.deleteHoverPoint);
 
