@@ -69,6 +69,28 @@ export class Smooth {
     return true;
   }
 
+  smoothAroundMinorVertex(data, vertexIndex) {
+    if (data.length < 4) return false;
+    if (vertexIndex < 1) return false;
+
+    const p1 = data.at((vertexIndex - 1 + data.length) % data.length);
+    const p2 = data.at((vertexIndex + 0) % data.length);
+    const p3 = data.at((vertexIndex + 1) % data.length);
+    const p4 = data.at((vertexIndex + 2) % data.length);
+
+    const circle1 = this.centerOfCircle(p1, p2, p3);
+    const angle1 = this.radianOfPoint(circle1, center(p2, p3));
+    const rightOf = this.arcPoint(circle1, angle1);
+
+    const circle2 = this.centerOfCircle(p2, p3, p4);
+    const angle2 = this.radianOfPoint(circle2, center(p2, p3));
+    const leftOf = this.arcPoint(circle2, angle2);
+
+    const middle = center(leftOf, rightOf);
+    data.splice(vertexIndex + 1, 0, middle);
+    return true;
+  }
+
   centerOfCircle(p1, p2, p3) {
     // from https://stackoverflow.com/questions/4103405/what-is-the-algorithm-for-finding-the-center-of-a-circle-from-three-points
     const center = { x: 0, y: 0, r: 0 };

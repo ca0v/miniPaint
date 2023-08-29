@@ -684,14 +684,37 @@ class DwLasso_class extends Base_tools_class {
       reset: () => this.reset(),
       cut: () => this.cut(),
       crop: () => this.crop(),
-      smooth: () => this.snapshot('before smoothing', () => (this.data = new Smooth().smooth(this.data))),
+
+      smooth: () => {
+        if (typeof this.hover.pointIndex === 'number') return this.state.actions.smoothAroundVertex();
+        if (typeof this.hover.midpointIndex === 'number') return this.state.actions.smoothAroundMinorVertex();
+        return this.state.actions.smoothAllData();
+      },
+
+      smoothAllData: () => {
+        this.snapshot('before smoothing', () => (this.data = new Smooth().smooth(this.data)));
+      },
 
       smoothAroundVertex: () => {
         const index = this.hover.pointIndex;
         if (typeof index !== 'number') return false;
         this.snapshot(`before smoothing around vertex ${index}`, () => {
-          const smooth = new Smooth();
-          smooth.smoothAroundVertex(this.data, index);
+          const success = new Smooth().smoothAroundVertex(this.data, index);
+          if (success) {
+            this.hover.pointIndex = index + 1;
+          }
+        });
+      },
+
+      smoothAroundMinorVertex: () => {
+        const index = this.hover.midpointIndex;
+        if (typeof index !== 'number') return false;
+        this.snapshot(`before smoothing around minor vertex ${index}`, () => {
+          const success = new Smooth().smoothAroundMinorVertex(this.data, index);
+          if (success) {
+            this.hover.pointIndex = index + 1;
+            this.hover.midpointIndex = null;
+          }
         });
       },
 
@@ -840,12 +863,6 @@ class DwLasso_class extends Base_tools_class {
       .about('continue moving the last point to the mouse location')
       .from(Status.placing)
       .when('mousemove')
-      .do(this.state.actions.movingLastPointToMouseLocation);
-
-    this.state
-      .about('continue moving the last point to the mouse location (shift key is pressed)')
-      .from(Status.placing)
-      .when('Shift+mousemove')
       .do(this.state.actions.movingLastPointToMouseLocation);
 
     this.state
