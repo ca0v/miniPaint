@@ -51,7 +51,11 @@ import { Smooth } from './dw_extensions/Smooth.js';
 import { Tests } from './dw_extensions/Tests.js';
 import { StateMachine } from './dw_extensions/StateMachine.js';
 
-class DwLasso_class extends Base_tools_class {
+async function doActions(actions) {
+  await app.State.do_action(new app.Actions.Bundle_action('dw_lasso_tool', 'Magic Crop Tool', actions));
+}
+
+export default class DwLasso_class extends Base_tools_class {
   constructor(ctx) {
     super();
 
@@ -90,6 +94,11 @@ class DwLasso_class extends Base_tools_class {
       console.log(`delayedSnapshot: ${about}`);
       this.snapshot(about);
     }, Settings.delayedSnapshotTimeout);
+  }
+
+  get scale() {
+    log(`scale: ${config.ZOOM}`);
+    return 1 / config.ZOOM;
   }
 
   on_activate() {
@@ -216,7 +225,7 @@ class DwLasso_class extends Base_tools_class {
     const { x, y, color, params } = layer;
 
     // scale down the size based on the zoom level
-    const size = (params.size || 1) / config.ZOOM;
+    const size = (params.size || 1) * this.scale;
 
     const data = this.data;
     if (!data.length) return;
@@ -246,23 +255,23 @@ class DwLasso_class extends Base_tools_class {
 
       // the circle should have an outline
       ctx.strokeStyle = Drawings.defaultStrokeColor;
-      ctx.lineWidth = 1 / config.ZOOM;
+      ctx.lineWidth = 1 * this.scale;
 
       // scale down the size based on the zoom level
-      let size = Drawings.major.size / config.ZOOM;
+      let size = Drawings.major.size * this.scale;
 
       if (currentPoint === this.metrics.lastPointMoved && age(this.metrics.timeOfMove) < 1000) {
         cross(ctx, currentPoint, {
           color: Drawings.lastMoveStrokeColor,
-          size: Drawings.hoverMajor.size / config.ZOOM,
-          lineWidth: 1 / config.ZOOM,
+          size: Drawings.hoverMajor.size * this.scale,
+          lineWidth: 1 * this.scale,
         });
       } else if (this.hover?.pointIndex === i) {
-        cross(ctx, currentPoint, { color: Drawings.hoverMajor.color, size: Drawings.hoverMajor.size / config.ZOOM });
+        cross(ctx, currentPoint, { color: Drawings.hoverMajor.color, size: Drawings.hoverMajor.size * this.scale });
       } else {
         // draw a circle
-        circle(ctx, currentPoint, { size, color: Drawings.defaultStrokeColor });
-        dot(ctx, currentPoint, { color: Drawings.major.color });
+        circle(ctx, currentPoint, { size, lineWidth: this.scale, color: Drawings.defaultStrokeColor });
+        dot(ctx, currentPoint, { size: this.scale, color: Drawings.major.color });
       }
     });
 
@@ -276,15 +285,15 @@ class DwLasso_class extends Base_tools_class {
       if (this.hover && this.hover.midpointIndex == i) {
         plus(ctx, centerPoint, {
           color: Drawings.hoverMinor.color,
-          size: Drawings.hoverMinor.size / config.ZOOM,
-          lineWidth: 1 / config.ZOOM,
+          size: Drawings.hoverMinor.size * this.scale,
+          lineWidth: 1 * this.scale,
         });
       } else {
         // draw a circle
         circle(ctx, centerPoint, {
-          size: Drawings.minor.size / config.ZOOM,
+          size: Drawings.minor.size * this.scale,
           color: Drawings.defaultStrokeColor,
-          lineWidth: 1 / config.ZOOM,
+          lineWidth: 1 * this.scale,
         });
       }
     });
@@ -582,7 +591,7 @@ class DwLasso_class extends Base_tools_class {
           return false;
         }
         let drawPoint = false;
-        const d = distance(priorPoint, currentPoint) * config.ZOOM;
+        const d = distance(priorPoint, currentPoint) * this.scale;
         drawPoint = drawPoint || d > Settings.distanceBetweenPoints;
         if (!drawPoint && data.length > 2 && d > Settings.minimalDistanceBetweenPoints) {
           const a = Math.PI - angleOf(data.at(-3), priorPoint, currentPoint);
@@ -614,18 +623,18 @@ class DwLasso_class extends Base_tools_class {
       placePointAtClickLocation: () => this.placePointAtClickLocation(),
       movingLastPointToMouseLocation: () => this.movingLastPointToMouseLocation(),
 
-      moveToPriorPoint: () => moveToNextVertex(this, -1),
-      moveToNextPoint: () => moveToNextVertex(this, 1),
+      moveToPriorPoint: () => this.moveToNextVertex(-1),
+      moveToNextPoint: () => this.moveToNextVertex(1),
 
-      movePointLeft1Units: () => movePoint(this, -1, 0),
-      movePointRight1Units: () => movePoint(this, 1, 0),
-      movePointUp1Units: () => movePoint(this, 0, -1),
-      movePointDown1Units: () => movePoint(this, 0, 1),
+      movePointLeft1Units: () => this.movePoint(-1, 0),
+      movePointRight1Units: () => this.movePoint(1, 0),
+      movePointUp1Units: () => this.movePoint(0, -1),
+      movePointDown1Units: () => this.movePoint(0, 1),
 
-      movePointLeft10Units: () => movePoint(this, -10, 0),
-      movePointRight10Units: () => movePoint(this, 10, 0),
-      movePointUp10Units: () => movePoint(this, 0, -10),
-      movePointDown10Units: () => movePoint(this, 0, 10),
+      movePointLeft10Units: () => this.movePoint(-10, 0),
+      movePointRight10Units: () => this.movePoint(10, 0),
+      movePointUp10Units: () => this.movePoint(0, -10),
+      movePointDown10Units: () => this.movePoint(0, 10),
 
       closePolygon: () => {
         // nothing to do
@@ -643,7 +652,7 @@ class DwLasso_class extends Base_tools_class {
         const hover = !!this.hover?.pointIndex || !!this.hover?.midpointIndex;
         console.log('stateMachine', 'deleteHoverPoint', hover);
         if (hover) {
-          deletePoint(this);
+          this.deletePoint(this);
         }
         return hover;
       },
@@ -652,7 +661,7 @@ class DwLasso_class extends Base_tools_class {
         const currentPoint = this.mousePoint(this.state.mouseEvent);
         if (!currentPoint) return false;
         const priorHover = JSON.stringify(this.hover || null);
-        const hover = (this.hover = computeHover(this.data, currentPoint));
+        const hover = (this.hover = this.computeHover(this.data, currentPoint));
         if (priorHover != JSON.stringify(this.hover)) {
           this.Base_layers.render();
         }
@@ -661,8 +670,8 @@ class DwLasso_class extends Base_tools_class {
 
       notHoveringOverPoint: () => !this.state.actions.hoveringOverPoint(),
 
-      zoomIn: () => zoomViewport(this, 1),
-      zoomOut: () => zoomViewport(this, -1),
+      zoomIn: () => this.zoomViewport(1),
+      zoomOut: () => this.zoomViewport(-1),
 
       reset: () => this.reset(),
       cut: () => this.cut(),
@@ -977,118 +986,116 @@ class DwLasso_class extends Base_tools_class {
       .when('Shift+mousemove')
       .do(this.state.actions.notHoveringOverPoint);
   }
-}
 
-export default DwLasso_class;
+  computeHover(data, currentPoint) {
+    const pointIndex = data.findIndex((point) => {
+      const distanceToCurrentPoint = distance(point, currentPoint);
+      return distanceToCurrentPoint < Drawings.hoverMajor.size * this.scale;
+    });
 
-async function doActions(actions) {
-  await app.State.do_action(new app.Actions.Bundle_action('dw_lasso_tool', 'Magic Crop Tool', actions));
-}
+    if (pointIndex > -1) return { pointIndex };
 
-function computeHover(data, currentPoint) {
-  const pointIndex = data.findIndex((point) => {
-    const distanceToCurrentPoint = distance(point, currentPoint);
-    return distanceToCurrentPoint < Drawings.hoverMajor.size / config.ZOOM;
-  });
+    // is the current point within 5 pixels of any of the midpoints of the lines?
+    const midpointIndex = data.findIndex((point, i) => {
+      const nextPoint = data[(i + 1) % data.length];
+      const centerPoint = center(point, nextPoint);
+      const distanceToCurrentPoint = distance(centerPoint, currentPoint);
+      return distanceToCurrentPoint < Drawings.hoverMinor.size * this.scale;
+    });
 
-  if (pointIndex > -1) return { pointIndex };
-
-  // is the current point within 5 pixels of any of the midpoints of the lines?
-  const midpointIndex = data.findIndex((point, i) => {
-    const nextPoint = data[(i + 1) % data.length];
-    const centerPoint = center(point, nextPoint);
-    const distanceToCurrentPoint = distance(centerPoint, currentPoint);
-    return distanceToCurrentPoint < Drawings.hoverMinor.size / config.ZOOM;
-  });
-
-  if (midpointIndex > -1) {
-    return { midpointIndex };
-  }
-
-  return null;
-}
-
-function movePoint(lasso, dx, dy) {
-  const scale = 1 / config.ZOOM;
-
-  const isMidpoint = lasso.hover?.midpointIndex >= 0;
-  let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
-
-  if (dx || dy) {
-    if (isMidpoint) {
-      // create the point an select the new point
-      const index = lasso.hover.midpointIndex;
-      const point = center(lasso.data.at(index), lasso.data.at((index + 1) % lasso.data.length));
-      lasso.snapshot('before moving point', () => {
-        lasso.data.splice(index + 1, 0, point);
-      });
-      lasso.hover = { pointIndex: index + 1 };
+    if (midpointIndex > -1) {
+      return { midpointIndex };
     }
 
-    lasso.delayedSnapshot('point moved');
-    const point = lasso.data.at(lasso.hover.pointIndex);
-    point.x += dx * scale;
-    point.y += dy * scale;
-    lasso.metrics.timeOfMove = Date.now();
-    lasso.metrics.lastPointMoved = point;
+    return null;
+  }
+
+  movePoint(dx, dy) {
+    const lasso = this;
+    const scale = 1 * this.scale;
+
+    const isMidpoint = lasso.hover?.midpointIndex >= 0;
+    let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
+
+    if (dx || dy) {
+      if (isMidpoint) {
+        // create the point an select the new point
+        const index = lasso.hover.midpointIndex;
+        const point = center(lasso.data.at(index), lasso.data.at((index + 1) % lasso.data.length));
+        lasso.snapshot('before moving point', () => {
+          lasso.data.splice(index + 1, 0, point);
+        });
+        lasso.hover = { pointIndex: index + 1 };
+      }
+
+      lasso.delayedSnapshot('point moved');
+      const point = lasso.data.at(lasso.hover.pointIndex);
+      point.x += dx * scale;
+      point.y += dy * scale;
+      lasso.metrics.timeOfMove = Date.now();
+      lasso.metrics.lastPointMoved = point;
+      lasso.Base_layers.render();
+    }
+  }
+
+  moveToNextVertex(indexOffset) {
+    if (!indexOffset) return;
+    const lasso = this;
+
+    const isMidpoint = lasso.hover?.midpointIndex >= 0;
+    let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
+
+    if (isMidpoint) {
+      pointIndex += indexOffset;
+      if (indexOffset < 0) pointIndex++;
+
+      lasso.hover = {
+        pointIndex: (pointIndex + lasso.data.length) % lasso.data.length,
+      };
+    } else {
+      pointIndex += indexOffset;
+      if (indexOffset > 0) pointIndex--;
+
+      lasso.hover = {
+        midpointIndex: (pointIndex + lasso.data.length) % lasso.data.length,
+      };
+    }
+    lasso.Base_layers.render();
+  }
+
+  zoomViewport(zoom) {
+    if (!zoom) return;
+    lasso.undoredo(
+      'before zooming',
+      () => {
+        lasso.GUI_preview.zoom(zoom);
+      },
+      () => {
+        lasso.GUI_preview.zoom(-zoom);
+      },
+    );
+    lasso.Base_layers.render();
+  }
+
+  deletePoint() {
+    const lasso = this;
+    const isMidpoint = lasso.hover?.midpointIndex >= 0;
+    if (isMidpoint) {
+      console.log(`deletePoint: cannot delete midpoint`);
+    }
+
+    let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
+
+    lasso.snapshot('before deleting point', () => {
+      lasso.data.splice(pointIndex, 1);
+    });
     lasso.Base_layers.render();
   }
 }
 
-function moveToNextVertex(lasso, indexOffset) {
-  if (!indexOffset) return;
-
-  const isMidpoint = lasso.hover?.midpointIndex >= 0;
-  let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
-
-  if (isMidpoint) {
-    pointIndex += indexOffset;
-    if (indexOffset < 0) pointIndex++;
-
-    lasso.hover = {
-      pointIndex: (pointIndex + lasso.data.length) % lasso.data.length,
-    };
-  } else {
-    pointIndex += indexOffset;
-    if (indexOffset > 0) pointIndex--;
-
-    lasso.hover = {
-      midpointIndex: (pointIndex + lasso.data.length) % lasso.data.length,
-    };
-  }
-  lasso.Base_layers.render();
-}
-
-function zoomViewport(lasso, zoom) {
-  if (!zoom) return;
-  lasso.undoredo(
-    'before zooming',
-    () => {
-      lasso.GUI_preview.zoom(zoom);
-    },
-    () => {
-      lasso.GUI_preview.zoom(-zoom);
-    },
-  );
-  lasso.Base_layers.render();
-}
-
-function deletePoint(lasso) {
-  const isMidpoint = lasso.hover?.midpointIndex >= 0;
-  if (isMidpoint) {
-    console.log(`deletePoint: cannot delete midpoint`);
-  }
-
-  let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
-
-  lasso.snapshot('before deleting point', () => {
-    lasso.data.splice(pointIndex, 1);
-  });
-  lasso.Base_layers.render();
-}
-
 let __priorLogMessage = '';
 function log(message) {
+  console.log(message);
   if (__priorLogMessage === message) return;
   __priorLogMessage = message;
   //alertify.success(message);

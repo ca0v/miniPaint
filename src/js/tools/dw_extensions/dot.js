@@ -1,6 +1,7 @@
-export function dot(ctx, point) {
+export function dot(ctx, point, options) {
+  const size = options.size || 1;
   ctx.beginPath();
-  ctx.arc(point.x, point.y, 0.5, 0, 2 * Math.PI);
+  ctx.arc(point.x, point.y, 0.5 * size, 0, 2 * Math.PI);
   ctx.stroke();
 }
 
