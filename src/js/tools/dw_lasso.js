@@ -698,265 +698,255 @@ class DwLasso_class extends Base_tools_class {
       },
     });
 
-    this.state.from(Status.none).goto(Status.ready).when(null).do(this.state.actions.noDataPoints);
-    this.state.from(Status.none).goto(Status.editing).when(null).do(this.state.actions.dataPoints);
+    this.state
+      .about('no data found')
+      .from(Status.none)
+      .goto(Status.ready)
+      .when(null)
+      .do(this.state.actions.noDataPoints);
+    this.state.about('data found').from(Status.none).goto(Status.editing).when(null).do(this.state.actions.dataPoints);
 
     this.state
       .about('reset the tool when drawing')
       .from(Status.drawing)
       .goto(Status.ready)
-      .when(this.state.keyboardState(Keyboard.Reset))
+      .when(Keyboard.Reset)
       .do(this.state.actions.reset);
 
     this.state
       .about('reset the tool when editing')
       .from(Status.editing)
       .goto(Status.ready)
-      .when(this.state.keyboardState(Keyboard.Reset))
+      .when(Keyboard.Reset)
       .do(this.state.actions.reset);
 
     this.state
       .about('reset the tool when placing')
       .from(Status.placing)
       .goto(Status.ready)
-      .when(this.state.keyboardState(Keyboard.Reset))
+      .when(Keyboard.Reset)
       .do(this.state.actions.reset);
 
     this.state
       .about('clear the interior during an edit')
       .from(Status.editing)
       .goto(Status.ready)
-      .when(this.state.keyboardState(Keyboard.ClearInterior))
+      .when(Keyboard.ClearInterior)
       .do(this.state.actions.cut);
 
     this.state
       .about('clear the exterior during an edit')
       .from(Status.editing)
       .goto(Status.ready)
-      .when(this.state.keyboardState(Keyboard.ClearExterior))
+      .when(Keyboard.ClearExterior)
       .do(this.state.actions.crop);
 
     this.state
       .about('inject smoothing points into the polygon')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.Smooth))
+      .when(Keyboard.Smooth)
       .do(this.state.actions.smooth);
 
     this.state
       .about('center about the current point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.CenterAt))
+      .when(Keyboard.CenterAt)
       .do(this.state.actions.centerAt);
 
     this.state
       .about('center about the current point')
       .from(Status.drawing)
       .goto(Status.drawing)
-      .when(this.state.keyboardState(Keyboard.CenterAt))
+      .when(Keyboard.CenterAt)
       .do(this.state.actions.centerAt);
 
     this.state
       .about('center about the current point')
       .from(Status.placing)
       .goto(Status.placing)
-      .when(this.state.keyboardState(Keyboard.CenterAt))
+      .when(Keyboard.CenterAt)
       .do(this.state.actions.centerAt);
 
     this.state
       .about('complete the polygon')
       .from([Status.placing, Status.drawing])
       .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.ClosePolygon))
-      .do(this.state.actions.closePolygon);
-
-    this.state
-      .about('complete the polygon')
-      .from(Status.placing)
-      .goto(Status.editing)
-      .when(this.state.mouseState('Shift+Left+mousedown'))
+      .when(Keyboard.ClosePolygon)
       .do(this.state.actions.closePolygon);
 
     this.state
       .about('prepare to drag this point')
       .from(Status.hover)
       .goto(Status.before_dragging)
-      .when(this.state.mouseState('Left+mousedown'))
+      .when('Left+mousedown')
       .do(this.state.actions.beforeDraggingHoverPoint);
 
     this.state
       .about('begin dragging this point')
       .from(Status.before_dragging)
       .goto(Status.hover)
-      .when(this.state.mouseState('Left+mouseup'))
+      .when('Left+mouseup')
       .do(this.state.actions.beforeDraggingHoverPoint);
 
     this.state
       .about('begin dragging this point')
       .from(Status.before_dragging)
       .goto(Status.dragging)
-      .when(this.state.mouseState('Left+mousemove'))
+      .when('Left+mousemove')
       .do(this.state.actions.draggingHoverPoint);
 
     this.state
       .about('drag this point')
       .from(Status.dragging)
       .goto(Status.dragging)
-      .when(this.state.mouseState('Left+mousemove'))
+      .when('Left+mousemove')
       .do(this.state.actions.draggingHoverPoint);
 
     this.state
       .about('automatically create vertices as mouse moves')
       .from(Status.drawing)
       .goto(Status.drawing)
-      .when(this.state.mouseState('Left+mousemove'))
+      .when('Left+mousemove')
       .do(this.state.actions.drawPoints);
 
     this.state
       .about('when moving the mouse, move the last point to the mouse location')
       .from(Status.drawing)
       .goto(Status.placing)
-      .when(this.state.mouseState('mousemove'))
+      .when('mousemove')
       .do(this.state.actions.placePointAtClickLocation);
 
     this.state
       .about('stop dragging this point')
       .from(Status.dragging)
       .goto(Status.editing)
-      .when(this.state.mouseState('Left+mouseup'))
+      .when('Left+mouseup')
       .do(this.state.actions.endDraggingHoverPoint);
 
     this.state
       .about('create the 1st point of the polygon')
       .from(Status.ready)
       .goto(Status.drawing)
-      .when(this.state.mouseState('Left+mousedown'))
+      .when('Left+mousedown')
       .do(this.state.actions.placeFirstPointAtMouseLocation);
 
     this.state
       .about('stop placing and enter drawing mode')
       .from(Status.placing)
       .goto(Status.drawing)
-      .when(this.state.mouseState('Left+mousedown'));
+      .when('Left+mousedown');
 
     this.state
       .about('continue moving the last point to the mouse location')
       .from(Status.placing)
       .goto(Status.placing)
-      .when(this.state.mouseState('mousemove'))
+      .when('mousemove')
       .do(this.state.actions.movingLastPointToMouseLocation);
 
     this.state
       .about('continue moving the last point to the mouse location (shift key is pressed)')
       .from(Status.placing)
       .goto(Status.placing)
-      .when(this.state.mouseState('Shift+mousemove'))
+      .when('Shift+mousemove')
       .do(this.state.actions.movingLastPointToMouseLocation);
 
     this.state
       .about('add a point to the polygon')
       .from(Status.drawing)
       .goto(Status.drawing)
-      .when(this.state.mouseState('Left+mousedown'))
+      .when('Left+mousedown')
       .do(this.state.actions.placePointAtClickLocation);
 
     this.state
       .about('zoom in when drawing')
-      .from(Status.drawing)
-      .goto(Status.drawing)
-      .when(this.state.keyboardState(Keyboard.ZoomIn))
+      .from([Status.drawing, Status.editing])
+      .when(Keyboard.ZoomIn)
       .do(this.state.actions.zoomIn);
 
     this.state
       .about('zoom out when drawing')
       .from(Status.drawing)
       .goto(Status.drawing)
-      .when(this.state.keyboardState(Keyboard.ZoomOut))
+      .when(Keyboard.ZoomOut)
       .do(this.state.actions.zoomOut);
 
     this.state
-      .about('zoom in when editing')
-      .from(Status.editing)
-      .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.ZoomIn))
-      .do(this.state.actions.zoomIn);
-
-    this.state
       .about('zoom out when drawing')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.ZoomOut))
+      .when(Keyboard.ZoomOut)
       .do(this.state.actions.zoomOut);
 
     this.state
       .about('set focus the the prior vertex')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState('ArrowLeft'))
+      .when('ArrowLeft')
       .do(this.state.actions.moveToPriorPoint);
 
     this.state
       .about('set focus the the next vertex')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState('ArrowRight'))
+      .when('ArrowRight')
       .do(this.state.actions.moveToNextPoint);
 
     this.state
       .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.MovePointLeft))
+      .when(Keyboard.MovePointLeft)
       .do(this.state.actions.movePointLeft1Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.MovePointRight))
+      .when(Keyboard.MovePointRight)
       .do(this.state.actions.movePointRight1Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.MovePointUp))
+      .when(Keyboard.MovePointUp)
       .do(this.state.actions.movePointUp1Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.MovePointDown))
+      .when(Keyboard.MovePointDown)
       .do(this.state.actions.movePointDown1Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.MovePointLeft10))
+      .when(Keyboard.MovePointLeft10)
       .do(this.state.actions.movePointLeft10Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.MovePointRight10))
+      .when(Keyboard.MovePointRight10)
       .do(this.state.actions.movePointRight10Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.MovePointUp10))
+      .when(Keyboard.MovePointUp10)
       .do(this.state.actions.movePointUp10Units);
 
     this.state
       .about('move the point')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.MovePointDown10))
+      .when(Keyboard.MovePointDown10)
       .do(this.state.actions.movePointDown10Units);
 
     this.state
@@ -970,49 +960,49 @@ class DwLasso_class extends Base_tools_class {
       .about('delete the hover point while editing (impossible?)')
       .from(Status.editing)
       .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.Delete))
+      .when(Keyboard.Delete)
       .do(this.state.actions.deleteHoverPoint);
 
     this.state
       .about('delete the hover point')
       .from(Status.hover)
       .goto(Status.editing)
-      .when(this.state.keyboardState(Keyboard.Delete))
+      .when(Keyboard.Delete)
       .do(this.state.actions.deleteHoverPoint);
 
     this.state
       .about('delete the hover point')
       .from(Status.hover)
       .goto(Status.editing)
-      .when(this.state.mouseState('Shift+Left+mousedown'))
+      .when('Shift+Left+mousedown')
       .do(this.state.actions.deleteHoverPoint);
 
     this.state
       .about('mouse has moved over a point')
       .from(Status.editing)
       .goto(Status.hover)
-      .when(this.state.mouseState('mousemove'))
+      .when('mousemove')
       .do(this.state.actions.hoveringOverPoint);
 
     this.state
       .about('mouse has moved over a point (shift key is pressed)')
       .from(Status.editing)
       .goto(Status.hover)
-      .when(this.state.mouseState('Shift+mousemove'))
+      .when('Shift+mousemove')
       .do(this.state.actions.hoveringOverPoint);
 
     this.state
       .about('mouse is no longer over a point')
       .from(Status.hover)
       .goto(Status.editing)
-      .when(this.state.mouseState('mousemove'))
+      .when('mousemove')
       .do(this.state.actions.notHoveringOverPoint);
 
     this.state
       .about('mouse is no longer over a point (shift key is pressed)')
       .from(Status.hover)
       .goto(Status.editing)
-      .when(this.state.mouseState('Shift+mousemove'))
+      .when('Shift+mousemove')
       .do(this.state.actions.notHoveringOverPoint);
   }
 }

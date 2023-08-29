@@ -123,59 +123,50 @@ export class StateMachine {
       about,
     };
 
-    return {
-      from: (state) => {
-        return this.from(state, context);
-      },
-    };
+    this.contexts.push(context);
+    return new ContextOperands(this, context);
+  }
+}
+
+class ContextOperands {
+  // adds goto, when, do, about, from methods to the context
+  constructor(state, context) {
+    this.state = state;
+    this.context = context;
   }
 
-  from(state, _context = {}) {
+  goto(newState) {
+    this.context.goto = newState;
+    return this;
+  }
+
+  when(condition) {
+    if (typeof condition === 'string') condition = [condition];
+    this.context.when = condition;
+    return this;
+  }
+
+  do(action) {
+    // if action is not a value of events, throw
+    if (!Object.values(this.state.actions).includes(action))
+      throw `Action not found in actions: ${Object.keys(this.state.actions).join(', ')}`;
+    this.context.do = action;
+    return this;
+  }
+
+  about(about) {
+    this.context.about = about;
+    return this;
+  }
+
+  from(state) {
     if (typeof state === 'string') state = [state];
 
     state.forEach((s) => {
-      if (!this.states[s]) throw `State ${s} is not a valid state`;
+      if (!this.state.states[s]) throw `State ${s} is not a valid state`;
     });
 
-    const context = Object.assign(
-      {
-        from: state,
-        goto: null,
-        when: null,
-        do: null,
-      },
-      _context,
-    );
-
-    this.contexts.push(context);
-
-    return {
-      goto: (newState) => {
-        context.goto = newState;
-        return {
-          when: (condition) => {
-            if (typeof condition === 'string') condition = [condition];
-            context.when = condition;
-            return {
-              do: (action) => {
-                // if action is not a value of events, throw
-                if (!Object.values(this.actions).includes(action))
-                  throw `Action not found in actions: ${Object.keys(this.actions).join(', ')}`;
-                context.do = action;
-              },
-            };
-          },
-        };
-      },
-    };
-  }
-
-  // return a function that gets evaluated during each mouse event, and returns true when the condition is met
-  mouseState(condition) {
-    return condition;
-  }
-
-  keyboardState(condition) {
-    return condition;
+    this.context.from = state;
+    return this;
   }
 }

@@ -140,9 +140,10 @@ export class Tests {
       });
 
       // register the events to be handled
-      s.from(s.states.none)
+      s.about('')
+        .from(s.states.none)
         .goto(s.states.drawing)
-        .when(s.mouseState('Shift+Left+mousedown'))
+        .when('Shift+Left+mousedown')
         .do(s.actions.shiftClickCallbackTest);
 
       // simulate a shift+left+mousedown
@@ -166,10 +167,7 @@ export class Tests {
         },
       });
 
-      s.from(s.states.none)
-        .goto(s.states.drawing)
-        .when(s.keyboardState('Ctrl+Shift+X'))
-        .do(s.actions.keypressCallbackTest);
+      s.about('').from(s.states.none).goto(s.states.drawing).when('Ctrl+Shift+X').do(s.actions.keypressCallbackTest);
 
       // simulate a ctrl+shift+arrowLeft keypress
       const event = new KeyboardEvent('keydown', { key: 'X', ctrlKey: true, shiftKey: true, target: null });
