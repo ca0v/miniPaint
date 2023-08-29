@@ -16,8 +16,7 @@
  * - Load an image then move it and the crop is the wrong part of the image...need to compensate for translations, etc.
  * -- Similarly, cut only working for images that have been cropped to the top-left corner, not sure where the problem is
  * -- but the crop.js works correctly, so the solution is in there somewhere
- * - Presently shift+click or [Space] closes the polygon, but it is not obvious that this is the case
- * -- [Escape] deletes it entirely
+ * - Cannot restore state when switching to another tool and back
  *
  * ** TODO **
  * - [Delete] deletes the selected point, or last point if there is none
@@ -47,10 +46,8 @@ import { center } from './dw_extensions/center.js';
 import { removeColinearPoints } from './dw_extensions/removeColinearPoints.js';
 import { getBoundingBox } from './dw_extensions/getBoundingBox.js';
 import { distance } from './dw_extensions/distance.js';
-import { deep } from './dw_extensions/deep.js';
 import { age } from './dw_extensions/age.js';
 import { angleOf } from './dw_extensions/angleOf.js';
-import { computeKeyboardState } from './dw_extensions/computeKeyboardState.js';
 import { debounce } from './dw_extensions/debounce.js';
 import { clockwise } from './dw_extensions/clockwise.js';
 import { Smooth } from './dw_extensions/Smooth.js';
@@ -70,9 +67,6 @@ class DwLasso_class extends Base_tools_class {
       lastPointMoved: null,
     };
 
-    this.defineStateMachine();
-
-    this.events = new EventManager();
     this.Base_layers = new Base_layers_class();
     this.Base_state = new Base_state_class();
     this.GUI_preview = new GUI_preview_class();
@@ -101,6 +95,56 @@ class DwLasso_class extends Base_tools_class {
     }, Settings.delayedSnapshotTimeout);
   }
 
+  on_activate() {
+    this.defineStateMachine();
+    this.state.setCurrentState(Status.none);
+    this.metrics.prior_action_history_max = this.Base_state.action_history_max;
+    this.Base_state.action_history_max = 1000;
+
+    const params_hash = this.get_params_hash();
+    const opacity = Math.round((config.ALPHA / 255) * 100);
+
+    const layer = config?.layers.find((l) => l.type === this.name);
+
+    if (!layer) {
+      console.log(`creating new magic crop layer`);
+      const layer = {
+        name: 'DW Lasso',
+        type: this.name,
+        opacity: opacity,
+        params: this.clone(this.getParams()),
+        status: 'draft',
+        render_function: [this.name, 'render'],
+        x: 0,
+        y: 0,
+        width: config.WIDTH,
+        height: config.HEIGHT,
+        hide_selection_if_active: true,
+        rotate: null,
+        is_vector: true,
+        color: config.COLOR,
+      };
+      app.State.do_action(
+        new app.Actions.Bundle_action('new_dw_lasso_layer', 'Magic Crop Layer', [
+          new app.Actions.Insert_layer_action(layer),
+        ]),
+      );
+      this.params_hash = params_hash;
+    } else {
+      this.renderData();
+    }
+  }
+
+  on_leave() {
+    this.state.off();
+
+    this.Base_state.action_history_max = this.metrics.prior_action_history_max;
+
+    // delete the magic crop layer
+    const actions = [new app.Actions.Reset_selection_action()];
+    this.addDeleteToolAction(actions);
+    return actions;
+  }
   get status() {
     return this.state.currentState;
   }
@@ -109,9 +153,7 @@ class DwLasso_class extends Base_tools_class {
     this.state.setCurrentState(value);
   }
 
-  load() {
-    this.state.setCurrentState(Status.none);
-  }
+  load() {}
 
   default_dragStart(event) {
     this.is_mousedown_canvas = false;
@@ -432,67 +474,6 @@ class DwLasso_class extends Base_tools_class {
         console.log(`deleting layer ${l.id}, ${l.name}`);
         actions.push(new app.Actions.Delete_layer_action(l.id));
       });
-  }
-
-  on_activate() {
-    switch (this.state.currentState) {
-      case Status.none: {
-        this.prior_action_history_max = this.Base_state.action_history_max;
-        this.Base_state.action_history_max = 1000;
-        break;
-      }
-
-      case Status.placing:
-      case Status.editing: {
-        this.state.trigger(Keyboard.Reset);
-        break;
-      }
-    }
-
-    const params_hash = this.get_params_hash();
-    const opacity = Math.round((config.ALPHA / 255) * 100);
-
-    const layer = config?.layers.find((l) => l.type === this.name);
-
-    if (!layer) {
-      console.log(`creating new magic crop layer`);
-      const layer = {
-        name: 'DW Lasso',
-        type: this.name,
-        opacity: opacity,
-        params: this.clone(this.getParams()),
-        status: 'draft',
-        render_function: [this.name, 'render'],
-        x: 0,
-        y: 0,
-        width: config.WIDTH,
-        height: config.HEIGHT,
-        hide_selection_if_active: true,
-        rotate: null,
-        is_vector: true,
-        color: config.COLOR,
-      };
-      app.State.do_action(
-        new app.Actions.Bundle_action('new_dw_lasso_layer', 'Magic Crop Layer', [
-          new app.Actions.Insert_layer_action(layer),
-        ]),
-      );
-      this.params_hash = params_hash;
-    } else {
-      this.renderData();
-    }
-  }
-
-  on_leave() {
-    this.events.off();
-    this.state.off();
-
-    this.Base_state.action_history_max = this.prior_action_history_max;
-
-    // delete the magic crop layer
-    const actions = [new app.Actions.Reset_selection_action()];
-    this.addDeleteToolAction(actions);
-    return actions;
   }
 
   mousePoint(e) {
