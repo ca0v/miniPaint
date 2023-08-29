@@ -42,7 +42,7 @@ import { Generic_action } from './dw_extensions/Generic_action.js';
 import { Update_layer_action } from './dw_extensions/Update_layer_action.js';
 import { EventManager } from './dw_extensions/EventManager.js';
 import { circle } from './dw_extensions/circle.js';
-import { dot, cross } from './dw_extensions/dot.js';
+import { dot, cross, plus } from './dw_extensions/dot.js';
 import { center } from './dw_extensions/center.js';
 import { removeColinearPoints } from './dw_extensions/removeColinearPoints.js';
 import { getBoundingBox } from './dw_extensions/getBoundingBox.js';
@@ -67,6 +67,7 @@ class DwLasso_class extends Base_tools_class {
 
     this.metrics = {
       timeOfMove: Date.now(),
+      lastPointMoved: null,
     };
 
     this.defineStateMachine();
@@ -211,19 +212,17 @@ class DwLasso_class extends Base_tools_class {
       // scale down the size based on the zoom level
       let size = Drawings.major.size / config.ZOOM;
 
-      if (this.hover?.pointIndex === i) {
-        if (age(this.metrics.timeOfMove) < 1000) {
-          cross(ctx, currentPoint, { color: Drawings.major.color, size: 12 });
-        } else {
-          size = Drawings.hoverMajor.size / config.ZOOM;
-          ctx.fillStyle = Drawings.hoverMajor.color;
-          // draw a circle
-          circle(ctx, currentPoint, size);
-          dot(ctx, currentPoint, { color: Drawings.major.color });
-        }
+      if (currentPoint === this.metrics.lastPointMoved && age(this.metrics.timeOfMove) < 1000) {
+        cross(ctx, currentPoint, {
+          color: Drawings.lastMoveStrokeColor,
+          size: Drawings.hoverMajor.size / config.ZOOM,
+          lineWidth: 1 / config.ZOOM,
+        });
+      } else if (this.hover?.pointIndex === i) {
+        cross(ctx, currentPoint, { color: Drawings.hoverMajor.color, size: Drawings.hoverMajor.size / config.ZOOM });
       } else {
         // draw a circle
-        circle(ctx, currentPoint, size);
+        circle(ctx, currentPoint, { size, color: Drawings.defaultStrokeColor });
         dot(ctx, currentPoint, { color: Drawings.major.color });
       }
     });
@@ -232,20 +231,23 @@ class DwLasso_class extends Base_tools_class {
     data.forEach((currentPoint, i) => {
       const nextPoint = data[(i + 1) % data.length];
       // scale down the size based on the zoom level
-      let size = Drawings.minor.size / config.ZOOM;
-      ctx.fillStyle = Drawings.minor.color;
-      ctx.strokeStyle = Drawings.defaultStrokeColor;
-      ctx.lineWidth = 1 / config.ZOOM;
 
       const centerPoint = center(currentPoint, nextPoint);
 
       if (this.hover && this.hover.midpointIndex == i) {
-        ctx.fillStyle = Drawings.hoverMinor.color;
-        size = Drawings.hoverMinor.size / config.ZOOM;
+        plus(ctx, centerPoint, {
+          color: Drawings.hoverMinor.color,
+          size: Drawings.hoverMinor.size / config.ZOOM,
+          lineWidth: 1 / config.ZOOM,
+        });
+      } else {
+        // draw a circle
+        circle(ctx, centerPoint, {
+          size: Drawings.minor.size / config.ZOOM,
+          color: Drawings.defaultStrokeColor,
+          lineWidth: 1 / config.ZOOM,
+        });
       }
-
-      // draw a circle
-      circle(ctx, centerPoint, size);
     });
 
     ctx.translate(-x, -y);
@@ -578,6 +580,8 @@ class DwLasso_class extends Base_tools_class {
           const point = this.hover.point;
           point.x = currentPoint.x;
           point.y = currentPoint.y;
+          this.metrics.timeOfMove = Date.now();
+          this.metrics.lastPointMoved = point;
           this.Base_layers.render();
         } else {
           console.log(`mousemove: no point to drag`);
@@ -627,8 +631,8 @@ class DwLasso_class extends Base_tools_class {
       placePointAtClickLocation: () => this.placePointAtClickLocation(),
       movingLastPointToMouseLocation: () => this.movingLastPointToMouseLocation(),
 
-      moveToPriorPoint: () => moveToNextVertex(this, computeKeyboardState(this.state.keyboardEvent)),
-      moveToNextPoint: () => moveToNextVertex(this, computeKeyboardState(this.state.keyboardEvent)),
+      moveToPriorPoint: () => moveToNextVertex(this, -1),
+      moveToNextPoint: () => moveToNextVertex(this, 1),
 
       movePointLeft1Units: () => movePoint(this, -1, 0),
       movePointRight1Units: () => movePoint(this, 1, 0),
@@ -1053,61 +1057,44 @@ function movePoint(lasso, dx, dy) {
       // create the point an select the new point
       const index = lasso.hover.midpointIndex;
       const point = center(lasso.data.at(index), lasso.data.at((index + 1) % lasso.data.length));
-      point.x += dx * scale;
-      point.y += dy * scale;
       lasso.snapshot('before moving point', () => {
         lasso.data.splice(index + 1, 0, point);
       });
       lasso.hover = { pointIndex: index + 1 };
-    } else {
-      lasso.delayedSnapshot('point moved');
-      const point = lasso.data.at(pointIndex);
-      point.x += dx * scale;
-      point.y += dy * scale;
     }
+
+    lasso.delayedSnapshot('point moved');
+    const point = lasso.data.at(lasso.hover.pointIndex);
+    point.x += dx * scale;
+    point.y += dy * scale;
     lasso.metrics.timeOfMove = Date.now();
+    lasso.metrics.lastPointMoved = point;
     lasso.Base_layers.render();
   }
 }
 
-function moveToNextVertex(lasso, keyboardState) {
-  let indexOffset = 0;
+function moveToNextVertex(lasso, indexOffset) {
+  if (!indexOffset) return;
 
   const isMidpoint = lasso.hover?.midpointIndex >= 0;
   let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
 
-  switch (keyboardState) {
-    case Keyboard.PriorVertex:
-      indexOffset--;
-      break;
-    case Keyboard.NextVertex:
-      indexOffset++;
-      break;
+  if (isMidpoint) {
+    pointIndex += indexOffset;
+    if (indexOffset < 0) pointIndex++;
 
-    default: {
-      console.log(`keydown: unknown keyboard state '${keyboardState}'`);
-      break;
-    }
+    lasso.hover = {
+      pointIndex: (pointIndex + lasso.data.length) % lasso.data.length,
+    };
+  } else {
+    pointIndex += indexOffset;
+    if (indexOffset > 0) pointIndex--;
+
+    lasso.hover = {
+      midpointIndex: (pointIndex + lasso.data.length) % lasso.data.length,
+    };
   }
-
-  if (indexOffset) {
-    if (isMidpoint) {
-      pointIndex += indexOffset;
-      if (indexOffset < 0) pointIndex++;
-
-      lasso.hover = {
-        pointIndex: (pointIndex + lasso.data.length) % lasso.data.length,
-      };
-    } else {
-      pointIndex += indexOffset;
-      if (indexOffset > 0) pointIndex--;
-
-      lasso.hover = {
-        midpointIndex: (pointIndex + lasso.data.length) % lasso.data.length,
-      };
-    }
-    lasso.Base_layers.render();
-  }
+  lasso.Base_layers.render();
 }
 
 function zoomViewport(lasso, keyboardState) {
