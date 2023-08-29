@@ -766,7 +766,7 @@ class DwLasso_class extends Base_tools_class {
 
     this.state
       .about('complete the polygon')
-      .from(Status.drawing)
+      .from([Status.placing, Status.drawing])
       .goto(Status.editing)
       .when(this.state.keyboardState(Keyboard.ClosePolygon))
       .do(this.state.actions.closePolygon);

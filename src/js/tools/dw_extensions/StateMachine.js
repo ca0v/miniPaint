@@ -89,7 +89,7 @@ export class StateMachine {
 
   execute(when) {
     const targetEvents = this.contexts
-      .filter((e) => e.from === this.currentState)
+      .filter((e) => e.from.includes(this.currentState))
       .filter((e) => !e.when || e.when.includes(when));
     if (!targetEvents.length) return;
     let stateChanged = false;
@@ -131,14 +131,18 @@ export class StateMachine {
   }
 
   from(state, _context = {}) {
-    if (!this.states[state]) throw `State ${state} is not a valid state`;
+    if (typeof state === 'string') state = [state];
+
+    state.forEach((s) => {
+      if (!this.states[s]) throw `State ${s} is not a valid state`;
+    });
 
     const context = Object.assign(
       {
         from: state,
-        goto: state,
-        when: [],
-        do: () => {},
+        goto: null,
+        when: null,
+        do: null,
       },
       _context,
     );
