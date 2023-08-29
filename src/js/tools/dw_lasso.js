@@ -686,8 +686,8 @@ class DwLasso_class extends Base_tools_class {
       crop: () => this.crop(),
 
       smooth: () => {
-        if (typeof this.hover.pointIndex === 'number') return this.state.actions.smoothAroundVertex();
-        if (typeof this.hover.midpointIndex === 'number') return this.state.actions.smoothAroundMinorVertex();
+        if (typeof this.hover?.pointIndex === 'number') return this.state.actions.smoothAroundVertex();
+        if (typeof this.hover?.midpointIndex === 'number') return this.state.actions.smoothAroundMinorVertex();
         return this.state.actions.smoothAllData();
       },
 
@@ -776,15 +776,9 @@ class DwLasso_class extends Base_tools_class {
 
     this.state
       .about('inject smoothing points into the polygon')
-      .from(Status.editing)
+      .from([Status.editing, Status.hover])
       .when(Keyboard.Smooth)
       .do(this.state.actions.smooth);
-
-    this.state
-      .about('inject smoothing points around vertex')
-      .from(Status.hover)
-      .when(Keyboard.Smooth)
-      .do(this.state.actions.smoothAroundVertex);
 
     this.state
       .about('center about the current point')

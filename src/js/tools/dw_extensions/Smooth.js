@@ -71,7 +71,6 @@ export class Smooth {
 
   smoothAroundMinorVertex(data, vertexIndex) {
     if (data.length < 4) return false;
-    if (vertexIndex < 1) return false;
 
     const p1 = data.at((vertexIndex - 1 + data.length) % data.length);
     const p2 = data.at((vertexIndex + 0) % data.length);
