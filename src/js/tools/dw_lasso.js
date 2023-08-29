@@ -615,6 +615,7 @@ class DwLasso_class extends Base_tools_class {
         }
         if (drawPoint) {
           data.push(currentPoint);
+          this.hover = { pointIndex: data.length - 1 };
         } else {
           const p = data.at(-1);
           p.x = currentPoint.x;
