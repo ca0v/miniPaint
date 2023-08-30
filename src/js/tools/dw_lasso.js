@@ -232,15 +232,6 @@ export default class DwLasso_class extends Base_tools_class {
 
     // now render the drag-points over the top of the lines
     data.forEach((currentPoint, i) => {
-      ctx.fillStyle = Drawings.major.color;
-
-      // the circle should have an outline
-      ctx.strokeStyle = Drawings.defaultStrokeColor;
-      ctx.lineWidth = 1 * this.scale;
-
-      // scale down the size based on the zoom level
-      let size = Drawings.major.size * this.scale;
-
       if (currentPoint === this.metrics.lastPointMoved && age(this.metrics.timeOfMove) < 1000) {
         cross(ctx, currentPoint, {
           color: Drawings.lastMoveStrokeColor,
@@ -255,8 +246,12 @@ export default class DwLasso_class extends Base_tools_class {
         });
       } else {
         // draw a circle
-        circle(ctx, currentPoint, { size, lineWidth: this.scale, color: Drawings.defaultStrokeColor });
-        dot(ctx, currentPoint, { size: this.scale, color: Drawings.major.color });
+        circle(ctx, currentPoint, {
+          size: Drawings.major.size * this.scale,
+          lineWidth: this.scale,
+          color: Drawings.major.color || Drawings.defaultStrokeColor,
+        });
+        //dot(ctx, currentPoint, { size: this.scale, color: Drawings.major.color });
       }
     });
 
@@ -277,7 +272,7 @@ export default class DwLasso_class extends Base_tools_class {
         // draw a circle
         circle(ctx, centerPoint, {
           size: Drawings.minor.size * this.scale,
-          color: Drawings.defaultStrokeColor,
+          color: Drawings.minor.color || Drawings.defaultStrokeColor,
           lineWidth: 1 * this.scale,
         });
       }

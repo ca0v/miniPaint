@@ -1,7 +1,20 @@
 export function dot(ctx, point, options) {
-  const size = options.size || 1;
+  if (!options) options = {};
+  if (!options.size) options.size = 1;
+  if (!options.color) options.color = 'red';
+  if (!options.fillColor) options.fillColor = 'transparent';
+  if (!options.lineWidth) options.lineWidth = options.size;
+
+  ctx.strokeStyle = options.color;
+  ctx.lineWidth = options.lineWidth;
+  ctx.fillStyle = options.fillColor;
+
+  const size = options.size;
+  const radius = Math.ceil(size / 2);
+
   ctx.beginPath();
-  ctx.arc(point.x, point.y, 0.5 * size, 0, 2 * Math.PI);
+  ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI);
+  ctx.fill();
   ctx.stroke();
 }
 
