@@ -447,8 +447,8 @@ export default class DwLasso_class extends Base_tools_class {
           y: 0,
           width: cropWidth,
           height: cropHeight,
-          width_original: link.width_original,
-          height_original: link.height_original,
+          width_original: cropWidth,
+          height_original: cropWidth,
         }),
       );
     });
@@ -725,14 +725,14 @@ export default class DwLasso_class extends Base_tools_class {
 
     this.state
       .about('clear the interior during an edit')
-      .from(Status.editing)
+      .from([Status.editing, Status.drawing, Status.placing])
       .goto(Status.ready)
       .when(Keyboard.ClearInterior)
       .do(this.state.actions.cut);
 
     this.state
       .about('clear the exterior during an edit')
-      .from(Status.editing)
+      .from([Status.editing, Status.drawing, Status.placing])
       .goto(Status.ready)
       .when(Keyboard.ClearExterior)
       .do(this.state.actions.crop);
@@ -1035,7 +1035,9 @@ export default class DwLasso_class extends Base_tools_class {
   }
 
   zoomViewport(zoom) {
+    const lasso = this;
     if (!zoom) return;
+
     lasso.undoredo(
       'before zooming',
       () => {
