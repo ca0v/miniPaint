@@ -43,59 +43,57 @@ export class StateMachine {
     this.contexts = [];
     this.actions = {};
 
-    this.mouseEvent = null;
     this.keyboardEvent = null;
 
     this.events = new EventManager();
 
+    const mouseDownState = {
+      buttons: 0,
+    };
+
     this.events.on('mousemove', (mouseEvent) => {
-      this.mouseEvent = mouseEvent;
       const mouseState = computeMouseState(mouseEvent);
-      const preventBubble = false !== this.execute(mouseState);
+      const preventBubble = false !== this.trigger(mouseState, { e: mouseEvent });
       if (preventBubble) mouseEvent.preventDefault();
     });
 
     this.events.on('mousedown', (mouseEvent) => {
-      this.mouseEvent = mouseEvent;
+      mouseDownState.buttons = mouseEvent.buttons;
       const mouseState = computeMouseState(mouseEvent);
-      const preventBubble = false !== this.execute(mouseState);
+      const preventBubble = false !== this.trigger(mouseState, { e: mouseEvent });
       if (preventBubble) mouseEvent.preventDefault();
     });
 
     this.events.on('mouseup', (mouseEvent) => {
-      const priorButtons = this.mouseEvent.buttons;
-      this.mouseEvent = mouseEvent;
+      const priorButtons = mouseDownState.buttons;
       let mouseState = computeMouseState(mouseEvent);
       if (priorButtons === 1) mouseState = `Left+${mouseState}`;
       if (priorButtons === 2) mouseState = `Right+${mouseState}`;
-      const preventBubble = false !== this.execute(mouseState);
+      const preventBubble = false !== this.trigger(mouseState, { e: mouseEvent });
       if (preventBubble) mouseEvent.preventDefault();
     });
 
     // did user touch the screen?
     this.events.on('touchstart', (touchEvent) => {
       if (touchEvent.touches[1]) return; // ignore multi-touch
-      this.mouseEvent = touchEvent;
       const mouseState = computeMouseState(touchEvent);
-      const preventBubble = false !== this.execute(mouseState);
+      const preventBubble = false !== this.trigger(mouseState, { e: touchEvent });
       if (preventBubble) touchEvent.preventDefault();
     });
 
     // did user move their finger on the screen?
     this.events.on('touchmove', (touchEvent) => {
       if (touchEvent.touches[1]) return; // ignore multi-touch
-      this.mouseEvent = touchEvent;
       const mouseState = computeMouseState(touchEvent);
-      const preventBubble = false !== this.execute(mouseState);
+      const preventBubble = false !== this.trigger(mouseState, { e: touchEvent });
       if (preventBubble) touchEvent.preventDefault();
     });
 
     // did user lift their finger off the screen?
     this.events.on('touchend', (touchEvent) => {
       if (touchEvent.touches[1]) return; // ignore multi-touch
-      this.mouseEvent = touchEvent;
       const mouseState = computeMouseState(touchEvent);
-      const preventBubble = false !== this.execute(mouseState);
+      const preventBubble = false !== this.trigger(mouseState, { e: touchEvent });
       if (preventBubble) touchEvent.preventDefault();
     });
 
@@ -193,7 +191,7 @@ export class StateMachine {
       this.events.on('keydown', (keyboardEvent) => {
         this.keyboardEvent = keyboardEvent;
         const keyboardState = computeKeyboardState(keyboardEvent, keysThatAreDown);
-        const preventBubble = false !== this.execute(keyboardState);
+        const preventBubble = false !== this.trigger(keyboardState);
         if (preventBubble) keyboardEvent.preventDefault();
       });
 
@@ -220,15 +218,15 @@ export class StateMachine {
     this.events.trigger('stateChanged', this.currentState);
   }
 
-  execute(when) {
+  execute(eventName, eventData) {
     const targetEvents = this.contexts
       .filter((e) => e.from.includes(this.currentState))
-      .filter((e) => !e.when || e.when.some((v) => isShortcutMatch(v, when)));
+      .filter((e) => !e.when || e.when.some((v) => isShortcutMatch(v, eventName)));
     if (!targetEvents.length) return false;
     let stateChanged = false;
     return targetEvents.some((targetEvent) => {
       if (targetEvent.do) {
-        if (false === targetEvent.do.call(this)) return false;
+        if (false === targetEvent.do.call(this, eventData)) return false;
         this.events.trigger('execute', targetEvent);
         if (stateChanged)
           throw new Error(
@@ -243,9 +241,10 @@ export class StateMachine {
     });
   }
 
-  trigger(event) {
-    const success = false !== this.execute(event);
-    if (!success) log(`No handler found for event ${event}, state ${this.currentState}`);
+  trigger(eventName, eventData) {
+    const success = false !== this.execute(eventName, eventData);
+    if (!success) log(`No handler found for event ${eventName}, state ${this.currentState}`);
+    return success;
   }
 
   register(actions) {

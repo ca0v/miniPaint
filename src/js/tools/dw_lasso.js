@@ -555,14 +555,14 @@ export default class DwLasso_class extends Base_tools_class {
       },
       endDraggingHoverPoint: () => {},
 
-      drawPoints: () => {
+      drawPoints: (e) => {
         const currentPoint = this.mousePoint(this.state.mouseEvent);
         if (!currentPoint) return false;
 
         const data = this.data;
         const priorPoint = data.at(-2);
         if (!priorPoint) {
-          this.placePointAtClickLocation();
+          this.placePointAtClickLocation(e);
           return false;
         }
 
@@ -595,7 +595,7 @@ export default class DwLasso_class extends Base_tools_class {
         });
       },
 
-      placePointAtClickLocation: () => this.placePointAtClickLocation(),
+      placePointAtClickLocation: (e) => this.placePointAtClickLocation(e),
       movingLastPointToMouseLocation: () => this.movingLastPointToMouseLocation(),
 
       moveToPriorPoint: () => this.moveToNextVertex(-1),
@@ -793,7 +793,7 @@ export default class DwLasso_class extends Base_tools_class {
       .about('stop placing and enter drawing mode')
       .from(Status.placing)
       .goto(Status.drawing)
-      .when('Left+mousedown');
+      .when(['Left+mousedown']);
 
     this.state
       .about('continue moving the last point to the mouse location')
@@ -804,7 +804,7 @@ export default class DwLasso_class extends Base_tools_class {
     this.state
       .about('add a point to the polygon')
       .from(Status.drawing)
-      .when(['Left+mousedown', 'touchmove'])
+      .when(['Left+mousedown', 'touchmove', 'touchstart'])
       .do(this.state.actions.placePointAtClickLocation);
 
     this.state
