@@ -1,6 +1,7 @@
 import { EventManager } from './EventManager.js';
 import { computeKeyboardState } from './computeKeyboardState.js';
 import { computeMouseState } from './computeMouseState.js';
+import { log } from './log.js';
 
 /**
  * The ideal would be to make state changes intuitive and easy to modify.  For example, shift+click closes the polygon as does [Space].  The [Space] is sort of intuitive because
@@ -115,7 +116,8 @@ export class StateMachine {
   }
 
   trigger(event) {
-    this.execute(event);
+    const success = false !== this.execute(event);
+    if (!success) log(`No handler found for event ${event}, state ${this.currentState}`);
   }
 
   register(actions) {

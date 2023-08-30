@@ -50,8 +50,7 @@ import { clockwise } from './dw_extensions/clockwise.js';
 import { Smooth } from './dw_extensions/Smooth.js';
 import { Tests } from './dw_extensions/Tests.js';
 import { StateMachine } from './dw_extensions/StateMachine.js';
-
-const noop = () => {};
+import { log } from './dw_extensions/log.js';
 
 async function doActions(actions) {
   await app.State.do_action(new app.Actions.Bundle_action('dw_lasso_tool', 'Magic Crop Tool', actions));
@@ -552,9 +551,12 @@ export default class DwLasso_class extends Base_tools_class {
           this.placePointAtClickLocation();
           return false;
         }
-        let drawPoint = false;
+
+        const isSecondPoint = data.length === 2;
+
         const d = distance(priorPoint, currentPoint) / this.scale;
-        drawPoint = drawPoint || d > Settings.distanceBetweenPoints;
+        let drawPoint = d > (isSecondPoint ? Settings.minimalDistanceBetweenPoints : Settings.distanceBetweenPoints);
+
         if (!drawPoint && data.length > 2 && d > Settings.minimalDistanceBetweenPoints) {
           const a = Math.PI - angleOf(data.at(-3), priorPoint, currentPoint);
           drawPoint = d * a > Settings.radiusThreshold * Settings.distanceBetweenPoints;
@@ -595,7 +597,7 @@ export default class DwLasso_class extends Base_tools_class {
       movePointUp10Units: () => this.movePoint(0, -10),
       movePointDown10Units: () => this.movePoint(0, 10),
 
-      closePolygon: noop,
+      closePolygon: () => {},
       dataPoints: () => !!this.data.length,
       noDataPoints: () => !this.data.length,
 
@@ -704,14 +706,14 @@ export default class DwLasso_class extends Base_tools_class {
 
     this.state
       .about('clear the interior during an edit')
-      .from([Status.editing, Status.drawing, Status.placing])
+      .from([Status.editing, Status.drawing, Status.placing, Status.hover])
       .goto(Status.ready)
       .when(Keyboard.ClearInterior)
       .do(this.state.actions.cut);
 
     this.state
       .about('clear the exterior during an edit')
-      .from([Status.editing, Status.drawing, Status.placing])
+      .from([Status.editing, Status.drawing, Status.placing, Status.hover])
       .goto(Status.ready)
       .when(Keyboard.ClearExterior)
       .do(this.state.actions.crop);
@@ -1040,24 +1042,11 @@ export default class DwLasso_class extends Base_tools_class {
   }
 }
 
-let __priorLogMessage = '';
-
-function renderAsPath(ctx, pointData) {
-  ctx.moveTo(pointData[0].x, pointData[0].y);
-  pointData.forEach((point) => ctx.lineTo(point.x, point.y));
-}
-
-function log(message) {
-  if (__priorLogMessage === message) return;
-  __priorLogMessage = message;
-
-  // does query string contain "debug"?
-  if (!window.location.search.includes('debug')) {
-    log = noop;
-    return;
-  }
-  console.log(message);
-  alertify.success(message);
+function renderAsPath(ctx, points) {
+  if (!points.length) throw 'no data to render';
+  const lastPoint = points.at(-1);
+  ctx.moveTo(lastPoint.x, lastPoint.y);
+  points.forEach((point) => ctx.lineTo(point.x, point.y));
 }
 
 new Tests().tests();
