@@ -43,8 +43,6 @@ export class StateMachine {
     this.contexts = [];
     this.actions = {};
 
-    this.keyboardEvent = null;
-
     this.events = new EventManager();
 
     const mouseDownState = {
@@ -143,13 +141,20 @@ export class StateMachine {
                 const draggingLeft = closeTo(degrees, 180);
                 const draggingRight = closeTo(degrees, 0);
 
-                draggingUp && this.trigger('PressDragUp');
-                draggingDown && this.trigger('PressDragDown');
-                draggingLeft && this.trigger('PressDragLeft');
-                draggingRight && this.trigger('PressDragRight');
+                const args = {
+                  dragDistanceInPixels: delta2,
+                  dragDirectionInDegrees: degrees,
+                };
+
+                draggingUp && this.trigger('PressDragUp', { e: args });
+                draggingDown && this.trigger('PressDragDown', { e: args });
+                draggingLeft && this.trigger('PressDragLeft', { e: args });
+                draggingRight && this.trigger('PressDragRight', { e: args });
 
                 if (draggingUp || draggingDown || draggingLeft || draggingRight) {
                   touchState.pinch.touch2 = touch2;
+                } else {
+                  this.trigger('PressDrag', { e: args });
                 }
               }
               return;
@@ -189,9 +194,8 @@ export class StateMachine {
       });
 
       this.events.on('keydown', (keyboardEvent) => {
-        this.keyboardEvent = keyboardEvent;
         const keyboardState = computeKeyboardState(keyboardEvent, keysThatAreDown);
-        const preventBubble = false !== this.trigger(keyboardState);
+        const preventBubble = false !== this.trigger(keyboardState, { e: keyboardEvent });
         if (preventBubble) keyboardEvent.preventDefault();
       });
 
