@@ -643,10 +643,10 @@ export default class DwLasso_class extends Base_tools_class {
 
       zoomIn: () => this.zoomViewport(1),
       zoomOut: () => this.zoomViewport(-1),
-      panLeft: () => this.panViewport(-1, 0),
-      panRight: () => this.panViewport(1, 0),
-      panUp: () => this.panViewport(0, -1),
-      panDown: () => this.panViewport(0, 1),
+      panLeft: (e) => this.panViewport2(e),
+      panRight: (e) => this.panViewport2(e),
+      panUp: (e) => this.panViewport2(e),
+      panDown: (e) => this.panViewport2(e),
 
       reset: () => this.reset(),
       cut: () => this.cut(),
@@ -1093,19 +1093,39 @@ export default class DwLasso_class extends Base_tools_class {
     lasso.Base_layers.render();
   }
 
+  hack = { x: 0, y: 0 };
+
   panViewport(dx, dy) {
     if (!dx && !dy) return;
-    dx *= -10 * this.scale;
-    dy *= -10 * this.scale;
-    if (!this.priorPanLocation) {
-      const { x, y } = this.GUI_preview.zoom_data;
-      this.priorPanLocation = { x, y };
-    }
-    this.priorPanLocation.x += dx;
-    this.priorPanLocation.y += dy;
-    const { x, y } = this.priorPanLocation;
+    dx = -Math.round(dx);
+    dy = -Math.round(dy);
+
+    let { x, y } = zoomView.getPosition();
+    this.hack.x += dx;
+    this.hack.y += dy;
+    x = this.hack.x;
+    y = this.hack.y;
+
+    let { x: worldX, y: worldY } = zoomView.toWorld(x, y);
+    console.log(`panViewport: ${JSON.stringify({ x, y, worldX, worldY })}`);
     this.GUI_preview.zoom_to_position(x, y);
-    console.log(`panViewport by (${dx}, ${dy}) (${x}, ${y})`);
+  }
+
+  panViewport2(e) {
+    function closeTo(expected, actual, tolerance = 45) {
+      return Math.abs(expected - actual) < tolerance;
+    }
+
+    const { dragDistanceInPixels: distance, dragDirectionInDegrees: degrees } = e;
+    const draggingUp = closeTo(degrees, -90);
+    const draggingDown = closeTo(degrees, 90);
+    const draggingLeft = closeTo(degrees, 180);
+    const draggingRight = closeTo(degrees, 0);
+
+    if (draggingLeft) this.panViewport(-distance, 0);
+    else if (draggingRight) this.panViewport(distance, 0);
+    else if (draggingUp) this.panViewport(0, -distance);
+    else if (draggingDown) this.panViewport(0, distance);
   }
 
   deletePoint() {

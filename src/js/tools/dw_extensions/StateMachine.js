@@ -146,15 +146,15 @@ export class StateMachine {
                   dragDirectionInDegrees: degrees,
                 };
 
-                draggingUp && this.trigger('PressDragUp', { e: args });
-                draggingDown && this.trigger('PressDragDown', { e: args });
-                draggingLeft && this.trigger('PressDragLeft', { e: args });
-                draggingRight && this.trigger('PressDragRight', { e: args });
+                draggingUp && this.trigger('PressDragUp', args);
+                draggingDown && this.trigger('PressDragDown', args);
+                draggingLeft && this.trigger('PressDragLeft', args);
+                draggingRight && this.trigger('PressDragRight', args);
 
                 if (draggingUp || draggingDown || draggingLeft || draggingRight) {
                   touchState.pinch.touch2 = touch2;
                 } else {
-                  this.trigger('PressDrag', { e: args });
+                  this.trigger('PressDrag', args);
                 }
               }
               return;
