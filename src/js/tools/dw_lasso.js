@@ -626,6 +626,10 @@ export default class DwLasso_class extends Base_tools_class {
 
       zoomIn: () => this.zoomViewport(1),
       zoomOut: () => this.zoomViewport(-1),
+      panLeft: () => this.panViewport(-1, 0),
+      panRight: () => this.panViewport(1, 0),
+      panUp: () => this.panViewport(0, -1),
+      panDown: () => this.panViewport(0, 1),
 
       reset: () => this.reset(),
       cut: () => this.cut(),
@@ -791,16 +795,40 @@ export default class DwLasso_class extends Base_tools_class {
       .do(this.state.actions.placePointAtClickLocation);
 
     this.state
-      .about('zoom in when drawing')
+      .about('zoom in')
       .from([Status.drawing, Status.editing, Status.ready])
       .when(Keyboard.ZoomIn)
       .do(this.state.actions.zoomIn);
 
     this.state
-      .about('zoom out when drawing')
+      .about('zoom out')
       .from([Status.drawing, Status.editing, Status.ready])
       .when(Keyboard.ZoomOut)
       .do(this.state.actions.zoomOut);
+
+    this.state
+      .about('pan')
+      .from([Status.drawing, Status.editing, Status.ready])
+      .when(Keyboard.PanLeft)
+      .do(this.state.actions.panLeft);
+
+    this.state
+      .about('pan')
+      .from([Status.drawing, Status.editing, Status.ready])
+      .when(Keyboard.PanRight)
+      .do(this.state.actions.panRight);
+
+    this.state
+      .about('pan')
+      .from([Status.drawing, Status.editing, Status.ready])
+      .when(Keyboard.PanUp)
+      .do(this.state.actions.panUp);
+
+    this.state
+      .about('pan')
+      .from([Status.drawing, Status.editing, Status.ready])
+      .when(Keyboard.PanDown)
+      .do(this.state.actions.panDown);
 
     this.state
       .about('set focus the the prior vertex')
@@ -1050,6 +1078,21 @@ export default class DwLasso_class extends Base_tools_class {
       },
     );
     lasso.Base_layers.render();
+  }
+
+  panViewport(dx, dy) {
+    if (!dx && !dy) return;
+    dx *= -10;
+    dy *= -10;
+    if (!this.priorPanLocation) {
+      const { x, y, move_pos } = this.GUI_preview.zoom_data;
+      this.priorPanLocation = { x, y };
+    }
+    this.priorPanLocation.x += dx;
+    this.priorPanLocation.y += dy;
+    const { x, y } = this.priorPanLocation;
+    this.GUI_preview.zoom_to_position(x, y);
+    console.log(`panViewport by (${dx}, ${dy}) (${x}, ${y})`);
   }
 
   deletePoint() {

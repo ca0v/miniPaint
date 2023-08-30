@@ -111,30 +111,53 @@ export class StateMachine {
       this.events.on('touchmove', (touchEvent) => {
         if (!touchEvent.touches[1]) return; // ignore single-touch
 
-        const touch1 = touchEvent.touches[0];
-        const touch2 = touchEvent.touches[1];
+        const touch1 = { x: touchEvent.touches[0].clientX, y: touchEvent.touches[0].clientY };
+        const touch2 = { x: touchEvent.touches[1].clientX, y: touchEvent.touches[1].clientY };
 
-        if (!touchStatus.priorTouch1) touchStatus.priorTouch1 = { x: touch1.clientX, y: touch1.clientY };
-        if (!touchStatus.priorTouch2) touchStatus.priorTouch2 = { x: touch2.clientX, y: touch2.clientY };
+        if (!touchStatus.priorTouch1) {
+          touchStatus.priorTouch1 = touch1;
+          touchStatus.priorTouch2 = touch2;
+        }
 
         // are we zooming in or out?
-        const priorDistance = distance(touchStatus.priorTouch1, touchStatus.priorTouch2);
-        const currentDistance = distance(
-          { x: touch1.clientX, y: touch1.clientY },
-          { x: touch2.clientX, y: touch2.clientY },
-        );
+        {
+          const priorDistance = distance(touchStatus.priorTouch1, touchStatus.priorTouch2);
+          const currentDistance = distance(touch1, touch2);
 
-        const totalDistance = Math.abs(currentDistance - priorDistance);
-        if (totalDistance > 10) {
-          touchStatus.priorTouch1 = { x: touch1.clientX, y: touch1.clientY };
-          touchStatus.priorTouch2 = { x: touch2.clientX, y: touch2.clientY };
-          const zoomDirection = currentDistance > priorDistance ? 'ZoomIn' : 'ZoomOut';
-          this.execute(zoomDirection);
-          if (touchStatus.zoomDirection !== zoomDirection) {
-            // this is a hack for computing the point to zoom about and that is not working well
-            this.mouseEvent = touchEvent;
-            touchStatus.zoomDirection = zoomDirection;
-            console.log(`Zooming ${zoomDirection}`);
+          const totalDistance = Math.abs(currentDistance - priorDistance);
+          if (totalDistance > 20) {
+            const zoomDirection = currentDistance > priorDistance ? 'ZoomIn' : 'ZoomOut';
+            this.execute(zoomDirection);
+            if (touchStatus.zoomDirection !== zoomDirection) {
+              // this is a hack for computing the point to zoom about and that is not working well
+              this.mouseEvent = touchEvent;
+              touchStatus.zoomDirection = zoomDirection;
+              console.log(`Zooming ${zoomDirection}`);
+            }
+            touchStatus.priorTouch1 = touch1;
+            touchStatus.priorTouch2 = touch2;
+            return;
+          }
+        }
+
+        // are we panning the image?
+        {
+          const totalDistance =
+            (distance(touchStatus.priorTouch1, touch1) + distance(touchStatus.priorTouch2, touch2)) / 2;
+          if (totalDistance > 10) {
+            const dx = touch1.x - touchStatus.priorTouch1.x;
+            const dy = touch1.y - touchStatus.priorTouch1.y;
+            if (Math.abs(dx) > 10) {
+              const xPanDirection = dx > 0 ? 'PanRight' : 'PanLeft';
+              this.trigger(xPanDirection);
+            }
+            if (Math.abs(dy) > 10) {
+              const yPanDirection = dy > 0 ? 'PanDown' : 'PanUp';
+              this.trigger(yPanDirection);
+            }
+            touchStatus.priorTouch1 = touch1;
+            touchStatus.priorTouch2 = touch2;
+            return;
           }
         }
       });
@@ -156,6 +179,11 @@ export class StateMachine {
       const keyboardState = computeKeyboardState(keyboardEvent, keysThatAreDown);
       const preventBubble = false !== this.execute(keyboardState);
       if (preventBubble) keyboardEvent.preventDefault();
+    });
+
+    // if we lose focus, clear the keysThatAreDown
+    this.events.on('blur', () => {
+      keysThatAreDown.clear();
     });
   }
 
