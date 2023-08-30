@@ -1,6 +1,7 @@
 import { EventManager } from './EventManager.js';
 import { computeKeyboardState } from './computeKeyboardState.js';
 import { computeMouseState } from './computeMouseState.js';
+import { isShortcutMatch } from './isShortcutMatch.js';
 import { log } from './log.js';
 
 /**
@@ -68,9 +69,20 @@ export class StateMachine {
       if (preventBubble) mouseEvent.preventDefault();
     });
 
+    this.keysThatAreDown = new Set();
+
+    this.events.on('keydown', (keyboardEvent) => {
+      // keep track of what keys are down but not up
+      this.keysThatAreDown.add(keyboardEvent.key);
+    });
+
+    this.events.on('keyup', (keyboardEvent) => {
+      this.keysThatAreDown.delete(keyboardEvent.key);
+    });
+
     this.events.on('keydown', (keyboardEvent) => {
       this.keyboardEvent = keyboardEvent;
-      const keyboardState = computeKeyboardState(keyboardEvent);
+      const keyboardState = computeKeyboardState(keyboardEvent, this.keysThatAreDown);
       const preventBubble = false !== this.execute(keyboardState);
       if (preventBubble) keyboardEvent.preventDefault();
     });
@@ -95,7 +107,7 @@ export class StateMachine {
   execute(when) {
     const targetEvents = this.contexts
       .filter((e) => e.from.includes(this.currentState))
-      .filter((e) => !e.when || e.when.includes(when));
+      .filter((e) => !e.when || e.when.some((v) => isShortcutMatch(v, when)));
     if (!targetEvents.length) return false;
     let stateChanged = false;
     return targetEvents.some((targetEvent) => {
@@ -156,7 +168,7 @@ class ContextOperands {
   do(action) {
     // if action is not a value of events, throw
     if (!Object.values(this.state.actions).includes(action))
-      throw `Action not found in actions: ${Object.keys(this.state.actions).join(', ')}`;
+      throw `Action not found in actions: ${Object.keys(this.state.actions).join(', ')}, action: ${action?.toString()}`;
     this.context.do = action;
     return this;
   }

@@ -1,4 +1,5 @@
-export function computeKeyboardState(e) {
-  const { key, ctrlKey, altKey, shiftKey } = e;
-  return `${ctrlKey ? 'Ctrl+' : ''}${altKey ? 'Alt+' : ''}${shiftKey ? 'Shift+' : ''}${key}`;
+export function computeKeyboardState(e, otherKeys) {
+  const downKeys = [...otherKeys].join('+');
+  console.log(downKeys);
+  return downKeys;
 }

@@ -18,6 +18,7 @@
  * -- but the crop.js works correctly, so the solution is in there somewhere
  *
  * ** TODO **
+ * - No touch support
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -587,6 +588,11 @@ export default class DwLasso_class extends Base_tools_class {
       movePointUp1Units: () => this.movePoint(0, -1),
       movePointDown1Units: () => this.movePoint(0, 1),
 
+      movePointUpLeft1Units: () => this.movePoint(-1, -1),
+      movePointUpRight1Units: () => this.movePoint(1, -1),
+      movePointDownLeft1Units: () => this.movePoint(-1, 1),
+      movePointDownRight1Units: () => this.movePoint(1, 1),
+
       movePointLeft10Units: () => this.movePoint(-10, 0),
       movePointRight10Units: () => this.movePoint(10, 0),
       movePointUp10Units: () => this.movePoint(0, -10),
@@ -846,6 +852,30 @@ export default class DwLasso_class extends Base_tools_class {
       .from(Status.editing)
       .when(Keyboard.MovePointDown)
       .do(this.state.actions.movePointDown1Units);
+
+    this.state
+      .about('move the point')
+      .from(Status.editing)
+      .when(Keyboard.MovePointUpLeft)
+      .do(this.state.actions.movePointUpLeft1Units);
+
+    this.state
+      .about('move the point')
+      .from(Status.editing)
+      .when(Keyboard.MovePointUpRight)
+      .do(this.state.actions.movePointUpRight1Units);
+
+    this.state
+      .about('move the point')
+      .from(Status.editing)
+      .when(Keyboard.MovePointDownLeft)
+      .do(this.state.actions.movePointDownLeft1Units);
+
+    this.state
+      .about('move the point')
+      .from(Status.editing)
+      .when(Keyboard.MovePointDownRight)
+      .do(this.state.actions.movePointDownRight1Units);
 
     this.state
       .about('move the point')

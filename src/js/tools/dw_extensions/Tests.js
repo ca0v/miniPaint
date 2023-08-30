@@ -1,5 +1,6 @@
 import { Smooth } from './Smooth.js';
 import { StateMachine } from './StateMachine.js';
+import { isShortcutMatch } from './isShortcutMatch.js';
 
 async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -14,15 +15,19 @@ function eq(expected, actual, assertion) {
   );
 }
 
-function radToDeg(rad) {
-  return Math.round((rad * 180) / Math.PI);
-}
-
 export class Tests {
   async tests() {
     await sleep(1000);
     this.testSmoothing();
     this.testStateMachine();
+
+    {
+      // isShortcutMatch
+      eq(true, isShortcutMatch('Shift+Left+mousedown', 'Shift+Left+mousedown'));
+      eq(true, isShortcutMatch('Shift+Left+mousedown', 'Left+Shift+mousedown'));
+      eq(false, isShortcutMatch('Shift+Left+mousedown', 'Left+mousedown'));
+      eq(false, isShortcutMatch('Left+mousedown', 'Shift+Left+mousedown'));
+    }
   }
 
   testSmoothing() {
