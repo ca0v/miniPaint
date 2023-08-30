@@ -686,22 +686,8 @@ export default class DwLasso_class extends Base_tools_class {
     this.state.about('data found').from(Status.none).goto(Status.editing).when(null).do(this.state.actions.dataPoints);
 
     this.state
-      .about('reset the tool when drawing')
-      .from(Status.drawing)
-      .goto(Status.ready)
-      .when(Keyboard.Reset)
-      .do(this.state.actions.reset);
-
-    this.state
-      .about('reset the tool when editing')
-      .from(Status.editing)
-      .goto(Status.ready)
-      .when(Keyboard.Reset)
-      .do(this.state.actions.reset);
-
-    this.state
-      .about('reset the tool when placing')
-      .from(Status.placing)
+      .about('reset the tool')
+      .from([Status.editing, Status.drawing, Status.placing, Status.hover])
       .goto(Status.ready)
       .when(Keyboard.Reset)
       .do(this.state.actions.reset);
@@ -762,7 +748,7 @@ export default class DwLasso_class extends Base_tools_class {
     this.state
       .about('automatically create vertices as mouse moves')
       .from(Status.drawing)
-      .when('Left+mousemove')
+      .when(['Left+mousemove', 'touchmove'])
       .do(this.state.actions.drawPoints);
 
     this.state
@@ -1044,6 +1030,14 @@ export default class DwLasso_class extends Base_tools_class {
   zoomViewport(zoom) {
     const lasso = this;
     if (!zoom) return;
+
+    // is this a pinch gesture?
+    if (lasso.state.mouseEvent?.touches?.length > 1) {
+      const touch1 = lasso.state.mouseEvent.touches[0];
+      const touch2 = lasso.state.mouseEvent.touches[1];
+      const centerPoint = center({ x: touch1.clientX, y: touch1.clientY }, { x: touch2.clientX, y: touch2.clientY });
+      this.centerAt(centerPoint);
+    }
 
     lasso.undoredo(
       'before zooming',

@@ -1,6 +1,7 @@
 import { EventManager } from './EventManager.js';
 import { computeKeyboardState } from './computeKeyboardState.js';
 import { computeMouseState } from './computeMouseState.js';
+import { distance } from './distance.js';
 import { isShortcutMatch } from './isShortcutMatch.js';
 import { log } from './log.js';
 
@@ -71,15 +72,16 @@ export class StateMachine {
 
     // did user touch the screen?
     this.events.on('touchstart', (touchEvent) => {
+      if (touchEvent.touches[1]) return; // ignore multi-touch
       this.mouseEvent = touchEvent;
       const mouseState = computeMouseState(touchEvent);
-      console.log({ mouseState });
       const preventBubble = false !== this.execute(mouseState);
       if (preventBubble) touchEvent.preventDefault();
     });
 
     // did user move their finger on the screen?
     this.events.on('touchmove', (touchEvent) => {
+      if (touchEvent.touches[1]) return; // ignore multi-touch
       this.mouseEvent = touchEvent;
       const mouseState = computeMouseState(touchEvent);
       const preventBubble = false !== this.execute(mouseState);
@@ -88,11 +90,53 @@ export class StateMachine {
 
     // did user lift their finger off the screen?
     this.events.on('touchend', (touchEvent) => {
+      if (touchEvent.touches[1]) return; // ignore multi-touch
       this.mouseEvent = touchEvent;
       const mouseState = computeMouseState(touchEvent);
       const preventBubble = false !== this.execute(mouseState);
       if (preventBubble) touchEvent.preventDefault();
     });
+
+    // is the user touching the screen in two locations?
+    {
+      const touchStatus = {
+        zoomDirection: null,
+      };
+      this.events.on('touchend', (touchEvent) => {
+        touchStatus.priorTouch1 = null;
+        touchStatus.priorTouch2 = null;
+        touchStatus.zoomDirection = null;
+      });
+
+      this.events.on('touchmove', (touchEvent) => {
+        if (!touchEvent.touches[1]) return; // ignore single-touch
+
+        const touch1 = touchEvent.touches[0];
+        const touch2 = touchEvent.touches[1];
+
+        if (!touchStatus.priorTouch1) touchStatus.priorTouch1 = { x: touch1.clientX, y: touch1.clientY };
+        if (!touchStatus.priorTouch2) touchStatus.priorTouch2 = { x: touch2.clientX, y: touch2.clientY };
+
+        // are we zooming in or out?
+        const priorDistance = distance(touchStatus.priorTouch1, touchStatus.priorTouch2);
+        const currentDistance = distance(
+          { x: touch1.clientX, y: touch1.clientY },
+          { x: touch2.clientX, y: touch2.clientY },
+        );
+
+        const totalDistance = Math.abs(currentDistance - priorDistance);
+        if (totalDistance > 10) {
+          touchStatus.priorTouch1 = { x: touch1.clientX, y: touch1.clientY };
+          touchStatus.priorTouch2 = { x: touch2.clientX, y: touch2.clientY };
+          const zoomDirection = currentDistance > priorDistance ? 'ZoomIn' : 'ZoomOut';
+          this.execute(zoomDirection);
+          if (touchStatus.zoomDirection !== zoomDirection) {
+            touchStatus.zoomDirection = zoomDirection;
+            console.log(`Zooming ${zoomDirection}`);
+          }
+        }
+      });
+    }
 
     const keysThatAreDown = new Set();
 
