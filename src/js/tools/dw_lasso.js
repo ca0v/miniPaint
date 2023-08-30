@@ -1093,7 +1093,8 @@ export default class DwLasso_class extends Base_tools_class {
     lasso.Base_layers.render();
   }
 
-  hack = { x: 0, y: 0 };
+  // not understanding how to read the current zoom position nor how to properly set it
+  hack = null;
 
   panViewport(dx, dy) {
     if (!dx && !dy) return;
@@ -1101,13 +1102,22 @@ export default class DwLasso_class extends Base_tools_class {
     dy = -Math.round(dy);
 
     let { x, y } = zoomView.getPosition();
-    this.hack.x += dx;
-    this.hack.y += dy;
-    x = this.hack.x;
-    y = this.hack.y;
 
-    let { x: worldX, y: worldY } = zoomView.toWorld(x, y);
-    console.log(`panViewport: ${JSON.stringify({ x, y, worldX, worldY })}`);
+    if (!this.hack) {
+      this.hack = { x: zoomView.getContext().canvas.width / 2, y: zoomView.getContext().canvas.height / 2 };
+      console.log(`panViewport: hack=${JSON.stringify(this.hack)}`);
+    }
+
+    this.hack.x = x = Math.min(
+      zoomView.getContext().canvas.width - this.GUI_preview.PREVIEW_SIZE.w,
+      Math.max(0, this.hack.x + dx),
+    );
+    this.hack.y = y = Math.min(
+      zoomView.getContext().canvas.height - this.GUI_preview.PREVIEW_SIZE.h,
+      Math.max(0, this.hack.y + dy),
+    );
+
+    console.log(`panViewport: ${JSON.stringify({ x, y })}`);
     this.GUI_preview.zoom_to_position(x, y);
   }
 
