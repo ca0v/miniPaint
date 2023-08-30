@@ -95,11 +95,11 @@ export class StateMachine {
     const targetEvents = this.contexts
       .filter((e) => e.from.includes(this.currentState))
       .filter((e) => !e.when || e.when.includes(when));
-    if (!targetEvents.length) return;
+    if (!targetEvents.length) return false;
     let stateChanged = false;
-    targetEvents.forEach((targetEvent) => {
+    return targetEvents.some((targetEvent) => {
       if (targetEvent.do) {
-        if (false === targetEvent.do.call(this)) return;
+        if (false === targetEvent.do.call(this)) return false;
         this.events.trigger('execute', targetEvent);
         if (stateChanged)
           throw new Error(
@@ -110,6 +110,7 @@ export class StateMachine {
         stateChanged = this.currentState !== targetEvent.goto;
         this.setCurrentState(targetEvent.goto);
       }
+      return true;
     });
   }
 

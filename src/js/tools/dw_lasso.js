@@ -51,6 +51,8 @@ import { Smooth } from './dw_extensions/Smooth.js';
 import { Tests } from './dw_extensions/Tests.js';
 import { StateMachine } from './dw_extensions/StateMachine.js';
 
+const noop = () => {};
+
 async function doActions(actions) {
   await app.State.do_action(new app.Actions.Bundle_action('dw_lasso_tool', 'Magic Crop Tool', actions));
 }
@@ -613,10 +615,7 @@ export default class DwLasso_class extends Base_tools_class {
       movePointUp10Units: () => this.movePoint(0, -10),
       movePointDown10Units: () => this.movePoint(0, 10),
 
-      closePolygon: () => {
-        // nothing to do
-      },
-
+      closePolygon: noop,
       dataPoints: () => !!this.data.length,
       noDataPoints: () => !this.data.length,
 
@@ -748,13 +747,6 @@ export default class DwLasso_class extends Base_tools_class {
       .from([Status.editing, Status.drawing, Status.placing, Status.hover])
       .when(Keyboard.CenterAt)
       .do(this.state.actions.centerAt);
-
-    this.state
-      .about('complete the polygon')
-      .from([Status.placing, Status.drawing])
-      .goto(Status.editing)
-      .when(Keyboard.ClosePolygon)
-      .do(this.state.actions.closePolygon);
 
     this.state
       .about('prepare to drag this point')
@@ -956,6 +948,13 @@ export default class DwLasso_class extends Base_tools_class {
       .goto(Status.editing)
       .when('Shift+mousemove')
       .do(this.state.actions.notHoveringOverPoint);
+
+    this.state
+      .about('complete the polygon')
+      .from([Status.drawing, Status.placing])
+      .goto(Status.editing)
+      .when(Keyboard.ClosePolygon)
+      .do(this.state.actions.closePolygon);
   }
 
   computeHover(data, currentPoint) {
@@ -1068,7 +1067,7 @@ function log(message) {
 
   // does query string contain "debug"?
   if (!window.location.search.includes('debug')) {
-    log = () => {};
+    log = noop;
     return;
   }
   console.log(message);
