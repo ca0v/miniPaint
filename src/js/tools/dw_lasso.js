@@ -792,13 +792,13 @@ export default class DwLasso_class extends Base_tools_class {
 
     this.state
       .about('zoom in when drawing')
-      .from([Status.drawing, Status.editing])
+      .from([Status.drawing, Status.editing, Status.ready])
       .when(Keyboard.ZoomIn)
       .do(this.state.actions.zoomIn);
 
     this.state
       .about('zoom out when drawing')
-      .from([Status.drawing, Status.editing])
+      .from([Status.drawing, Status.editing, Status.ready])
       .when(Keyboard.ZoomOut)
       .do(this.state.actions.zoomOut);
 
@@ -1036,6 +1036,7 @@ export default class DwLasso_class extends Base_tools_class {
       const touch1 = lasso.state.mouseEvent.touches[0];
       const touch2 = lasso.state.mouseEvent.touches[1];
       const centerPoint = center({ x: touch1.clientX, y: touch1.clientY }, { x: touch2.clientX, y: touch2.clientY });
+      console.log(`pinch zoom at ${centerPoint.x}, ${centerPoint.y}`);
       this.centerAt(centerPoint);
     }
 

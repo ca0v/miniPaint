@@ -131,6 +131,8 @@ export class StateMachine {
           const zoomDirection = currentDistance > priorDistance ? 'ZoomIn' : 'ZoomOut';
           this.execute(zoomDirection);
           if (touchStatus.zoomDirection !== zoomDirection) {
+            // this is a hack for computing the point to zoom about and that is not working well
+            this.mouseEvent = touchEvent;
             touchStatus.zoomDirection = zoomDirection;
             console.log(`Zooming ${zoomDirection}`);
           }

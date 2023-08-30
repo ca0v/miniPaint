@@ -319,7 +319,6 @@ class GUI_preview_class {
   }
 
   zoom_auto(only_increase) {
-    debugger;
     var container = document.getElementById('main_wrapper');
     var page_w = container.clientWidth;
     var page_h = container.clientHeight;
