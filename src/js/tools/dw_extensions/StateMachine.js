@@ -5,6 +5,8 @@ import { distance } from './distance.js';
 import { isShortcutMatch } from './isShortcutMatch.js';
 import { log } from './log.js';
 
+const MINIMAL_SPREAD_DISTANCE = 25;
+
 /**
  * The ideal would be to make state changes intuitive and easy to modify.  For example, shift+click closes the polygon as does [Space].  The [Space] is sort of intuitive because
  * it is associated with a state called "ClosePolygon" but it would be better if it were part of a state diagram, for example:
@@ -98,93 +100,108 @@ export class StateMachine {
     });
 
     // is the user touching the screen in two locations?
-    {
-      const touchStatus = {
-        zoomDirection: null,
-      };
-      this.events.on('touchend', (touchEvent) => {
-        touchStatus.priorTouch1 = null;
-        touchStatus.priorTouch2 = null;
-        touchStatus.zoomDirection = null;
+    this.events.on('touchstart', (touchStartEvent) => {
+      if (touchStartEvent.touches.length !== 2) return;
+
+      const touchCount = touchStartEvent.touches.length;
+      console.log(`touchstart: ${touchCount}`);
+
+      const touchEvents = new EventManager();
+
+      const touchState = {};
+
+      touchEvents.on('touchend', (touchEvent) => {
+        if (touchEvent.touches.length !== touchCount - 1) return;
+        console.log(`touchend: ${touchEvent.touches.length}`);
+        touchEvents.off();
       });
 
-      this.events.on('touchmove', (touchEvent) => {
-        if (!touchEvent.touches[1]) return; // ignore single-touch
+      touchEvents.on('touchmove', (touchEvent) => {
+        if (touchEvent.touches.length !== touchCount) return;
+        console.log(`touchmove: ${touchEvent.touches.length}`);
 
-        const touch1 = { x: touchEvent.touches[0].clientX, y: touchEvent.touches[0].clientY };
-        const touch2 = { x: touchEvent.touches[1].clientX, y: touchEvent.touches[1].clientY };
-
-        if (!touchStatus.priorTouch1) {
-          touchStatus.priorTouch1 = touch1;
-          touchStatus.priorTouch2 = touch2;
-        }
-
-        // are we zooming in or out?
         {
-          const priorDistance = distance(touchStatus.priorTouch1, touchStatus.priorTouch2);
-          const currentDistance = distance(touch1, touch2);
+          const touch1 = touchLocation(touchEvent.touches[0]);
+          const touch2 = touchLocation(touchEvent.touches[1]);
 
-          const totalDistance = Math.abs(currentDistance - priorDistance);
-          if (totalDistance > 20) {
-            const zoomDirection = currentDistance > priorDistance ? 'ZoomIn' : 'ZoomOut';
-            this.execute(zoomDirection);
-            if (touchStatus.zoomDirection !== zoomDirection) {
-              // this is a hack for computing the point to zoom about and that is not working well
-              this.mouseEvent = touchEvent;
-              touchStatus.zoomDirection = zoomDirection;
-              console.log(`Zooming ${zoomDirection}`);
+          if (!touchState.pinch) {
+            touchState.pinch = { touch1, touch2 };
+          }
+
+          {
+            // is this a Press+Drag
+            const delta1 = distance(touchState.pinch.touch1, touch1);
+            const delta2 = distance(touchState.pinch.touch2, touch2);
+            if (delta1 < MINIMAL_SPREAD_DISTANCE && delta2 > MINIMAL_SPREAD_DISTANCE) {
+              {
+                // to be moved outside this control
+                // what is the direction of the drag?
+                const dx = touch2.x - touchState.pinch.touch2.x;
+                const dy = touch2.y - touchState.pinch.touch2.y;
+                const degrees = (Math.atan2(dy, dx) * 180) / Math.PI;
+
+                const draggingUp = closeTo(degrees, -90);
+                const draggingDown = closeTo(degrees, 90);
+                const draggingLeft = closeTo(degrees, 180);
+                const draggingRight = closeTo(degrees, 0);
+
+                draggingUp && this.trigger('PressDragUp');
+                draggingDown && this.trigger('PressDragDown');
+                draggingLeft && this.trigger('PressDragLeft');
+                draggingRight && this.trigger('PressDragRight');
+
+                if (draggingUp || draggingDown || draggingLeft || draggingRight) {
+                  touchState.pinch.touch2 = touch2;
+                }
+              }
+              return;
             }
-            touchStatus.priorTouch1 = touch1;
-            touchStatus.priorTouch2 = touch2;
-            return;
+          }
+
+          {
+            // is this a pinch or spread?
+            const delta1 = distance(touchState.pinch.touch1, touch1);
+            const delta2 = distance(touchState.pinch.touch2, touch2);
+            if (delta1 > MINIMAL_SPREAD_DISTANCE && delta2 > MINIMAL_SPREAD_DISTANCE) {
+              const startDistance = distance(touchState.pinch.touch1, touchState.pinch.touch2);
+              const currentDistance = distance(touch1, touch2);
+              const delta = currentDistance - startDistance;
+              if (Math.abs(delta) > MINIMAL_SPREAD_DISTANCE) {
+                touchState.pinch = { touch1, touch2 };
+                const pinchDirection = delta > 0 ? 'Spread' : 'Pinch';
+                this.trigger(pinchDirection);
+                return;
+              }
+            }
           }
         }
+      });
+    });
 
-        // are we panning the image?
-        {
-          const totalDistance =
-            (distance(touchStatus.priorTouch1, touch1) + distance(touchStatus.priorTouch2, touch2)) / 2;
-          if (totalDistance > 10) {
-            const dx = touch1.x - touchStatus.priorTouch1.x;
-            const dy = touch1.y - touchStatus.priorTouch1.y;
-            if (Math.abs(dx) > 10) {
-              const xPanDirection = dx > 0 ? 'PanRight' : 'PanLeft';
-              this.trigger(xPanDirection);
-            }
-            if (Math.abs(dy) > 10) {
-              const yPanDirection = dy > 0 ? 'PanDown' : 'PanUp';
-              this.trigger(yPanDirection);
-            }
-            touchStatus.priorTouch1 = touch1;
-            touchStatus.priorTouch2 = touch2;
-            return;
-          }
-        }
+    {
+      const keysThatAreDown = new Set();
+
+      this.events.on('keydown', (keyboardEvent) => {
+        // keep track of what keys are down but not up
+        keysThatAreDown.add(keyboardEvent.key);
+      });
+
+      this.events.on('keyup', (keyboardEvent) => {
+        keysThatAreDown.delete(keyboardEvent.key);
+      });
+
+      this.events.on('keydown', (keyboardEvent) => {
+        this.keyboardEvent = keyboardEvent;
+        const keyboardState = computeKeyboardState(keyboardEvent, keysThatAreDown);
+        const preventBubble = false !== this.execute(keyboardState);
+        if (preventBubble) keyboardEvent.preventDefault();
+      });
+
+      // if we lose focus, clear the keysThatAreDown
+      this.events.on('blur', () => {
+        keysThatAreDown.clear();
       });
     }
-
-    const keysThatAreDown = new Set();
-
-    this.events.on('keydown', (keyboardEvent) => {
-      // keep track of what keys are down but not up
-      keysThatAreDown.add(keyboardEvent.key);
-    });
-
-    this.events.on('keyup', (keyboardEvent) => {
-      keysThatAreDown.delete(keyboardEvent.key);
-    });
-
-    this.events.on('keydown', (keyboardEvent) => {
-      this.keyboardEvent = keyboardEvent;
-      const keyboardState = computeKeyboardState(keyboardEvent, keysThatAreDown);
-      const preventBubble = false !== this.execute(keyboardState);
-      if (preventBubble) keyboardEvent.preventDefault();
-    });
-
-    // if we lose focus, clear the keysThatAreDown
-    this.events.on('blur', () => {
-      keysThatAreDown.clear();
-    });
   }
 
   off() {
@@ -287,4 +304,11 @@ class ContextOperands {
     this.context.from = state;
     return this;
   }
+}
+function touchLocation(touch) {
+  return { x: touch.clientX, y: touch.clientY };
+}
+
+function closeTo(expected, actual, tolerance = 45) {
+  return Math.abs(expected - actual) < tolerance;
 }

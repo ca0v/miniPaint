@@ -18,7 +18,19 @@
  * -- but the crop.js works correctly, so the solution is in there somewhere
  *
  * ** TODO **
- * - No touch support
+ * - Is there a definitive list of touch gestures?  I came up with these:
+ * -- Tap (one finger)
+ * -- Tap+Tap (one finger)
+ * -- Drag (one finger)
+ * -- Flick (one finger)
+ * -- Pinch (two fingers coming together)
+ * -- Spread (two fingers moving apart)
+ * -- Press (one finger held for some time)
+ * -- Press+Tap (one finger held then tapped second finger)
+ * -- Press+Drag (one finger held then dragged second finger)
+ * -- Rotate (two fingers moving in a circle, or second finger moving around a first)
+ * -- Shake (one finger moving rapidly back and forth)
+ * - StateMachine should not be raising pan and zoom events but instead Press+Drag (for pan) and Pinch/Spread (for zoom)
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -102,6 +114,7 @@ export default class DwLasso_class extends Base_tools_class {
   }
 
   on_activate() {
+    console.log('dw_lasso: on_activate');
     this.defineStateMachine();
     this.state.setCurrentState(Status.none);
     this.metrics.prior_action_history_max = this.Base_state.action_history_max;
@@ -137,8 +150,7 @@ export default class DwLasso_class extends Base_tools_class {
       this.params_hash = params_hash;
     } else {
       // bring layer to the top
-      while (app.Layers.find_previous(layer.id))
-        app.State.do_action(new app.Actions.Reorder_layer_action(layer.id, -1));
+      while (app.Layers.find_next(layer.id)) app.State.do_action(new app.Actions.Reorder_layer_action(layer.id, 1));
       this.renderData();
     }
   }
@@ -476,6 +488,11 @@ export default class DwLasso_class extends Base_tools_class {
   }
 
   defineStateMachine() {
+    if (this.state) {
+      this.state.off();
+      console.log('dw_lasso: state machine off');
+      this.data = [];
+    }
     this.state = new StateMachine(Object.values(Status));
     this.state.on('execute', (context) => context.about && log(`${context.about}`));
 
@@ -681,13 +698,9 @@ export default class DwLasso_class extends Base_tools_class {
       },
     });
 
-    this.state
-      .about('no data found')
-      .from(Status.none)
-      .goto(Status.ready)
-      .when(null)
-      .do(this.state.actions.noDataPoints);
-    this.state.about('data found').from(Status.none).goto(Status.editing).when(null).do(this.state.actions.dataPoints);
+    this.state.about('no data found').from(Status.none).goto(Status.ready).do(this.state.actions.noDataPoints);
+
+    this.state.about('data found').from(Status.none).goto(Status.editing).do(this.state.actions.dataPoints);
 
     this.state
       .about('reset the tool')
@@ -1082,10 +1095,10 @@ export default class DwLasso_class extends Base_tools_class {
 
   panViewport(dx, dy) {
     if (!dx && !dy) return;
-    dx *= -10;
-    dy *= -10;
+    dx *= -10 * this.scale;
+    dy *= -10 * this.scale;
     if (!this.priorPanLocation) {
-      const { x, y, move_pos } = this.GUI_preview.zoom_data;
+      const { x, y } = this.GUI_preview.zoom_data;
       this.priorPanLocation = { x, y };
     }
     this.priorPanLocation.x += dx;
