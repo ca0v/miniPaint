@@ -201,21 +201,14 @@ export default class DwLasso_class extends Base_tools_class {
     ctx.beginPath();
     ctx.rect(0, 0, config.WIDTH, config.HEIGHT);
     const clockwiseData = clockwise(pointData);
-    ctx.moveTo(clockwiseData[0].x, clockwiseData[0].y);
-    clockwiseData.forEach((point) => ctx.lineTo(point.x, point.y));
+    renderAsPath(ctx, clockwiseData);
     ctx.closePath();
     ctx.fill();
 
     ctx.beginPath();
     ctx.fillStyle = Drawings.fill.color;
-    try {
-      ctx.moveTo(pointData[0].x, pointData[0].y);
-      pointData.forEach((point) => {
-        ctx.lineTo(point.x, point.y);
-      });
-    } finally {
-      ctx.closePath();
-    }
+    renderAsPath(ctx, pointData);
+    ctx.closePath();
     ctx.fill();
   }
 
@@ -233,19 +226,10 @@ export default class DwLasso_class extends Base_tools_class {
     ctx.lineWidth = size;
     ctx.translate(x, y);
 
-    const firstPoint = data.at(0);
-
     ctx.beginPath();
-    try {
-      ctx.moveTo(firstPoint.x, firstPoint.y);
-      data.forEach((_, i) => {
-        const nextPoint = data.at((i + 1) % data.length);
-        ctx.lineTo(nextPoint.x, nextPoint.y);
-      });
-    } finally {
-      ctx.closePath();
-      ctx.stroke();
-    }
+    renderAsPath(ctx, data);
+    ctx.closePath();
+    ctx.stroke();
 
     // now render the drag-points over the top of the lines
     data.forEach((currentPoint, i) => {
@@ -362,8 +346,7 @@ export default class DwLasso_class extends Base_tools_class {
 
       // draw the clipping path
       ctx.beginPath();
-      ctx.moveTo(this.data[0].x, this.data[0].y);
-      this.data.forEach((point) => ctx.lineTo(point.x, point.y));
+      renderAsPath(ctx, this.data);
       ctx.closePath();
       ctx.clip();
 
@@ -422,10 +405,7 @@ export default class DwLasso_class extends Base_tools_class {
       ctx.globalCompositeOperation = 'destination-in';
       ctx.fillStyle = config.COLOR;
       ctx.beginPath();
-      ctx.moveTo(data[0].x, data[0].y);
-      data.forEach((point) => {
-        ctx.lineTo(point.x, point.y);
-      });
+      renderAsPath(ctx, data);
       ctx.closePath();
       ctx.fill();
 
@@ -1061,6 +1041,12 @@ export default class DwLasso_class extends Base_tools_class {
 }
 
 let __priorLogMessage = '';
+
+function renderAsPath(ctx, pointData) {
+  ctx.moveTo(pointData[0].x, pointData[0].y);
+  pointData.forEach((point) => ctx.lineTo(point.x, point.y));
+}
+
 function log(message) {
   if (__priorLogMessage === message) return;
   __priorLogMessage = message;
