@@ -91,13 +91,11 @@ export default class DwLasso_class extends Base_tools_class {
     this.Base_selection = new Base_selection_class(ctx, sel_config, this.name);
 
     this.delayedSnapshot = debounce((about) => {
-      console.log(`delayedSnapshot: ${about}`);
       this.snapshot(about);
     }, Settings.delayedSnapshotTimeout);
   }
 
   get scale() {
-    log(`scale: ${config.ZOOM}`);
     return 1 / config.ZOOM;
   }
 
@@ -113,7 +111,6 @@ export default class DwLasso_class extends Base_tools_class {
     const layer = config?.layers.find((l) => l.type === this.name);
 
     if (!layer) {
-      console.log(`creating new magic crop layer`);
       const layer = {
         name: 'DW Lasso',
         type: this.name,
@@ -137,6 +134,9 @@ export default class DwLasso_class extends Base_tools_class {
       );
       this.params_hash = params_hash;
     } else {
+      // bring layer to the top
+      while (app.Layers.find_previous(layer.id))
+        app.State.do_action(new app.Actions.Reorder_layer_action(layer.id, -1));
       this.renderData();
     }
   }
@@ -171,11 +171,7 @@ export default class DwLasso_class extends Base_tools_class {
 
   centerAt(point) {
     // pan the canvas so that the point is centered
-    const { x: dx, y: dy } = zoomView.getPosition();
-    const { x: px, y: py } = point;
     const pos_global = zoomView.toScreen(point);
-
-    console.log(`point at: ${px}, ${py} zoom at: ${dx}, ${dy}, moving to: ${pos_global.x}, ${pos_global.y}`);
 
     // preview top-left of point
     zoomView.move(-pos_global.x, -pos_global.y);
@@ -306,13 +302,11 @@ export default class DwLasso_class extends Base_tools_class {
   }
 
   snapshot(why, cb) {
-    console.log(`snapshot: ${why}`);
     const action = new Update_layer_action(this, why, cb);
     app.State.do_action(action);
   }
 
   undoredo(why, doit, undo) {
-    console.log(`undoredo: ${why}`);
     const action = new Generic_action(this, { why, doit, undo });
     app.State.do_action(action);
   }
@@ -323,10 +317,10 @@ export default class DwLasso_class extends Base_tools_class {
   async on_params_update(event) {
     switch (event.key) {
       case 'dw_cut':
-        await this.cut();
+        this.state.trigger(Keyboard.ClearInterior);
         break;
       case 'dw_crop':
-        await this.crop();
+        this.state.trigger(Keyboard.ClearExterior);
         break;
       case 'dw_reset':
         this.state.trigger(Keyboard.Reset);
@@ -343,7 +337,6 @@ export default class DwLasso_class extends Base_tools_class {
 
   async cut() {
     const fillColor = config.COLOR;
-    console.log(`fill selection with background color: ${fillColor}`);
 
     const imageLayers = config.layers.filter((l) => l.type === 'image');
     if (!imageLayers.length) {
@@ -356,15 +349,6 @@ export default class DwLasso_class extends Base_tools_class {
     // for each image layer, fill the selection with the background color
     imageLayers.forEach((link) => {
       const { x, y, width, height, width_original, height_original } = link;
-      console.log('cut', {
-        x,
-        y,
-        width,
-        height,
-        width_original,
-        height_original,
-      });
-
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       canvas.width = width;
@@ -428,9 +412,6 @@ export default class DwLasso_class extends Base_tools_class {
       const { x, y } = link;
 
       //cut required part
-      console.log(
-        `cropping image ${link.id} to ${cropWidth}x${cropHeight}, width_ratio=${link.width / link.width_original}`,
-      );
       ctx.translate(-cropLeft - x, -cropTop);
       ctx.drawImage(link.link, 0, 0);
       ctx.translate(0, 0);
@@ -481,7 +462,6 @@ export default class DwLasso_class extends Base_tools_class {
     config.layers
       .filter((l) => l.type === this.name)
       .map((l) => {
-        console.log(`deleting layer ${l.id}, ${l.name}`);
         actions.push(new app.Actions.Delete_layer_action(l.id));
       });
   }
@@ -489,16 +469,13 @@ export default class DwLasso_class extends Base_tools_class {
   mousePoint(e) {
     const mouse = this.get_mouse_info(e);
     if (mouse.click_valid == false) return null;
-
-    return {
-      x: mouse.x,
-      y: mouse.y,
-    };
+    return { x: Math.max(0, Math.min(config.WIDTH, mouse.x)), y: Math.max(0, Math.min(config.HEIGHT, mouse.y)) };
   }
 
   placePointAtClickLocation() {
     const currentPoint = this.mousePoint(this.state.mouseEvent);
     if (!currentPoint) return false;
+
     this.undoredo(
       `before placing point ${this.data.length + 1}`,
       () => {
@@ -522,11 +499,10 @@ export default class DwLasso_class extends Base_tools_class {
 
   defineStateMachine() {
     this.state = new StateMachine(Object.values(Status));
-    this.state.on('stateChanged', (state) => log(`state: ${state}`));
-    this.state.on('execute', (context) => context.about && log(`context: ${context.about}`));
+    this.state.on('execute', (context) => context.about && log(`${context.about}`));
 
     this.state.register({
-      start: () => console.log('start'),
+      start: () => {},
       beforeDraggingHoverPoint: () => {
         const currentPoint = this.mousePoint(this.state.mouseEvent);
         if (!currentPoint) return false;
@@ -579,10 +555,10 @@ export default class DwLasso_class extends Base_tools_class {
           this.metrics.lastPointMoved = point;
           this.Base_layers.render();
         } else {
-          console.log(`mousemove: no point to drag`);
+          log(`mousemove: no point to drag`);
         }
       },
-      endDraggingHoverPoint: () => console.log('stateMachine', 'endDraggingHoverPoint'),
+      endDraggingHoverPoint: () => {},
 
       drawPoints: () => {
         const currentPoint = this.mousePoint(this.state.mouseEvent);
@@ -600,9 +576,6 @@ export default class DwLasso_class extends Base_tools_class {
         if (!drawPoint && data.length > 2 && d > Settings.minimalDistanceBetweenPoints) {
           const a = Math.PI - angleOf(data.at(-3), priorPoint, currentPoint);
           drawPoint = d * a > Settings.radiusThreshold * Settings.distanceBetweenPoints;
-          if (drawPoint) {
-            console.log(`angle: ${a}, distance: ${d}`);
-          }
         }
         if (drawPoint) {
           data.push(currentPoint);
@@ -644,17 +617,11 @@ export default class DwLasso_class extends Base_tools_class {
         // nothing to do
       },
 
-      dataPoints: () => {
-        const hasDataPoints = !!this.data.length;
-        console.log('stateMachine', 'dataPoints', hasDataPoints);
-        return hasDataPoints;
-      },
-
-      noDataPoints: () => !this.state.actions.dataPoints(),
+      dataPoints: () => !!this.data.length,
+      noDataPoints: () => !this.data.length,
 
       deleteHoverPoint: () => {
         const hover = !!this.hover?.pointIndex || !!this.hover?.midpointIndex;
-        console.log('stateMachine', 'deleteHoverPoint', hover);
         if (hover) {
           this.deletePoint(this);
         }
@@ -1083,11 +1050,6 @@ export default class DwLasso_class extends Base_tools_class {
 
   deletePoint() {
     const lasso = this;
-    const isMidpoint = lasso.hover?.midpointIndex >= 0;
-    if (isMidpoint) {
-      console.log(`deletePoint: cannot delete midpoint`);
-    }
-
     let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
 
     lasso.snapshot('before deleting point', () => {
@@ -1099,10 +1061,16 @@ export default class DwLasso_class extends Base_tools_class {
 
 let __priorLogMessage = '';
 function log(message) {
-  console.log(message);
   if (__priorLogMessage === message) return;
   __priorLogMessage = message;
-  //alertify.success(message);
+
+  // does query string contain "debug"?
+  if (!window.location.search.includes('debug')) {
+    log = () => {};
+    return;
+  }
+  console.log(message);
+  alertify.success(message);
 }
 
 new Tests().tests();
