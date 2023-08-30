@@ -10,7 +10,7 @@ export function circle(ctx, center, options) {
   ctx.fillStyle = options.fillColor;
 
   const size = options.size;
-  const radius = Math.ceil(size / 2);
+  const radius = 0.5 * size;
 
   ctx.beginPath();
   ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
