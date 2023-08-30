@@ -69,20 +69,45 @@ export class StateMachine {
       if (preventBubble) mouseEvent.preventDefault();
     });
 
-    this.keysThatAreDown = new Set();
+    // did user touch the screen?
+    this.events.on('touchstart', (touchEvent) => {
+      this.mouseEvent = touchEvent;
+      const mouseState = computeMouseState(touchEvent);
+      console.log({ mouseState });
+      const preventBubble = false !== this.execute(mouseState);
+      if (preventBubble) touchEvent.preventDefault();
+    });
+
+    // did user move their finger on the screen?
+    this.events.on('touchmove', (touchEvent) => {
+      this.mouseEvent = touchEvent;
+      const mouseState = computeMouseState(touchEvent);
+      const preventBubble = false !== this.execute(mouseState);
+      if (preventBubble) touchEvent.preventDefault();
+    });
+
+    // did user lift their finger off the screen?
+    this.events.on('touchend', (touchEvent) => {
+      this.mouseEvent = touchEvent;
+      const mouseState = computeMouseState(touchEvent);
+      const preventBubble = false !== this.execute(mouseState);
+      if (preventBubble) touchEvent.preventDefault();
+    });
+
+    const keysThatAreDown = new Set();
 
     this.events.on('keydown', (keyboardEvent) => {
       // keep track of what keys are down but not up
-      this.keysThatAreDown.add(keyboardEvent.key);
+      keysThatAreDown.add(keyboardEvent.key);
     });
 
     this.events.on('keyup', (keyboardEvent) => {
-      this.keysThatAreDown.delete(keyboardEvent.key);
+      keysThatAreDown.delete(keyboardEvent.key);
     });
 
     this.events.on('keydown', (keyboardEvent) => {
       this.keyboardEvent = keyboardEvent;
-      const keyboardState = computeKeyboardState(keyboardEvent, this.keysThatAreDown);
+      const keyboardState = computeKeyboardState(keyboardEvent, keysThatAreDown);
       const preventBubble = false !== this.execute(keyboardState);
       if (preventBubble) keyboardEvent.preventDefault();
     });

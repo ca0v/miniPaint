@@ -299,6 +299,7 @@ export default class DwLasso_class extends Base_tools_class {
     switch (event.key) {
       case 'dw_cut':
         this.state.trigger(Keyboard.ClearInterior);
+        this.getParams()[event.key] = true;
         break;
       case 'dw_crop':
         this.state.trigger(Keyboard.ClearExterior);
@@ -735,27 +736,27 @@ export default class DwLasso_class extends Base_tools_class {
       .about('prepare to drag this point')
       .from(Status.hover)
       .goto(Status.before_dragging)
-      .when('Left+mousedown')
+      .when(['Left+mousedown', 'touchmove'])
       .do(this.state.actions.beforeDraggingHoverPoint);
 
     this.state
-      .about('begin dragging this point')
+      .about('stop dragging this point')
       .from(Status.before_dragging)
       .goto(Status.hover)
-      .when('Left+mouseup')
+      .when(['Left+mouseup', 'touchend'])
       .do(this.state.actions.beforeDraggingHoverPoint);
 
     this.state
       .about('begin dragging this point')
       .from(Status.before_dragging)
       .goto(Status.dragging)
-      .when('Left+mousemove')
+      .when(['Left+mousemove', 'touchmove'])
       .do(this.state.actions.draggingHoverPoint);
 
     this.state
       .about('drag this point')
       .from(Status.dragging)
-      .when('Left+mousemove')
+      .when(['Left+mousemove', 'touchmove'])
       .do(this.state.actions.draggingHoverPoint);
 
     this.state
@@ -775,14 +776,14 @@ export default class DwLasso_class extends Base_tools_class {
       .about('stop dragging this point')
       .from(Status.dragging)
       .goto(Status.editing)
-      .when('Left+mouseup')
+      .when(['Left+mouseup', 'touchend'])
       .do(this.state.actions.endDraggingHoverPoint);
 
     this.state
       .about('create the 1st point of the polygon')
       .from(Status.ready)
       .goto(Status.drawing)
-      .when('Left+mousedown')
+      .when(['Left+mousedown', 'touchmove'])
       .do(this.state.actions.placeFirstPointAtMouseLocation);
 
     this.state
@@ -800,7 +801,7 @@ export default class DwLasso_class extends Base_tools_class {
     this.state
       .about('add a point to the polygon')
       .from(Status.drawing)
-      .when('Left+mousedown')
+      .when(['Left+mousedown', 'touchmove'])
       .do(this.state.actions.placePointAtClickLocation);
 
     this.state
@@ -932,7 +933,7 @@ export default class DwLasso_class extends Base_tools_class {
       .about('mouse has moved over a point')
       .from(Status.editing)
       .goto(Status.hover)
-      .when('mousemove')
+      .when(['mousemove', 'touchmove'])
       .do(this.state.actions.hoveringOverPoint);
 
     this.state
@@ -946,7 +947,7 @@ export default class DwLasso_class extends Base_tools_class {
       .about('mouse is no longer over a point')
       .from(Status.hover)
       .goto(Status.editing)
-      .when('mousemove')
+      .when(['mousemove', 'touchmove'])
       .do(this.state.actions.notHoveringOverPoint);
 
     this.state
