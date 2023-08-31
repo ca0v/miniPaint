@@ -74,7 +74,6 @@ export class StateMachine {
       if (touchStartEvent.touches.length !== 2) return;
 
       const touchCount = touchStartEvent.touches.length;
-      console.log(`touchstart: ${touchCount}`);
 
       const touchEvents = new EventManager();
 
@@ -82,13 +81,11 @@ export class StateMachine {
 
       touchEvents.on('touchend', (touchEvent) => {
         if (touchEvent.touches.length !== touchCount - 1) return;
-        console.log(`touchend: ${touchEvent.touches.length}`);
         touchEvents.off();
       });
 
       touchEvents.on('touchmove', (touchEvent) => {
         if (touchEvent.touches.length !== touchCount) return;
-        console.log(`touchmove: ${touchEvent.touches.length}`);
 
         {
           const touch1 = touchLocation(touchEvent.touches[0]);

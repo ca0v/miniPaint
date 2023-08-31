@@ -112,7 +112,6 @@ export default class DwLasso_class extends Base_tools_class {
   }
 
   on_activate() {
-    console.log('dw_lasso: on_activate');
     this.defineStateMachine();
     this.state.setCurrentState(Status.none);
     this.metrics.prior_action_history_max = this.Base_state.action_history_max;
@@ -402,27 +401,6 @@ export default class DwLasso_class extends Base_tools_class {
       const sx = width / width_original;
       const sy = height / height_original;
 
-      // the crop area cannot be any bigger then the image being cropped
-      const cropSx = cropWidth / width;
-      const cropSy = cropHeight / height;
-
-      console.log(
-        JSON.stringify({
-          x,
-          y,
-          width,
-          height,
-          width_original,
-          height_original,
-          sx,
-          sy,
-          cropSx,
-          cropSy,
-          linkWidth: link.width,
-          linkHeight: link.height,
-        }),
-      );
-
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       canvas.width = link.width;
@@ -514,12 +492,13 @@ export default class DwLasso_class extends Base_tools_class {
   defineStateMachine() {
     if (this.state) {
       this.state.off();
-      console.log('dw_lasso: state machine off');
       this.data = [];
     }
     this.state = new StateMachine(Object.values(Status));
 
-    this.state.on('execute', (context) => context.about && log(`${context.about}`));
+    this.state.on('execute', (context) =>
+      log(`${context.when}: ${context.about} (state: ${context.from} -> ${context.goto || context.from})`),
+    );
 
     this.state.on('PressDrag', (dragEvent) => {
       // nothing to do
@@ -537,7 +516,6 @@ export default class DwLasso_class extends Base_tools_class {
 
     this.state.on('DragDrag', (dragEvent) => {
       const { dragDirectionInDegrees: degrees, dragDistanceInPixels: distance } = dragEvent;
-      console.log(`DragDrag: ${distance}px @ ${degrees} degrees`);
 
       const draggingUp = closeTo(degrees, -90);
       const draggingRight = closeTo(degrees, 0);
@@ -547,8 +525,6 @@ export default class DwLasso_class extends Base_tools_class {
       const eventName = `DragDrag${
         draggingUp ? 'Up' : draggingRight ? 'Right' : draggingDown ? 'Down' : draggingLeft ? 'Left' : ''
       }`;
-
-      console.log(`DragDrag: ${eventName}`);
 
       this.state.trigger(eventName, dragEvent);
     });
@@ -601,9 +577,6 @@ export default class DwLasso_class extends Base_tools_class {
 
         if (this.hover?.point) {
           const point = this.hover.point;
-          console.log(
-            `dragging point ${this.hover.pointIndex} from ${point.x}, ${point.y} to ${currentPoint.x}, ${currentPoint.y}`,
-          );
           point.x = currentPoint.x;
           point.y = currentPoint.y;
           this.metrics.timeOfMove = Date.now();
@@ -657,7 +630,7 @@ export default class DwLasso_class extends Base_tools_class {
 
       clonePoint: () => this.clonePoint(),
       placePointAtClickLocation: (e) => this.placePointAtClickLocation(e),
-      movingLastPointToMouseLocation: () => this.movingLastPointToMouseLocation(),
+      movingLastPointToMouseLocation: (e) => this.movingLastPointToMouseLocation(e),
 
       moveToPriorPoint: () => this.moveToNextVertex(-1),
       moveToNextPoint: () => this.moveToNextVertex(1),
@@ -754,14 +727,11 @@ export default class DwLasso_class extends Base_tools_class {
 
         if (isMajorVertex) {
           const pointIndex = this.hover.pointIndex;
-          console.log(`centering at point ${pointIndex}`);
           this.centerAt(this.data[pointIndex]);
         } else if (isMinorVertex) {
           const pointIndex = this.hover.midpointIndex;
-          console.log(`centering at midpoint ${pointIndex}`);
           this.centerAt(center(this.data.at(pointIndex), this.data.at((pointIndex + 1) % this.data.length)));
         } else {
-          console.log(`nothing to center about`);
           return;
         }
         this.Base_layers.render();
@@ -1089,7 +1059,6 @@ export default class DwLasso_class extends Base_tools_class {
       const touch2 = mouseEvent.touches[1];
       const centerPoint = center(touch1, touch2);
 
-      console.log(`pinch zoom at ${centerPoint.x}, ${centerPoint.y}`);
       lasso.GUI_preview.zoom_data.x = centerPoint.x;
       lasso.GUI_preview.zoom_data.y = centerPoint.y;
       lasso.GUI_preview.zoom(zoom);
