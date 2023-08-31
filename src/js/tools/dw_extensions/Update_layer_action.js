@@ -39,7 +39,6 @@ export class Update_layer_action extends Base_action {
     } else {
       // nothing to do
     }
-    dump(this.cropper);
   }
 
   async undo() {
@@ -50,7 +49,6 @@ export class Update_layer_action extends Base_action {
     this.cropper.data = deep(this.cropperState.do.data);
     this.cropper.Base_layers.render();
     super.undo();
-    dump(this.cropper);
   }
 
   free() {
