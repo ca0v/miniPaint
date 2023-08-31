@@ -29,11 +29,35 @@ class Tools_replaceColor_class {
                 canvas_preview.putImageData(data, 0, 0);
             },
             params: [
-                { name: 'target', title: 'Target:', value: config.COLOR, type: 'color' },
-                { name: 'replacement', title: 'Replacement:', value: '#ff0000', type: 'color' },
-                { name: 'power', title: 'Power:', value: '20', range: [0, 255] },
-                { name: 'alpha', title: 'Alpha:', value: '255', range: [0, 255] },
-                { name: 'mode', title: 'Mode:', values: ['Advanced', 'Simple'] },
+                {
+                    name: 'target',
+                    title: 'Target:',
+                    value: config.COLOR,
+                    type: 'color',
+                },
+                {
+                    name: 'replacement',
+                    title: 'Replacement:',
+                    value: '#ff0000',
+                    type: 'color',
+                },
+                {
+                    name: 'power',
+                    title: 'Power:',
+                    value: '20',
+                    range: [0, 255],
+                },
+                {
+                    name: 'alpha',
+                    title: 'Alpha:',
+                    value: '255',
+                    range: [0, 255],
+                },
+                {
+                    name: 'mode',
+                    title: 'Mode:',
+                    values: ['Advanced', 'Simple'],
+                },
             ],
             on_finish: function (params) {
                 _this.save_alpha(params);

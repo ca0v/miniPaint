@@ -27,15 +27,50 @@ class Effects_tiltShift_class {
             effects: true,
             params: [
                 //extra
-                { name: 'param7', title: 'Saturation:', value: '3', range: [0, 20] },
-                { name: 'param8', title: 'Sharpen:', value: '1', range: [0, 5] },
+                {
+                    name: 'param7',
+                    title: 'Saturation:',
+                    value: '3',
+                    range: [0, 20],
+                },
+                {
+                    name: 'param8',
+                    title: 'Sharpen:',
+                    value: '1',
+                    range: [0, 5],
+                },
                 //main
-                { name: 'param1', title: 'Blur Radius:', value: 10, range: [0, 30] },
-                { name: 'param2', title: 'Gradient Radius:', value: 70, range: [40, 100] },
+                {
+                    name: 'param1',
+                    title: 'Blur Radius:',
+                    value: 10,
+                    range: [0, 30],
+                },
+                {
+                    name: 'param2',
+                    title: 'Gradient Radius:',
+                    value: 70,
+                    range: [40, 100],
+                },
                 //startX, startY, endX, endY
-                { name: 'param3', title: 'X start:', value: 0, range: [0, 100] },
-                { name: 'param4', title: 'Y start:', value: 50, range: [0, 100] },
-                { name: 'param5', title: 'X end:', value: 100, range: [0, 100] },
+                {
+                    name: 'param3',
+                    title: 'X start:',
+                    value: 0,
+                    range: [0, 100],
+                },
+                {
+                    name: 'param4',
+                    title: 'Y start:',
+                    value: 50,
+                    range: [0, 100],
+                },
+                {
+                    name: 'param5',
+                    title: 'X end:',
+                    value: 100,
+                    range: [0, 100],
+                },
                 { name: 'param6', title: 'Y end:', value: 50, range: [0, 100] },
             ],
             on_change: function (params, canvas_preview, w, h, canvas_) {

@@ -19,7 +19,14 @@ class Tools_sprites_class {
 
         var settings = {
             title: 'Sprites',
-            params: [{ name: 'gap', title: 'Gap:', value: '50', values: ['0', '10', '50', '100'] }],
+            params: [
+                {
+                    name: 'gap',
+                    title: 'Gap:',
+                    value: '50',
+                    values: ['0', '10', '50', '100'],
+                },
+            ],
             on_finish: function (params) {
                 _this.generate_sprites(params.gap);
             },

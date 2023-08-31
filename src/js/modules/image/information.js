@@ -77,15 +77,25 @@ class Image_information_class {
 
             //show general data
             for (var i in exif_data.general) {
-                settings.params.push({ title: i + ':', value: exif_data.general[i] });
+                settings.params.push({
+                    title: i + ':',
+                    value: exif_data.general[i],
+                });
             }
 
             //show exif data
             var n = 0;
             for (var i in exif_data.exif) {
                 if (i == 'undefined') continue;
-                if (n == 0) settings.params.push({ title: '==== EXIF ====', value: '' });
-                settings.params.push({ title: i + ':', value: exif_data.exif[i] });
+                if (n == 0)
+                    settings.params.push({
+                        title: '==== EXIF ====',
+                        value: '',
+                    });
+                settings.params.push({
+                    title: i + ':',
+                    value: exif_data.exif[i],
+                });
                 n++;
             }
         }

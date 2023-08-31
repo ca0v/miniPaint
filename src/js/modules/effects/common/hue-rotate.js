@@ -17,7 +17,14 @@ class Effects_hueRotate_class extends Effects_common_class {
 
         var filter = this.Base_layers.find_filter_by_id(filter_id, 'hue-rotate');
 
-        var params = [{ name: 'value', title: 'Degree:', value: (filter.value ??= 90), range: [0, 360] }];
+        var params = [
+            {
+                name: 'value',
+                title: 'Degree:',
+                value: (filter.value ??= 90),
+                range: [0, 360],
+            },
+        ];
         this.show_dialog('hue-rotate', params, filter_id);
     }
 

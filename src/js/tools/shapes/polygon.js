@@ -146,7 +146,10 @@ class Polygon_class extends Base_tools_class {
         }
 
         //add more data
-        config.layer.data[config.layer.data.length - 1] = { x: mouse_x, y: mouse_y };
+        config.layer.data[config.layer.data.length - 1] = {
+            x: mouse_x,
+            y: mouse_y,
+        };
 
         this.Base_layers.render();
     }
@@ -173,7 +176,10 @@ class Polygon_class extends Base_tools_class {
         this.snap_line_info = { x: null, y: null };
 
         //add more data
-        config.layer.data[config.layer.data.length - 1] = { x: mouse_x, y: mouse_y };
+        config.layer.data[config.layer.data.length - 1] = {
+            x: mouse_x,
+            y: mouse_y,
+        };
 
         this.Base_layers.render();
     }

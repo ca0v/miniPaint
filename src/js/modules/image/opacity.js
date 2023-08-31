@@ -13,7 +13,14 @@ class Image_opacity_class {
 
         var settings = {
             title: 'Opacity',
-            params: [{ name: 'opacity', title: 'Alpha:', value: config.layer.opacity, range: [0, 100] }],
+            params: [
+                {
+                    name: 'opacity',
+                    title: 'Alpha:',
+                    value: config.layer.opacity,
+                    range: [0, 100],
+                },
+            ],
             on_change: function (params, canvas_preview, w, h) {
                 _this.opacity_handler(params, false);
             },

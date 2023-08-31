@@ -23,7 +23,12 @@ class Tools_colorZoom_class {
             preview: true,
             params: [
                 { name: 'zoom', title: 'Zoom:', value: '2', range: [2, 20] },
-                { name: 'center', title: 'Center:', value: '128', range: [0, 255] },
+                {
+                    name: 'center',
+                    title: 'Center:',
+                    value: '128',
+                    range: [0, 255],
+                },
             ],
             on_change: function (params, canvas_preview, w, h) {
                 var img = canvas_preview.getImageData(0, 0, w, h);

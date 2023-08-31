@@ -453,7 +453,10 @@ export default class DwLasso_class extends Base_tools_class {
     mousePoint(e) {
         const mouse = this.get_mouse_info(e);
         if (mouse.click_valid == false) return null;
-        return { x: Math.max(0, Math.min(config.WIDTH, mouse.x)), y: Math.max(0, Math.min(config.HEIGHT, mouse.y)) };
+        return {
+            x: Math.max(0, Math.min(config.WIDTH, mouse.x)),
+            y: Math.max(0, Math.min(config.HEIGHT, mouse.y)),
+        };
     }
 
     clonePoint() {

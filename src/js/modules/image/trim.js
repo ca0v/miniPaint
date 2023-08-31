@@ -52,7 +52,11 @@ class Image_trim_class {
                 { name: 'trim_layer', title: 'Trim layer:', value: true },
                 { name: 'trim_all', title: 'Trim borders:', value: true },
                 { name: 'power', title: 'Power:', value: 0, max: 255 },
-                { name: 'remove_white', title: 'Trim white color?', value: removeWhiteColor },
+                {
+                    name: 'remove_white',
+                    title: 'Trim white color?',
+                    value: removeWhiteColor,
+                },
             ],
             on_finish: async (params) => {
                 if (params.trim_layer == true) {

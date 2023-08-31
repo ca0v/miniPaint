@@ -52,11 +52,34 @@ class File_new_class {
         var settings = {
             title: 'New file',
             params: [
-                { name: 'width', title: 'Width:', value: width, comment: units },
-                { name: 'height', title: 'Height:', value: height, comment: units },
-                { name: 'resolution_type', title: 'Resolution:', values: resolution_types },
-                { name: 'layout', title: 'Layout:', value: 'Custom', values: ['Custom', 'Landscape', 'Portrait'] },
-                { name: 'transparency', title: 'Transparent:', value: transparency },
+                {
+                    name: 'width',
+                    title: 'Width:',
+                    value: width,
+                    comment: units,
+                },
+                {
+                    name: 'height',
+                    title: 'Height:',
+                    value: height,
+                    comment: units,
+                },
+                {
+                    name: 'resolution_type',
+                    title: 'Resolution:',
+                    values: resolution_types,
+                },
+                {
+                    name: 'layout',
+                    title: 'Layout:',
+                    value: 'Custom',
+                    values: ['Custom', 'Landscape', 'Portrait'],
+                },
+                {
+                    name: 'transparency',
+                    title: 'Transparent:',
+                    value: transparency,
+                },
             ],
             on_finish: function (params) {
                 _this.new_handler(params);

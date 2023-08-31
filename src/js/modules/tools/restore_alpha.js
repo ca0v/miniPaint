@@ -26,7 +26,14 @@ class Tools_restoreAlpha_class {
                 var data = _this.recover_alpha(img, params.level);
                 canvas_preview.putImageData(data, 0, 0);
             },
-            params: [{ name: 'level', title: 'Level:', value: '128', range: [0, 255] }],
+            params: [
+                {
+                    name: 'level',
+                    title: 'Level:',
+                    value: '128',
+                    range: [0, 255],
+                },
+            ],
             on_finish: function (params) {
                 _this.save_alpha(params.level);
             },

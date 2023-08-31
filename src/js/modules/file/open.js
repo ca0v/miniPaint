@@ -204,7 +204,14 @@ class File_open_class {
 
         var settings = {
             title: 'Open data URL',
-            params: [{ name: 'data', title: 'Data URL:', type: 'textarea', value: '' }],
+            params: [
+                {
+                    name: 'data',
+                    title: 'Data URL:',
+                    type: 'textarea',
+                    value: '',
+                },
+            ],
             on_finish: function (params) {
                 _this.file_open_data_url_handler(params.data);
             },

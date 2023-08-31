@@ -17,7 +17,14 @@ class Effects_saturate_class extends Effects_common_class {
 
         var filter = this.Base_layers.find_filter_by_id(filter_id, 'saturate');
 
-        var params = [{ name: 'value', title: 'Percentage:', value: (filter.value ??= -50), range: [-100, 100] }];
+        var params = [
+            {
+                name: 'value',
+                title: 'Percentage:',
+                value: (filter.value ??= -50),
+                range: [-100, 100],
+            },
+        ];
         this.show_dialog('saturate', params, filter_id);
     }
 

@@ -24,8 +24,18 @@ class Effects_boxBlur_class {
             preview: true,
             effects: true,
             params: [
-                { name: 'param1', title: 'H Radius:', value: 3, range: [1, 20] },
-                { name: 'param2', title: 'V Radius:', value: 3, range: [1, 20] },
+                {
+                    name: 'param1',
+                    title: 'H Radius:',
+                    value: 3,
+                    range: [1, 20],
+                },
+                {
+                    name: 'param2',
+                    title: 'V Radius:',
+                    value: 3,
+                    range: [1, 20],
+                },
                 { name: 'param3', title: 'Quality:', value: 3, range: [1, 20] },
             ],
             on_change: function (params, canvas_preview, w, h) {

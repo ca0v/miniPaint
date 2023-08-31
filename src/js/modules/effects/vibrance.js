@@ -24,7 +24,15 @@ class Effects_vibrance_class {
             title: 'Vibrance',
             preview: true,
             effects: true,
-            params: [{ name: 'level', title: 'Level:', value: '0.5', range: [-1, 1], step: 0.01 }],
+            params: [
+                {
+                    name: 'level',
+                    title: 'Level:',
+                    value: '0.5',
+                    range: [-1, 1],
+                    step: 0.01,
+                },
+            ],
             on_change: function (params, canvas_preview, w, h, canvas_) {
                 var data = _this.change(canvas_, params);
                 canvas_preview.clearRect(0, 0, canvas_.width, canvas_.height);

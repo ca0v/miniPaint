@@ -32,7 +32,12 @@ class Effects_backAndWhite_class {
             preview: true,
             effects: true,
             params: [
-                { name: 'level', title: 'Level:', value: default_level, range: [0, 255] },
+                {
+                    name: 'level',
+                    title: 'Level:',
+                    value: default_level,
+                    range: [0, 255],
+                },
                 { name: 'dithering', title: 'Dithering:', value: false },
             ],
             on_change: function (params, canvas_preview, w, h) {

@@ -24,7 +24,14 @@ class Effects_denoise_class {
             title: 'Denoise',
             preview: true,
             effects: true,
-            params: [{ name: 'param1', title: 'Exponent:', value: 20, range: [0, 50] }],
+            params: [
+                {
+                    name: 'param1',
+                    title: 'Exponent:',
+                    value: 20,
+                    range: [0, 50],
+                },
+            ],
             on_change: function (params, canvas_preview, w, h, canvas_) {
                 var data = _this.change(canvas_, params);
                 canvas_preview.clearRect(0, 0, canvas_.width, canvas_.height);

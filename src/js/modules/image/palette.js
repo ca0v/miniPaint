@@ -24,12 +24,20 @@ class Image_color_class {
 
         var settings = {
             title: 'Palette',
-            params: [{ title: 'Dominant color:', html: this.generate_color_box(dominant, 200) }],
+            params: [
+                {
+                    title: 'Dominant color:',
+                    html: this.generate_color_box(dominant, 200),
+                },
+            ],
         };
         for (var i in palette) {
             var rgb = this.Helper.rgbToHex(palette[i][0], palette[i][1], palette[i][2]);
             i = parseInt(i);
-            settings.params.push({ title: 'Color #' + (i + 1) + ':', html: this.generate_color_box(rgb, 100) });
+            settings.params.push({
+                title: 'Color #' + (i + 1) + ':',
+                html: this.generate_color_box(rgb, 100),
+            });
         }
         this.POP.show(settings);
     }

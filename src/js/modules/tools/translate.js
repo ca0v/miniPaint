@@ -36,7 +36,10 @@ class Tools_translate_class {
 
         if (this.trans_lang_codes.includes(lang_code) || lang_code == 'en') {
             //translate
-            $(element || 'body').translate({ lang: lang_code, t: this.translations });
+            $(element || 'body').translate({
+                lang: lang_code,
+                t: this.translations,
+            });
             config.LANG = lang_code;
         } else {
             alertify.error('Translate error, can not find dictionary: ' + lang_code);

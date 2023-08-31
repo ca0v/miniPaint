@@ -36,7 +36,11 @@ class Tools_settings_class {
         var settings = {
             title: 'Settings',
             params: [
-                { name: 'transparency', title: 'Transparent:', value: transparency },
+                {
+                    name: 'transparency',
+                    title: 'Transparent:',
+                    value: transparency,
+                },
                 {
                     name: 'transparency_type',
                     title: 'Transparency background:',
@@ -44,7 +48,13 @@ class Tools_settings_class {
                     value: config.TRANSPARENCY_TYPE,
                     values: transparency_values,
                 },
-                { name: 'theme', title: 'Theme', values: config.themes, value: theme, type: 'select' },
+                {
+                    name: 'theme',
+                    title: 'Theme',
+                    values: config.themes,
+                    value: theme,
+                    type: 'select',
+                },
                 {
                     name: 'default_units',
                     title: 'Units',
@@ -61,10 +71,26 @@ class Tools_settings_class {
                 },
                 { name: 'snap', title: 'Enable snap:', value: snap },
                 { name: 'guides', title: 'Enable guides:', value: guides },
-                { name: 'safe_search', title: 'Safe search:', value: safe_search },
-                { name: 'exit_confirm', title: 'Exit confirmation:', value: exit_confirm },
-                { name: 'thick_guides', title: 'Thick guides:', value: thick_guides },
-                { name: 'enable_autoresize', title: 'Enable autoresize:', value: enable_autoresize },
+                {
+                    name: 'safe_search',
+                    title: 'Safe search:',
+                    value: safe_search,
+                },
+                {
+                    name: 'exit_confirm',
+                    title: 'Exit confirmation:',
+                    value: exit_confirm,
+                },
+                {
+                    name: 'thick_guides',
+                    title: 'Thick guides:',
+                    value: thick_guides,
+                },
+                {
+                    name: 'enable_autoresize',
+                    title: 'Enable autoresize:',
+                    value: enable_autoresize,
+                },
             ],
             on_change: function (params) {
                 this.Base_gui.change_theme(params.theme);

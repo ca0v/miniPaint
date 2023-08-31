@@ -23,7 +23,15 @@ class Effects_sharpen_class {
             title: 'Sharpen',
             preview: true,
             effects: true,
-            params: [{ name: 'param1', title: 'Factor:', value: '3', range: [1, 10], step: 0.1 }],
+            params: [
+                {
+                    name: 'param1',
+                    title: 'Factor:',
+                    value: '3',
+                    range: [1, 10],
+                    step: 0.1,
+                },
+            ],
             on_change: function (params, canvas_preview, w, h) {
                 var img = canvas_preview.getImageData(0, 0, w, h);
                 var data = _this.change(img, params);

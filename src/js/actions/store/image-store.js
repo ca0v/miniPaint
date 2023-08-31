@@ -53,7 +53,9 @@ export default {
                                 database = openRequest.result;
                                 switch (event.oldVersion) {
                                     case 0:
-                                        database.createObjectStore('images', { keyPath: 'id' });
+                                        database.createObjectStore('images', {
+                                            keyPath: 'id',
+                                        });
                                         break;
                                 }
                             };

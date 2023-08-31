@@ -135,12 +135,30 @@ class File_save_class {
             title: title,
             params: [
                 { name: 'name', title: 'File name:', value: file_name },
-                { name: 'type', title: 'Save as type:', values: save_types, value: save_default },
-                { name: 'quality', title: 'Quality:', value: 90, range: [1, 100] },
+                {
+                    name: 'type',
+                    title: 'Save as type:',
+                    values: save_types,
+                    value: save_default,
+                },
+                {
+                    name: 'quality',
+                    title: 'Quality:',
+                    value: 90,
+                    range: [1, 100],
+                },
                 { title: 'File size:', html: '<span id="file_size">-</span>' },
                 { title: 'Resolution:', value: resolution },
-                { name: 'calc_size', title: 'Show file size:', value: calc_size_value },
-                { name: 'layers', title: 'Save layers:', values: save_layers_types },
+                {
+                    name: 'calc_size',
+                    title: 'Show file size:',
+                    value: calc_size_value,
+                },
+                {
+                    name: 'layers',
+                    title: 'Save layers:',
+                    values: save_layers_types,
+                },
                 { name: 'delay', title: 'Gif delay:', value: 400 },
             ],
             on_change: function (params, canvas_preview, w, h) {
@@ -219,7 +237,14 @@ class File_save_class {
 
         var settings = {
             title: 'Data URL',
-            params: [{ name: 'url', title: 'URL:', type: 'textarea', value: data_url }],
+            params: [
+                {
+                    name: 'url',
+                    title: 'URL:',
+                    type: 'textarea',
+                    value: data_url,
+                },
+            ],
         };
         this.POP.show(settings);
     }

@@ -28,7 +28,14 @@ class Tools_colorToAlpha_class {
                 var data = _this.change(img, params.color);
                 canvas_preview.putImageData(data, 0, 0);
             },
-            params: [{ name: 'color', title: 'Color:', value: config.COLOR, type: 'color' }],
+            params: [
+                {
+                    name: 'color',
+                    title: 'Color:',
+                    value: config.COLOR,
+                    type: 'color',
+                },
+            ],
             on_finish: function (params) {
                 _this.apply_affect(params.color);
             },

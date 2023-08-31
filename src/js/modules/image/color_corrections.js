@@ -40,16 +40,56 @@ class Image_colorCorrections_class {
                 canvas_preview.drawImage(canvas, 0, 0);
             },
             params: [
-                { name: 'param_b', title: 'Brightness:', value: '0', range: [-100, 100] },
-                { name: 'param_c', title: 'Contrast:', value: '0', range: [-100, 100] },
-                { name: 'param_s', title: 'Saturation:', value: '0', range: [-100, 100] },
-                { name: 'param_h', title: 'Hue:', value: '0', range: [-180, 180] },
+                {
+                    name: 'param_b',
+                    title: 'Brightness:',
+                    value: '0',
+                    range: [-100, 100],
+                },
+                {
+                    name: 'param_c',
+                    title: 'Contrast:',
+                    value: '0',
+                    range: [-100, 100],
+                },
+                {
+                    name: 'param_s',
+                    title: 'Saturation:',
+                    value: '0',
+                    range: [-100, 100],
+                },
+                {
+                    name: 'param_h',
+                    title: 'Hue:',
+                    value: '0',
+                    range: [-180, 180],
+                },
                 {},
-                { name: 'param_l', title: 'Luminance:', value: '0', range: [-100, 100] },
+                {
+                    name: 'param_l',
+                    title: 'Luminance:',
+                    value: '0',
+                    range: [-100, 100],
+                },
                 {},
-                { name: 'param_red', title: 'Red channel:', value: '0', range: [-255, 255] },
-                { name: 'param_green', title: 'Green channel:', value: '0', range: [-255, 255] },
-                { name: 'param_blue', title: 'Blue channel:', value: '0', range: [-255, 255] },
+                {
+                    name: 'param_red',
+                    title: 'Red channel:',
+                    value: '0',
+                    range: [-255, 255],
+                },
+                {
+                    name: 'param_green',
+                    title: 'Green channel:',
+                    value: '0',
+                    range: [-255, 255],
+                },
+                {
+                    name: 'param_blue',
+                    title: 'Blue channel:',
+                    value: '0',
+                    range: [-255, 255],
+                },
             ],
             on_finish: function (params) {
                 _this.save_changes(params);

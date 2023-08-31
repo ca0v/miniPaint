@@ -15,7 +15,12 @@ class Select_tool_class extends Base_tools_class {
         this.ctx = ctx;
         this.name = 'select';
         this.saved = false;
-        this.mousedown_dimensions = { x: null, y: null, width: null, height: null };
+        this.mousedown_dimensions = {
+            x: null,
+            y: null,
+            width: null,
+            height: null,
+        };
         this.keyboard_move_start_position = null;
         this.moving = false;
         this.resizing = false;
@@ -96,7 +101,12 @@ class Select_tool_class extends Base_tools_class {
                     let y = config.layer.y;
                     config.layer.x = this.keyboard_move_start_position.x;
                     config.layer.y = this.keyboard_move_start_position.y;
-                    app.State.do_action(new app.Actions.Update_layer_action(config.layer.id, { x, y }));
+                    app.State.do_action(
+                        new app.Actions.Update_layer_action(config.layer.id, {
+                            x,
+                            y,
+                        }),
+                    );
                     this.keyboard_move_start_position = null;
                 }
             }

@@ -179,7 +179,12 @@ export class Tests {
                 .do(s.actions.keypressCallbackTest);
 
             // simulate a ctrl+shift+arrowLeft keypress
-            const event = new KeyboardEvent('keydown', { key: 'X', ctrlKey: true, shiftKey: true, target: null });
+            const event = new KeyboardEvent('keydown', {
+                key: 'X',
+                ctrlKey: true,
+                shiftKey: true,
+                target: null,
+            });
             // document.dispatchEvent(event);
             s.trigger('Ctrl+Shift+X');
             eq(true, hit, 'The keypressCallbackTest handler should have been called');

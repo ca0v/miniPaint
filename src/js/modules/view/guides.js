@@ -26,7 +26,12 @@ class View_guides_class {
         var settings = {
             title: 'Insert guides',
             params: [
-                { name: 'type', title: 'Type:', values: ['Vertical', 'Horizontal'], value: 'Vertical' },
+                {
+                    name: 'type',
+                    title: 'Type:',
+                    values: ['Vertical', 'Horizontal'],
+                    value: 'Vertical',
+                },
                 { name: 'position', title: 'Position:', value: position },
             ],
             on_finish: function (params) {

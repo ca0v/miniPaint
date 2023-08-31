@@ -28,9 +28,25 @@ class Effects_zoomBlur_class {
             preview: true,
             effects: true,
             params: [
-                { name: 'param1', title: 'Strength:', value: '0.3', range: [0, 1], step: 0.01 },
-                { name: 'param2', title: 'Center x:', value: Math.round(canvas.width / 2), range: [0, canvas.width] },
-                { name: 'param3', title: 'Center y:', value: Math.round(canvas.height / 2), range: [0, canvas.height] },
+                {
+                    name: 'param1',
+                    title: 'Strength:',
+                    value: '0.3',
+                    range: [0, 1],
+                    step: 0.01,
+                },
+                {
+                    name: 'param2',
+                    title: 'Center x:',
+                    value: Math.round(canvas.width / 2),
+                    range: [0, canvas.width],
+                },
+                {
+                    name: 'param3',
+                    title: 'Center y:',
+                    value: Math.round(canvas.height / 2),
+                    range: [0, canvas.height],
+                },
             ],
             on_change: function (params, canvas_preview, w, h, canvas_) {
                 //recalc param by size

@@ -25,7 +25,12 @@ class Effects_oil_class {
             effects: true,
             params: [
                 { name: 'param1', title: 'Range:', value: 2, range: [1, 10] },
-                { name: 'param2', title: 'Levels:', value: '32', range: [1, 256] },
+                {
+                    name: 'param2',
+                    title: 'Levels:',
+                    value: '32',
+                    range: [1, 256],
+                },
             ],
             on_change: function (params, canvas_preview, w, h) {
                 var img = canvas_preview.getImageData(0, 0, w, h);

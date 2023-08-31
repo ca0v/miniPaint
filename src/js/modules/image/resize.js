@@ -62,14 +62,47 @@ class Image_resize_class {
         var settings = {
             title: 'Resize',
             params: [
-                { name: 'width', title: 'Width:', value: '', placeholder: width, comment: units },
-                { name: 'height', title: 'Height:', value: '', placeholder: height, comment: units },
-                { name: 'width_percent', title: 'Width (%):', value: '', placeholder: 100, comment: '%' },
-                { name: 'height_percent', title: 'Height (%):', value: '', placeholder: 100, comment: '%' },
-                { name: 'mode', title: 'Mode:', values: ['Lanczos', 'Hermite', 'Basic'] },
+                {
+                    name: 'width',
+                    title: 'Width:',
+                    value: '',
+                    placeholder: width,
+                    comment: units,
+                },
+                {
+                    name: 'height',
+                    title: 'Height:',
+                    value: '',
+                    placeholder: height,
+                    comment: units,
+                },
+                {
+                    name: 'width_percent',
+                    title: 'Width (%):',
+                    value: '',
+                    placeholder: 100,
+                    comment: '%',
+                },
+                {
+                    name: 'height_percent',
+                    title: 'Height (%):',
+                    value: '',
+                    placeholder: 100,
+                    comment: '%',
+                },
+                {
+                    name: 'mode',
+                    title: 'Mode:',
+                    values: ['Lanczos', 'Hermite', 'Basic'],
+                },
 
                 { name: 'sharpen', title: 'Sharpen:', value: false },
-                { name: 'layers', title: 'Layers:', values: ['All', 'Active'], value: 'All' },
+                {
+                    name: 'layers',
+                    title: 'Layers:',
+                    values: ['All', 'Active'],
+                    value: 'All',
+                },
             ],
             on_finish: function (params) {
                 _this.do_resize(params);

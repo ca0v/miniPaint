@@ -48,11 +48,35 @@ class Tools_contentFill_class {
                 canvas_preview.drawImage(canvas, 0, 0, w, h);
             },
             params: [
-                { name: 'mode', title: 'Mode:', values: ['Expand edges', 'Cloned edges', 'Resized as background'] },
-                { name: 'blur_power', title: 'Blur power:', value: 5, range: [1, 20] },
-                { name: 'blur_h', title: 'Horizontal blur:', value: 5, range: [0, 30] },
-                { name: 'blur_v', title: 'Vertical blur:', value: 5, range: [0, 30] },
-                { name: 'clone_count', title: 'Clone count:', value: 15, range: [10, 50] },
+                {
+                    name: 'mode',
+                    title: 'Mode:',
+                    values: ['Expand edges', 'Cloned edges', 'Resized as background'],
+                },
+                {
+                    name: 'blur_power',
+                    title: 'Blur power:',
+                    value: 5,
+                    range: [1, 20],
+                },
+                {
+                    name: 'blur_h',
+                    title: 'Horizontal blur:',
+                    value: 5,
+                    range: [0, 30],
+                },
+                {
+                    name: 'blur_v',
+                    title: 'Vertical blur:',
+                    value: 5,
+                    range: [0, 30],
+                },
+                {
+                    name: 'clone_count',
+                    title: 'Clone count:',
+                    value: 15,
+                    range: [10, 50],
+                },
             ],
             on_finish: function (params) {
                 _this.apply_affect(params);

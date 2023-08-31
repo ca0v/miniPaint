@@ -16,7 +16,14 @@ class Effects_brightness_class extends Effects_common_class {
         }
         var filter = this.Base_layers.find_filter_by_id(filter_id, 'brightness');
 
-        var params = [{ name: 'value', title: 'Percentage:', value: (filter.value ??= 50), range: [-100, 100] }];
+        var params = [
+            {
+                name: 'value',
+                title: 'Percentage:',
+                value: (filter.value ??= 50),
+                range: [-100, 100],
+            },
+        ];
         this.show_dialog('brightness', params, filter_id);
     }
 

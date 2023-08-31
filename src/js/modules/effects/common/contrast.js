@@ -17,7 +17,14 @@ class Effects_contrast_class extends Effects_common_class {
 
         var filter = this.Base_layers.find_filter_by_id(filter_id, 'contrast');
 
-        var params = [{ name: 'value', title: 'Percentage:', value: (filter.value ??= 40), range: [-100, 100] }];
+        var params = [
+            {
+                name: 'value',
+                title: 'Percentage:',
+                value: (filter.value ??= 40),
+                range: [-100, 100],
+            },
+        ];
         this.show_dialog('contrast', params, filter_id);
     }
 

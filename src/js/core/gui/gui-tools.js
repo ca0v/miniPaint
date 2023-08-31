@@ -219,7 +219,10 @@ class GUI_tools_class {
                         //send event
                         var moduleKey = actionData.name;
                         var functionName = actionData.on_update;
-                        this.tools_modules[moduleKey].object[functionName]({ key: id, value: new_value });
+                        this.tools_modules[moduleKey].object[functionName]({
+                            key: id,
+                            value: new_value,
+                        });
                     }
                 });
 
@@ -278,7 +281,10 @@ class GUI_tools_class {
                             //send event
                             var moduleKey = actionData.name;
                             var functionName = actionData.on_update;
-                            this.tools_modules[moduleKey].object[functionName]({ key: id, value: value });
+                            this.tools_modules[moduleKey].object[functionName]({
+                                key: id,
+                                value: value,
+                            });
                         }
                     });
 
@@ -356,7 +362,10 @@ class GUI_tools_class {
                             //send event
                             var moduleKey = actionData.name;
                             var functionName = actionData.on_update;
-                            this.tools_modules[moduleKey].object[functionName]({ key: id, value: value });
+                            this.tools_modules[moduleKey].object[functionName]({
+                                key: id,
+                                value: value,
+                            });
                         }
                     });
 

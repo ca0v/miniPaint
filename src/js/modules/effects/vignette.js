@@ -25,8 +25,20 @@ class Effects_vignette_class {
             preview: true,
             effects: true,
             params: [
-                { name: 'param1', title: 'Level:', value: '0.5', range: [0, 1], step: 0.01 },
-                { name: 'param2', title: 'Size:', value: '0.5', range: [0, 1], step: 0.01 },
+                {
+                    name: 'param1',
+                    title: 'Level:',
+                    value: '0.5',
+                    range: [0, 1],
+                    step: 0.01,
+                },
+                {
+                    name: 'param2',
+                    title: 'Size:',
+                    value: '0.5',
+                    range: [0, 1],
+                    step: 0.01,
+                },
             ],
             on_change: function (params, canvas_preview, w, h, canvas_) {
                 var data = _this.change(canvas_, params);

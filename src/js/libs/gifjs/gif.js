@@ -194,7 +194,9 @@
                                               this.activeWorkers.length +
                                               ' active',
                                       ),
-                                      (this.imageParts[n] = { indexOfFirstInGroup: r }))
+                                      (this.imageParts[n] = {
+                                          indexOfFirstInGroup: r,
+                                      }))
                                     : (this.log(
                                           'frame ' +
                                               (t.index + 1) +

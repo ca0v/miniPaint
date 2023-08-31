@@ -17,7 +17,14 @@ class Effects_sepia_class extends Effects_common_class {
 
         var filter = this.Base_layers.find_filter_by_id(filter_id, 'sepia');
 
-        var params = [{ name: 'value', title: 'Percentage:', value: (filter.value ??= 60), range: [0, 100] }];
+        var params = [
+            {
+                name: 'value',
+                title: 'Percentage:',
+                value: (filter.value ??= 60),
+                range: [0, 100],
+            },
+        ];
         this.show_dialog('sepia', params, filter_id);
     }
 

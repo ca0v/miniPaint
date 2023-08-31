@@ -31,7 +31,12 @@ class Image_decreaseColors_class {
                 canvas_preview.putImageData(data, 0, 0);
             },
             params: [
-                { name: 'colors', title: 'Colors:', value: 10, range: [1, 256] },
+                {
+                    name: 'colors',
+                    title: 'Colors:',
+                    value: 10,
+                    range: [1, 256],
+                },
                 { name: 'greyscale', title: 'Greyscale:', value: false },
             ],
             on_finish: function (params) {

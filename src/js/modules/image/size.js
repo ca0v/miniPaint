@@ -34,12 +34,41 @@ class Image_size_class {
         var settings = {
             title: 'Canvas size',
             params: [
-                { name: 'w', title: 'Width:', value: width, placeholder: width, comment: units },
-                { name: 'h', title: 'Height:', value: height, placeholder: height, comment: units },
-                { name: 'resolution', title: 'Resolution:', values: resolutions },
-                { name: 'layout', title: 'Layout:', value: 'Custom', values: ['Custom', 'Landscape', 'Portrait'] },
-                { name: 'enable_autoresize', title: 'Enable autoresize:', value: enable_autoresize },
-                { name: 'in_proportion', title: 'In proportion:', value: false },
+                {
+                    name: 'w',
+                    title: 'Width:',
+                    value: width,
+                    placeholder: width,
+                    comment: units,
+                },
+                {
+                    name: 'h',
+                    title: 'Height:',
+                    value: height,
+                    placeholder: height,
+                    comment: units,
+                },
+                {
+                    name: 'resolution',
+                    title: 'Resolution:',
+                    values: resolutions,
+                },
+                {
+                    name: 'layout',
+                    title: 'Layout:',
+                    value: 'Custom',
+                    values: ['Custom', 'Landscape', 'Portrait'],
+                },
+                {
+                    name: 'enable_autoresize',
+                    title: 'Enable autoresize:',
+                    value: enable_autoresize,
+                },
+                {
+                    name: 'in_proportion',
+                    title: 'In proportion:',
+                    value: false,
+                },
             ],
             on_finish: function (params) {
                 _this.size_handler(params);

@@ -20,7 +20,14 @@ class Layer_differences_class {
         var settings = {
             title: 'Differences',
             preview: true,
-            params: [{ name: 'sensitivity', title: 'Sensitivity:', value: '0', range: [0, 255] }],
+            params: [
+                {
+                    name: 'sensitivity',
+                    title: 'Sensitivity:',
+                    value: '0',
+                    range: [0, 255],
+                },
+            ],
             on_change: function (params, canvas_preview, w, h) {
                 _this.calc_differences(params.sensitivity, canvas_preview, w, h);
             },

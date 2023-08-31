@@ -342,7 +342,12 @@ class GUI_colors_class {
 
         // Initialize color swatches
         this.inputs.swatches
-            .uiSwatches({ rows: 3, cols: 7, count: 21, readonly: this.uiType === 'dialog' })
+            .uiSwatches({
+                rows: 3,
+                cols: 7,
+                count: 21,
+                readonly: this.uiType === 'dialog',
+            })
             .on('input', () => {
                 this.set_color({
                     hex: this.inputs.swatches.uiSwatches('get_selected_hex'),
@@ -390,7 +395,9 @@ class GUI_colors_class {
                 });
             input.number &&
                 input.number.uiNumberInput().on('input', () => {
-                    this.set_color({ [key]: input.number.uiNumberInput('get_value') });
+                    this.set_color({
+                        [key]: input.number.uiNumberInput('get_value'),
+                    });
                 });
         }
 
@@ -580,16 +587,25 @@ class GUI_colors_class {
             `linear-gradient(to right, ${Helper.hex_set_hsl('#ff0000', {
                 s: hsl.s,
                 l: hsl.l,
-            })} 0%, ${Helper.hex_set_hsl('#ffff00', { s: hsl.s, l: hsl.l })} 17%, ${Helper.hex_set_hsl('#00ff00', {
+            })} 0%, ${Helper.hex_set_hsl('#ffff00', {
+                s: hsl.s,
+                l: hsl.l,
+            })} 17%, ${Helper.hex_set_hsl('#00ff00', {
                 s: hsl.s,
                 l: hsl.l,
             })} 33%, ${Helper.hex_set_hsl('#00ffff', {
                 s: hsl.s,
                 l: hsl.l,
-            })} 50%, ${Helper.hex_set_hsl('#0000ff', { s: hsl.s, l: hsl.l })} 67%, ${Helper.hex_set_hsl('#ff00ff', {
+            })} 50%, ${Helper.hex_set_hsl('#0000ff', {
                 s: hsl.s,
                 l: hsl.l,
-            })} 83%, ${Helper.hex_set_hsl('#ff0000', { s: hsl.s, l: hsl.l })} 100%)`,
+            })} 67%, ${Helper.hex_set_hsl('#ff00ff', {
+                s: hsl.s,
+                l: hsl.l,
+            })} 83%, ${Helper.hex_set_hsl('#ff0000', {
+                s: hsl.s,
+                l: hsl.l,
+            })} 100%)`,
         );
         // HSL - S
         let rangeMin = JSON.parse(JSON.stringify(hsl));

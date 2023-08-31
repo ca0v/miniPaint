@@ -48,7 +48,12 @@ class Layer_composition_class {
             title: 'Composition',
             //preview: true,
             params: [
-                { name: 'composition', title: 'Composition:', value: config.layer.composition, values: compositions },
+                {
+                    name: 'composition',
+                    title: 'Composition:',
+                    value: config.layer.composition,
+                    values: compositions,
+                },
             ],
             on_change: function (params, canvas_preview, w, h) {
                 //redraw preview

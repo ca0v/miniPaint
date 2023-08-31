@@ -1641,7 +1641,11 @@ class Text_editor_class {
                     }
                 }
                 let lineSize = ascenderSize + descenderSize;
-                lineRenderInfo.wrapSizes.push({ size: lineSize, offset: wrapSizeAccumulator, baseline: ascenderSize });
+                lineRenderInfo.wrapSizes.push({
+                    size: lineSize,
+                    offset: wrapSizeAccumulator,
+                    baseline: ascenderSize,
+                });
                 wrapSizeAccumulator += lineSize;
                 wrapCounter++;
             }
@@ -2053,7 +2057,14 @@ class Google_fonts_search_class {
     show() {
         this.POP.show({
             title: 'Search for Font',
-            params: [{ name: 'query', title: 'Search:', value: '', prevent_submission: true }],
+            params: [
+                {
+                    name: 'query',
+                    title: 'Search:',
+                    value: '',
+                    prevent_submission: true,
+                },
+            ],
             on_load: (params, popup) => {
                 this.popup = popup;
                 var node = document.createElement('div');

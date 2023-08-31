@@ -17,7 +17,14 @@ class Effects_grayscale_class extends Effects_common_class {
 
         var filter = this.Base_layers.find_filter_by_id(filter_id, 'grayscale');
 
-        var params = [{ name: 'value', title: 'Percentage:', value: (filter.value ??= 100), range: [0, 100] }];
+        var params = [
+            {
+                name: 'value',
+                title: 'Percentage:',
+                value: (filter.value ??= 100),
+                range: [0, 100],
+            },
+        ];
         this.show_dialog('grayscale', params, filter_id);
     }
 

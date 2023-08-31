@@ -23,7 +23,14 @@ class Effects_dither_class {
             title: 'Dither',
             preview: true,
             effects: true,
-            params: [{ name: 'param1', title: 'Levels:', value: '8', range: [2, 32] }],
+            params: [
+                {
+                    name: 'param1',
+                    title: 'Levels:',
+                    value: '8',
+                    range: [2, 32],
+                },
+            ],
             on_change: function (params, canvas_preview, w, h) {
                 var img = canvas_preview.getImageData(0, 0, w, h);
                 var data = _this.change(img, params);

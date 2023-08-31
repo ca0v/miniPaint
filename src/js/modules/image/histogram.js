@@ -19,7 +19,11 @@ class Image_histogram_class {
                 _this.histogram_onload(params);
             },
             params: [
-                { name: 'channel', title: 'Channel:', values: ['Gray', 'Red', 'Green', 'Blue'] },
+                {
+                    name: 'channel',
+                    title: 'Channel:',
+                    values: ['Gray', 'Red', 'Green', 'Blue'],
+                },
                 {
                     title: 'Histogram:',
                     function: function () {

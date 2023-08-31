@@ -69,7 +69,9 @@ class Copy_class {
         try {
             // The clipboard-write permission is granted automatically to pages
             // when they are the active tab. So it's not required, but it's more safe.
-            const { state } = await navigator.permissions.query({ name: 'clipboard-write' });
+            const { state } = await navigator.permissions.query({
+                name: 'clipboard-write',
+            });
             return state === 'granted';
         } catch (error) {
             // Browser compatibility / Security error (ONLY HTTPS) ...

@@ -215,7 +215,11 @@ class Helper_class {
             b = this.hueToRgb(p, q, h - 1 / 3);
         }
 
-        return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
+        return {
+            r: Math.round(r * 255),
+            g: Math.round(g * 255),
+            b: Math.round(b * 255),
+        };
     }
 
     /**
@@ -426,7 +430,10 @@ class Helper_class {
      */
     number_format(n, maximumFractionDigits) {
         let x = parseFloat(n);
-        var number = x.toLocaleString('us', { minimumFractionDigits: 0, maximumFractionDigits: maximumFractionDigits });
+        var number = x.toLocaleString('us', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: maximumFractionDigits,
+        });
         number = number.replaceAll(',', '');
         number = parseFloat(number);
 

@@ -179,7 +179,10 @@ var fx = (function () {
                 null,
                 'uniform sampler2D texture;uniform float brightness;uniform float contrast;varying vec2 texCoord;void main(){vec4 color=texture2D(texture,texCoord);color.rgb+=brightness;if(contrast>0.0){color.rgb=(color.rgb-0.5)/(1.0-contrast)+0.5;}else{color.rgb=(color.rgb-0.5)*(1.0+contrast)+0.5;}gl_FragColor=color;}',
             );
-        f.call(this, a.brightnessContrast, { brightness: q(-1, b, 1), contrast: q(-1, d, 1) });
+        f.call(this, a.brightnessContrast, {
+            brightness: q(-1, b, 1),
+            contrast: q(-1, d, 1),
+        });
         return this;
     }
     function t(a) {
@@ -211,7 +214,10 @@ var fx = (function () {
                 'uniform sampler2D texture;uniform float exponent;uniform float strength;uniform vec2 texSize;varying vec2 texCoord;void main(){vec4 center=texture2D(texture,texCoord);vec4 color=vec4(0.0);float total=0.0;for(float x=-4.0;x<=4.0;x+=1.0){for(float y=-4.0;y<=4.0;y+=1.0){vec4 sample=texture2D(texture,texCoord+vec2(x,y)/texSize);float weight=1.0-abs(dot(sample.rgb-center.rgb,vec3(0.25)));weight=pow(weight,exponent);color+=sample*weight;total+=weight;}}gl_FragColor=color/total;}',
             );
         for (var d = 0; 2 > d; d++)
-            f.call(this, a.denoise, { exponent: Math.max(0, b), texSize: [this.width, this.height] });
+            f.call(this, a.denoise, {
+                exponent: Math.max(0, b),
+                texSize: [this.width, this.height],
+            });
         return this;
     }
     function K(b, d) {
@@ -221,7 +227,10 @@ var fx = (function () {
                 null,
                 'uniform sampler2D texture;uniform float hue;uniform float saturation;varying vec2 texCoord;void main(){vec4 color=texture2D(texture,texCoord);float angle=hue*3.14159265;float s=sin(angle),c=cos(angle);vec3 weights=(vec3(2.0*c,-sqrt(3.0)*s-c,sqrt(3.0)*s-c)+1.0)/3.0;float len=length(color.rgb);color.rgb=vec3(dot(color.rgb,weights.xyz),dot(color.rgb,weights.zxy),dot(color.rgb,weights.yzx));float average=(color.r+color.g+color.b)/3.0;if(saturation>0.0){color.rgb+=(average-color.rgb)*(1.0-1.0/(1.001-saturation));}else{color.rgb+=(average-color.rgb)*(-saturation);}gl_FragColor=color;}',
             );
-        f.call(this, a.hueSaturation, { hue: q(-1, b, 1), saturation: q(-1, d, 1) });
+        f.call(this, a.hueSaturation, {
+            hue: q(-1, b, 1),
+            saturation: q(-1, d, 1),
+        });
         return this;
     }
     function L(b) {
@@ -369,7 +378,11 @@ var fx = (function () {
                     s +
                     'void main(){vec4 color=vec4(0.0);float total=0.0;vec2 toCenter=center-texCoord*texSize;float offset=random(vec3(12.9898,78.233,151.7182),0.0);for(float t=0.0;t<=40.0;t++){float percent=(t+offset)/40.0;float weight=4.0*(percent-percent*percent);vec4 sample=texture2D(texture,texCoord+toCenter*percent*strength/texSize);sample.rgb*=sample.a;color+=sample*weight;total+=weight;}gl_FragColor=color/total;gl_FragColor.rgb/=gl_FragColor.a+0.00001;}',
             );
-        f.call(this, a.zoomBlur, { center: [b, d], strength: c, texSize: [this.width, this.height] });
+        f.call(this, a.zoomBlur, {
+            center: [b, d],
+            strength: c,
+            texSize: [this.width, this.height],
+        });
         return this;
     }
     function U(b, d, c, e) {
@@ -394,7 +407,12 @@ var fx = (function () {
                 null,
                 'uniform sampler2D texture;uniform vec2 center;uniform float angle;uniform float scale;uniform vec2 texSize;varying vec2 texCoord;float pattern(){float s=sin(angle),c=cos(angle);vec2 tex=texCoord*texSize-center;vec2 point=vec2(c*tex.x-s*tex.y,s*tex.x+c*tex.y)*scale;return(sin(point.x)*sin(point.y))*4.0;}void main(){vec4 color=texture2D(texture,texCoord);float average=(color.r+color.g+color.b)/3.0;gl_FragColor=vec4(vec3(average*10.0-5.0+pattern()),color.a);}',
             );
-        f.call(this, a.dotScreen, { center: [b, d], angle: c, scale: Math.PI / e, texSize: [this.width, this.height] });
+        f.call(this, a.dotScreen, {
+            center: [b, d],
+            angle: c,
+            scale: Math.PI / e,
+            texSize: [this.width, this.height],
+        });
         return this;
     }
     function W(b) {
@@ -425,7 +443,11 @@ var fx = (function () {
                 null,
                 'uniform sampler2D texture;uniform vec2 center;uniform float scale;uniform vec2 texSize;varying vec2 texCoord;void main(){vec2 tex=(texCoord*texSize-center)/scale;tex.y/=0.866025404;tex.x-=tex.y*0.5;vec2 a;if(tex.x+tex.y-floor(tex.x)-floor(tex.y)<1.0)a=vec2(floor(tex.x),floor(tex.y));else a=vec2(ceil(tex.x),ceil(tex.y));vec2 b=vec2(ceil(tex.x),floor(tex.y));vec2 c=vec2(floor(tex.x),ceil(tex.y));vec3 TEX=vec3(tex.x,tex.y,1.0-tex.x-tex.y);vec3 A=vec3(a.x,a.y,1.0-a.x-a.y);vec3 B=vec3(b.x,b.y,1.0-b.x-b.y);vec3 C=vec3(c.x,c.y,1.0-c.x-c.y);float alen=length(TEX-A);float blen=length(TEX-B);float clen=length(TEX-C);vec2 choice;if(alen<blen){if(alen<clen)choice=a;else choice=c;}else{if(blen<clen)choice=b;else choice=c;}choice.x+=choice.y*0.5;choice.y*=0.866025404;choice*=scale/texSize;gl_FragColor=texture2D(texture,choice+center/texSize);}',
             );
-        f.call(this, a.hexagonalPixelate, { center: [b, d], scale: c, texSize: [this.width, this.height] });
+        f.call(this, a.hexagonalPixelate, {
+            center: [b, d],
+            scale: c,
+            texSize: [this.width, this.height],
+        });
         return this;
     }
     function Y(b) {
@@ -435,7 +457,10 @@ var fx = (function () {
                 null,
                 'uniform sampler2D texture;uniform float strength;uniform vec2 texSize;varying vec2 texCoord;void main(){vec2 dx=vec2(1.0/texSize.x,0.0);vec2 dy=vec2(0.0,1.0/texSize.y);vec4 color=texture2D(texture,texCoord);float bigTotal=0.0;float smallTotal=0.0;vec3 bigAverage=vec3(0.0);vec3 smallAverage=vec3(0.0);for(float x=-2.0;x<=2.0;x+=1.0){for(float y=-2.0;y<=2.0;y+=1.0){vec3 sample=texture2D(texture,texCoord+dx*x+dy*y).rgb;bigAverage+=sample;bigTotal+=1.0;if(abs(x)+abs(y)<2.0){smallAverage+=sample;smallTotal+=1.0;}}}vec3 edge=max(vec3(0.0),bigAverage/bigTotal-smallAverage/smallTotal);gl_FragColor=vec4(color.rgb-dot(edge,edge)*strength*100000.0,color.a);}',
             );
-        f.call(this, a.ink, { strength: b * b * b * b * b, texSize: [this.width, this.height] });
+        f.call(this, a.ink, {
+            strength: b * b * b * b * b,
+            texSize: [this.width, this.height],
+        });
         return this;
     }
     function Z(b, d, c, e) {
@@ -493,7 +518,12 @@ var fx = (function () {
                 'uniform float radius;uniform float angle;uniform vec2 center;',
                 'coord-=center;float distance=length(coord);if(distance<radius){float percent=(radius-distance)/radius;float theta=percent*percent*angle;float s=sin(theta);float c=cos(theta);coord=vec2(coord.x*c-coord.y*s,coord.x*s+coord.y*c);}coord+=center;',
             );
-        f.call(this, a.swirl, { radius: c, center: [b, d], angle: e, texSize: [this.width, this.height] });
+        f.call(this, a.swirl, {
+            radius: c,
+            center: [b, d],
+            angle: e,
+            texSize: [this.width, this.height],
+        });
         return this;
     }
     var v = {};
@@ -588,7 +618,13 @@ var fx = (function () {
             a = null;
         }
         if (!a) throw 'This browser does not support WebGL';
-        b._ = { gl: a, isInitialized: !1, texture: null, spareTexture: null, flippedShader: null };
+        b._ = {
+            gl: a,
+            isInitialized: !1,
+            texture: null,
+            spareTexture: null,
+            flippedShader: null,
+        };
         b.texture = k(A);
         b.draw = k(C);
         b.update = k(D);

@@ -24,7 +24,12 @@ class Effects_borders_class {
         var settings = {
             title: 'Borders',
             params: [
-                { name: 'color', title: 'Color:', value: (filter.color ??= config.COLOR), type: 'color' },
+                {
+                    name: 'color',
+                    title: 'Color:',
+                    value: (filter.color ??= config.COLOR),
+                    type: 'color',
+                },
                 { name: 'size', title: 'Size:', value: (filter.size ??= 10) },
             ],
             on_finish: function (params) {

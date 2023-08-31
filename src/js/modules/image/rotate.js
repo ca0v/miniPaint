@@ -55,7 +55,12 @@ class Image_rotate_class {
         var settings = {
             title: 'Rotate',
             params: [
-                { name: 'rotate', title: 'Rotate:', value: config.layer.rotate, range: [0, 360] },
+                {
+                    name: 'rotate',
+                    title: 'Rotate:',
+                    value: config.layer.rotate,
+                    range: [0, 360],
+                },
                 { name: 'right_angle', title: 'Right angle:', values: angles },
             ],
             on_change: function (params, canvas_preview, w, h) {
