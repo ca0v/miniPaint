@@ -336,12 +336,18 @@ export default class DwLasso_class extends Base_tools_class {
     // for each image layer, fill the selection with the background color
     imageLayers.forEach((imageLayer) => {
       const { x, y, width, height, width_original, height_original, link } = imageLayer;
+
+      const sx = width / width_original;
+      const sy = height / height_original;
+
       console.log(
         JSON.stringify({
           x,
           y,
           width,
           height,
+          sx,
+          sy,
           width_original,
           height_original,
           link_width: link.width,
@@ -358,6 +364,7 @@ export default class DwLasso_class extends Base_tools_class {
       ctx.drawImage(link, 0, 0);
 
       // draw the clipping path
+      ctx.scale(1 / sx, 1 / sy);
       ctx.translate(-x, -y);
       ctx.beginPath();
       renderAsPath(ctx, this.data);
