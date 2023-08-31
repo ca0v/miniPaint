@@ -1105,10 +1105,19 @@ export default class DwLasso_class extends Base_tools_class {
     dy = -Math.round(dy);
 
     let { x, y } = zoomView.getPosition();
+    // this is set with screen coordinates but then it is modified, so not what I'm looking for (values are negative and scaled)
+    const maybe1 = zoomView.toScreen({ x, y });
+    const maybe2 = zoomView.toWorld(x, y);
+    const probably = { x: -x * this.scale, y: -y * this.scale };
+    console.log(
+      `getPosition: (${x},${y})`,
+      `maybe1: ${JSON.stringify(maybe1)}`,
+      `maybe2: ${JSON.stringify(maybe2)}`,
+      `probably: ${JSON.stringify(probably)}`,
+    );
 
     if (!this.hack) {
-      this.hack = { x: zoomView.getContext().canvas.width / 2, y: zoomView.getContext().canvas.height / 2 };
-      console.log(`panViewport: hack=${JSON.stringify(this.hack)}`);
+      this.hack = probably;
     }
 
     this.hack.x = x = Math.min(
