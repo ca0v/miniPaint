@@ -514,6 +514,16 @@ export default class DwLasso_class extends Base_tools_class {
       // nothing to do
     });
 
+    // surfacing for visibility, will not customize
+    this.state.on('Pinch', (dragEvent) => {
+      this.state.trigger('Pinch', dragEvent);
+    });
+
+    // surfacing for visibility, will not customize
+    this.state.on('Spread', (dragEvent) => {
+      this.state.trigger('Spread', dragEvent);
+    });
+
     this.state.on('DragDrag', (dragEvent) => {
       const { dragDirectionInDegrees: degrees, dragDistanceInPixels: distance } = dragEvent;
       console.log(`DragDrag: ${distance}px @ ${degrees} degrees`);
@@ -1066,7 +1076,7 @@ export default class DwLasso_class extends Base_tools_class {
     if (mouseEvent.touches?.length === 2) {
       const touch1 = mouseEvent.touches[0];
       const touch2 = mouseEvent.touches[1];
-      const centerPoint = center({ x: touch1.clientX, y: touch1.clientY }, { x: touch2.clientX, y: touch2.clientY });
+      const centerPoint = center(touch1, touch2);
 
       console.log(`pinch zoom at ${centerPoint.x}, ${centerPoint.y}`);
       lasso.GUI_preview.zoom_data.x = centerPoint.x;

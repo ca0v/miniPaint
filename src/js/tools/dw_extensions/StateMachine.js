@@ -147,7 +147,7 @@ export class StateMachine {
             const delta2 = distance(touchState.pinch.touch2, touch2);
             const angle1 = angleOf(touch1, touchState.pinch.touch1);
             const angle2 = angleOf(touch2, touchState.pinch.touch2);
-            console.log(`angle1: ${angle1}, angle2: ${angle2}`);
+
             if (
               delta1 > MINIMAL_SPREAD_DISTANCE &&
               delta2 > MINIMAL_SPREAD_DISTANCE &&
@@ -158,8 +158,17 @@ export class StateMachine {
               const delta = currentDistance - startDistance;
               if (Math.abs(delta) > MINIMAL_SPREAD_DISTANCE) {
                 touchState.pinch = { touch1, touch2 };
+                const args = {
+                  currentDistanceInPixels: currentDistance,
+                  priorDistanceInPixels: delta,
+                  dragDistanceInPixels: (delta1 + delta2) / 2,
+                  dragDirectionInDegrees: angleOf(touch2, touch1),
+                  touches: [touch1, touch2],
+                };
+
                 const pinchDirection = delta > 0 ? 'Spread' : 'Pinch';
-                this.trigger(pinchDirection, touchEvent);
+
+                this.events.trigger(pinchDirection, args);
                 return;
               }
             }
