@@ -87,6 +87,9 @@ export default class DwLasso_class extends Base_tools_class {
     this.metrics = {
       timeOfMove: Date.now(),
       lastPointMoved: null,
+      speed: 1,
+      ACCELERATION: 0.3,
+      MAX_SPEED: 25,
     };
 
     this.Base_layers = new Base_layers_class();
@@ -628,11 +631,6 @@ export default class DwLasso_class extends Base_tools_class {
       movePointDownLeft1Units: () => this.movePoint(-1, 1),
       movePointDownRight1Units: () => this.movePoint(1, 1),
 
-      movePointLeft10Units: () => this.movePoint(-10, 0),
-      movePointRight10Units: () => this.movePoint(10, 0),
-      movePointUp10Units: () => this.movePoint(0, -10),
-      movePointDown10Units: () => this.movePoint(0, 10),
-
       closePolygon: () => {},
       deletePointAndClosePolygon: () => {
         this.deletePoint();
@@ -907,18 +905,6 @@ export default class DwLasso_class extends Base_tools_class {
       .do(this.state.actions.movePointDownRight1Units);
 
     this.state
-      .about('move the point x10')
-      .from([Status.editing, Status.placing])
-      .when(Keyboard.MovePointLeft10)
-      .do(this.state.actions.movePointLeft10Units)
-      .butWhen(Keyboard.MovePointRight10)
-      .do(this.state.actions.movePointRight10Units)
-      .butWhen(Keyboard.MovePointUp10)
-      .do(this.state.actions.movePointUp10Units)
-      .butWhen(Keyboard.MovePointDown10)
-      .do(this.state.actions.movePointDown10Units);
-
-    this.state
       .about('after deleting the last point indicate we are ready for the 1st point')
       .from(Status.editing)
       .goto(Status.ready)
@@ -1019,31 +1005,45 @@ export default class DwLasso_class extends Base_tools_class {
   }
 
   movePoint(dx, dy) {
+    if (!dx && !dy) return; // nothing to do
+
     const lasso = this;
-    const scale = 1 * this.scale;
 
     const isMidpoint = lasso.hover?.midpointIndex >= 0;
-    let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
 
-    if (dx || dy) {
-      if (isMidpoint) {
-        // create the point an select the new point
-        const index = lasso.hover.midpointIndex;
-        const point = center(lasso.data.at(index), lasso.data.at((index + 1) % lasso.data.length));
-        lasso.snapshot('before moving point', () => {
-          lasso.data.splice(index + 1, 0, point);
-        });
-        lasso.hover = { pointIndex: index + 1 };
-      }
-
-      lasso.delayedSnapshot('point moved');
-      const point = lasso.data.at(lasso.hover.pointIndex);
-      point.x += dx * scale;
-      point.y += dy * scale;
-      lasso.metrics.timeOfMove = Date.now();
-      lasso.metrics.lastPointMoved = point;
-      lasso.Base_layers.render();
+    const timeOfLastMove = this.metrics.timeOfMove;
+    this.metrics.timeOfMove = Date.now();
+    // if the time between moves is short, then increase the speed, but if it's long, then reset the speed
+    if (timeOfLastMove && this.metrics.timeOfMove - timeOfLastMove < 100) {
+      this.metrics.speed = Math.max(
+        1,
+        Math.min(this.metrics.MAX_SPEED, this.metrics.speed + this.metrics.ACCELERATION),
+      );
+      console.log(`speed=${this.metrics.speed}`);
+    } else {
+      this.metrics.speed = 1;
     }
+
+    dx *= this.metrics.speed * this.scale;
+    dy *= this.metrics.speed * this.scale;
+
+    if (isMidpoint) {
+      // create the point an select the new point
+      const index = lasso.hover.midpointIndex;
+      const point = center(lasso.data.at(index), lasso.data.at((index + 1) % lasso.data.length));
+      lasso.snapshot('before moving point', () => {
+        lasso.data.splice(index + 1, 0, point);
+      });
+      lasso.hover = { pointIndex: index + 1 };
+    }
+
+    lasso.delayedSnapshot('point moved');
+    const point = lasso.data.at(lasso.hover.pointIndex);
+    point.x += dx;
+    point.y += dy;
+    lasso.metrics.timeOfMove = Date.now();
+    lasso.metrics.lastPointMoved = point;
+    lasso.Base_layers.render();
   }
 
   moveToNextVertex(indexOffset) {

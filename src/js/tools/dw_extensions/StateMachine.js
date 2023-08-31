@@ -7,32 +7,6 @@ import { log } from './log.js';
 
 const MINIMAL_SPREAD_DISTANCE = 25;
 
-/**
- * The ideal would be to make state changes intuitive and easy to modify.  For example, shift+click closes the polygon as does [Space].  The [Space] is sort of intuitive because
- * it is associated with a state called "ClosePolygon" but it would be better if it were part of a state diagram, for example:
- *
-  const s = new StateMachine("Magic Crop Tool");
-
-  // register the event handlers
-  s.register({
-    placePointAtClickLocation: () => {
-    },
-    movePointLeft10Units: () => {
-    },
-    closePolygon: () => {
-    },
-    placePointAtCenterOfCanvas: () => {
-    },
-  })
-
-  // register the events to be handled
-  s.from(s.states.drawing).goto(s.states.editing).when(s.mouseState("Shift+Click")).do(s.actions.placePointAtClickLocation);
-  s.from(s.states.editing).goto(s.state.editing).when(s.keyboardState(s => s === "Ctrl+Shift+ArrowLeft")).do(s.actions.movePointLeft10Units);
-  s.from(s.states.placing).goto(s.states.editing).when(s.keyboardState(" ")).do(s.actions.closePolygon);
-  s.from(s.states.ready).goto(s.states.drawing).when(s.mouseState("Shift+Click")).do(s.actions.placePointAtCenterOfCanvas);
-
- */
-
 export class StateMachine {
   constructor(states) {
     if (!states.length) throw 'You must provide at least one state';
