@@ -51,6 +51,9 @@ class GUI_tools_class {
                 }
 
                 var classObj = plugins_context(key);
+
+                // dataworks: skip if not a class
+                if (!classObj.default) return;
                 var object = new classObj.default(ctx);
 
                 var title = _this.Helper.ucfirst(object.name);

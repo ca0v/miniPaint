@@ -460,6 +460,18 @@ config.TOOLS = [
         },
     },
     {
+        name: 'dw_lasso',
+        on_activate: 'on_activate',
+        on_update: 'on_params_update',
+        on_leave: 'on_leave',
+        attributes: {
+            dw_crop: true,
+            dw_cut: true,
+            dw_reset: true,
+            dw_transparent: true,
+        },
+    },
+    {
         name: 'blur',
         attributes: {
             size: 30,
