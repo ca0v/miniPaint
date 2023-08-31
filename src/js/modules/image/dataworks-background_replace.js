@@ -264,7 +264,11 @@ class Effects_backgroundReplace_class {
                     injectCustomColorsIntoColorPicker(colorPicker);
                     createColorPickerButtons(target, { canvas_preview, w, h });
                     colorPicker.addEventListener('change', () => {
-                        createColorPickerButtons(target, { canvas_preview, w, h });
+                        createColorPickerButtons(target, {
+                            canvas_preview,
+                            w,
+                            h,
+                        });
                     });
                 }
 

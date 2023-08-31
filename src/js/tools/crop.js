@@ -10,7 +10,11 @@ import Base_selection_class from './../core/base-selection.js';
 import alertify from './../../../node_modules/alertifyjs/build/alertify.min.js';
 
 const USE_DATAWORKS = true;
-const mouseDownState = { mouse: { x: 0, y: 0 }, selection: { x: 0, y: 0, width: 0, height: 0 }, mode: '' };
+const mouseDownState = {
+    mouse: { x: 0, y: 0 },
+    selection: { x: 0, y: 0, width: 0, height: 0 },
+    mode: '',
+};
 
 class Crop_class extends Base_tools_class {
     constructor(ctx) {
