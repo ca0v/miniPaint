@@ -121,11 +121,15 @@ class GUI_menu_class {
         } else {
             return `
 				<li>
-					<a id="main_menu_${level}_${index}" role="menuitem" tabindex="-1" aria-haspopup="${!!definition.children + ''}"
+					<a id="main_menu_${level}_${index}" role="menuitem" tabindex="-1" aria-haspopup="${
+                        !!definition.children + ''
+                    }"
 						href="${definition.href ? definition.href : 'javascript:void(0)'}"
 						target="${definition.href ? '_blank' : '_self'}"
 						data-level="${level}" data-index="${index}">
-						<span class="name"><span class="trn">${definition.name}</span>${definition.ellipsis ? ' ...' : ''}</span>
+						<span class="name"><span class="trn">${definition.name}</span>${
+                            definition.ellipsis ? ' ...' : ''
+                        }</span>
 						${
                             !!definition.shortcut
                                 ? `
@@ -140,7 +144,10 @@ class GUI_menu_class {
     }
 
     on_mouse_down_body(event) {
-        const target = event.touches && event.touches.length > 0 ? event.touches[0].target : event.target;
+        const target =
+            event.touches && event.touches.length > 0
+                ? event.touches[0].target
+                : event.target;
 
         // Clicked outside of menu; close dropdowns.
         if (target && !this.menuContainer.contains(target)) {
@@ -150,7 +157,9 @@ class GUI_menu_class {
 
     on_focus_menu_bar(event) {
         if (document.activeElement === this.menuBarNode) {
-            let lastFocusedLink = this.menuBarNode.querySelector(`[data-index="${this.lastFocusedMenuBarLink}"]`);
+            let lastFocusedLink = this.menuBarNode.querySelector(
+                `[data-index="${this.lastFocusedMenuBarLink}"]`,
+            );
             if (!lastFocusedLink) {
                 lastFocusedLink = this.menuBarNode.querySelector('a');
             }
@@ -159,7 +168,8 @@ class GUI_menu_class {
     }
 
     on_focus_menu_bar_link(event) {
-        this.lastFocusedMenuBarLink = parseInt(event.target.getAttribute('data-index'), 10) || 0;
+        this.lastFocusedMenuBarLink =
+            parseInt(event.target.getAttribute('data-index'), 10) || 0;
     }
 
     on_blur_menu_bar(event) {
@@ -171,26 +181,37 @@ class GUI_menu_class {
         const activeElement = document.activeElement;
 
         if (activeElement && activeElement.tagName === 'A') {
-            const linkLevel = parseInt(activeElement.getAttribute('data-level'), 10) || 0;
-            const linkIndex = parseInt(activeElement.getAttribute('data-index'), 10) || 0;
+            const linkLevel =
+                parseInt(activeElement.getAttribute('data-level'), 10) || 0;
+            const linkIndex =
+                parseInt(activeElement.getAttribute('data-index'), 10) || 0;
             const menuParent = activeElement.closest('ul');
             if (linkLevel === 0) {
                 if (['Right', 'ArrowRight'].includes(event.key)) {
-                    let nextLink = menuParent.querySelector(`[data-index="${linkIndex + 1}"]`);
+                    let nextLink = menuParent.querySelector(
+                        `[data-index="${linkIndex + 1}"]`,
+                    );
                     if (!nextLink) {
                         nextLink = menuParent.querySelector(`[data-index="0"]`);
                     }
                     nextLink.focus();
                 } else if (['Left', 'ArrowLeft'].includes(event.key)) {
-                    let previousLink = menuParent.querySelector(`[data-index="${linkIndex - 1}"]`);
+                    let previousLink = menuParent.querySelector(
+                        `[data-index="${linkIndex - 1}"]`,
+                    );
                     if (!previousLink) {
                         previousLink = menuParent.querySelector(
-                            `[data-index="${menuParent.querySelectorAll('[data-index]').length - 1}"]`,
+                            `[data-index="${
+                                menuParent.querySelectorAll('[data-index]')
+                                    .length - 1
+                            }"]`,
                         );
                     }
                     previousLink.focus();
                 } else if (['Down', 'ArrowDown'].includes(event.key)) {
-                    if (activeElement.getAttribute('aria-haspopup') === 'true') {
+                    if (
+                        activeElement.getAttribute('aria-haspopup') === 'true'
+                    ) {
                         event.preventDefault();
                         activeElement.click();
                     }
@@ -198,7 +219,12 @@ class GUI_menu_class {
                     menuParent.querySelector(`[data-index="0"]`).focus();
                 } else if (event.key === 'End') {
                     menuParent
-                        .querySelector(`[data-index="${menuParent.querySelectorAll('[data-index]').length - 1}"]`)
+                        .querySelector(
+                            `[data-index="${
+                                menuParent.querySelectorAll('[data-index]')
+                                    .length - 1
+                            }"]`,
+                        )
                         .focus();
                 } else if ([' ', 'Enter'].includes(event.key)) {
                     event.preventDefault();
@@ -207,28 +233,41 @@ class GUI_menu_class {
             } else {
                 if (['Up', 'ArrowUp'].includes(event.key)) {
                     event.preventDefault();
-                    let previousLink = menuParent.querySelector(`[data-index="${linkIndex - 1}"]`);
+                    let previousLink = menuParent.querySelector(
+                        `[data-index="${linkIndex - 1}"]`,
+                    );
                     if (!previousLink) {
-                        previousLink = menuParent.querySelector(`[data-index="${linkIndex - 2}"]`); // Skip dividers
+                        previousLink = menuParent.querySelector(
+                            `[data-index="${linkIndex - 2}"]`,
+                        ); // Skip dividers
                     }
                     if (!previousLink) {
                         previousLink = menuParent.querySelector(
-                            `[data-index="${this.dropdownStack[linkLevel - 1].children.length - 1}"]`,
+                            `[data-index="${
+                                this.dropdownStack[linkLevel - 1].children
+                                    .length - 1
+                            }"]`,
                         );
                     }
                     previousLink.focus();
                 } else if (['Down', 'ArrowDown'].includes(event.key)) {
                     event.preventDefault();
-                    let nextLink = menuParent.querySelector(`[data-index="${linkIndex + 1}"]`);
+                    let nextLink = menuParent.querySelector(
+                        `[data-index="${linkIndex + 1}"]`,
+                    );
                     if (!nextLink) {
-                        nextLink = menuParent.querySelector(`[data-index="${linkIndex + 2}"]`); // Skip dividers
+                        nextLink = menuParent.querySelector(
+                            `[data-index="${linkIndex + 2}"]`,
+                        ); // Skip dividers
                     }
                     if (!nextLink) {
                         nextLink = menuParent.querySelector(`[data-index="0"]`);
                     }
                     nextLink.focus();
                 } else if (['Right', 'ArrowRight'].includes(event.key)) {
-                    if (activeElement.getAttribute('aria-haspopup') === 'true') {
+                    if (
+                        activeElement.getAttribute('aria-haspopup') === 'true'
+                    ) {
                         activeElement.click();
                     } else if (this.dropdownStack.length > 1) {
                         const opener = this.dropdownStack[linkLevel - 1].opener;
@@ -236,10 +275,20 @@ class GUI_menu_class {
                         opener.focus();
                     } else {
                         const menuBarLinkIndex =
-                            parseInt(this.dropdownStack[0].opener.getAttribute('data-index'), 10) || 0;
-                        let nextLink = this.menuBarNode.querySelector(`[data-index="${menuBarLinkIndex + 1}"]`);
+                            parseInt(
+                                this.dropdownStack[0].opener.getAttribute(
+                                    'data-index',
+                                ),
+                                10,
+                            ) || 0;
+                        let nextLink = this.menuBarNode.querySelector(
+                            `[data-index="${menuBarLinkIndex + 1}"]`,
+                        );
                         if (!nextLink) {
-                            nextLink = this.menuBarNode.querySelector(`[data-index="0"]`);
+                            nextLink =
+                                this.menuBarNode.querySelector(
+                                    `[data-index="0"]`,
+                                );
                         }
                         nextLink.click();
                     }
@@ -250,11 +299,22 @@ class GUI_menu_class {
                         opener.focus();
                     } else {
                         const menuBarLinkIndex =
-                            parseInt(this.dropdownStack[0].opener.getAttribute('data-index'), 10) || 0;
-                        let previousLink = this.menuBarNode.querySelector(`[data-index="${menuBarLinkIndex - 1}"]`);
+                            parseInt(
+                                this.dropdownStack[0].opener.getAttribute(
+                                    'data-index',
+                                ),
+                                10,
+                            ) || 0;
+                        let previousLink = this.menuBarNode.querySelector(
+                            `[data-index="${menuBarLinkIndex - 1}"]`,
+                        );
                         if (!previousLink) {
                             previousLink = this.menuBarNode.querySelector(
-                                `[data-index="${this.menuBarNode.querySelectorAll('[data-index]').length - 1}"]`,
+                                `[data-index="${
+                                    this.menuBarNode.querySelectorAll(
+                                        '[data-index]',
+                                    ).length - 1
+                                }"]`,
                             );
                         }
                         previousLink.click();
@@ -263,7 +323,12 @@ class GUI_menu_class {
                     menuParent.querySelector(`[data-index="0"]`).focus();
                 } else if (event.key === 'End') {
                     menuParent
-                        .querySelector(`[data-index="${this.dropdownStack[linkLevel - 1].children.length - 1}"]`)
+                        .querySelector(
+                            `[data-index="${
+                                this.dropdownStack[linkLevel - 1].children
+                                    .length - 1
+                            }"]`,
+                        )
                         .focus();
                 } else if ([' ', 'Enter'].includes(event.key)) {
                     event.preventDefault();
@@ -323,7 +388,10 @@ class GUI_menu_class {
         // Find link definition
         let children = menuDefinition;
         for (let i = 0; i < level; i++) {
-            const childIndex = this.dropdownStack[i] != null ? this.dropdownStack[i].index : index;
+            const childIndex =
+                this.dropdownStack[i] != null
+                    ? this.dropdownStack[i].index
+                    : index;
             children = children[childIndex].children;
         }
         let definition = children[index];
@@ -342,8 +410,13 @@ class GUI_menu_class {
     close_child_dropdowns(level) {
         for (let i = this.dropdownStack.length - 1; i >= 0; i--) {
             if (i >= level) {
-                this.dropdownStack[i].element.parentNode.removeChild(this.dropdownStack[i].element);
-                this.dropdownStack[i].opener.setAttribute('aria-expanded', false);
+                this.dropdownStack[i].element.parentNode.removeChild(
+                    this.dropdownStack[i].element,
+                );
+                this.dropdownStack[i].opener.setAttribute(
+                    'aria-expanded',
+                    false,
+                );
             }
         }
         this.dropdownStack = this.dropdownStack.slice(0, level);
@@ -355,7 +428,10 @@ class GUI_menu_class {
         // Find child list in the menu definition
         let children = menuDefinition;
         for (let i = 0; i <= level; i++) {
-            const childIndex = this.dropdownStack[i] != null ? this.dropdownStack[i].index : index;
+            const childIndex =
+                this.dropdownStack[i] != null
+                    ? this.dropdownStack[i].index
+                    : index;
             children = children[childIndex].children;
         }
 
@@ -364,10 +440,17 @@ class GUI_menu_class {
         dropdownElement.className = 'menu_dropdown';
         dropdownElement.role = 'menu';
         dropdownElement.tabIndex = 0;
-        dropdownElement.setAttribute('aria-labelledby', 'main_menu_' + level + '_' + index);
+        dropdownElement.setAttribute(
+            'aria-labelledby',
+            'main_menu_' + level + '_' + index,
+        );
         let dropdownTemplate = '';
         for (let i = 0; i < children.length; i++) {
-            dropdownTemplate += this.generate_menu_dropdown_item_template(children[i], level + 1, i);
+            dropdownTemplate += this.generate_menu_dropdown_item_template(
+                children[i],
+                level + 1,
+                i,
+            );
         }
         dropdownElement.innerHTML = dropdownTemplate;
 
@@ -392,21 +475,30 @@ class GUI_menu_class {
     }
 
     position_dropdowns() {
-        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-        const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+        const vw = Math.max(
+            document.documentElement.clientWidth || 0,
+            window.innerWidth || 0,
+        );
+        const vh = Math.max(
+            document.documentElement.clientHeight || 0,
+            window.innerHeight || 0,
+        );
 
         let topNavHeight = 0;
         for (let level = 0; level < this.dropdownStack.length; level++) {
             const dropdownElement = this.dropdownStack[level].element;
-            const openerRect = this.dropdownStack[level].opener.getBoundingClientRect();
+            const openerRect =
+                this.dropdownStack[level].opener.getBoundingClientRect();
 
             topNavHeight = openerRect.height;
-            const dropdownMaxHeight = vh - topNavHeight - this.dropdownMaxHeightMargin;
+            const dropdownMaxHeight =
+                vh - topNavHeight - this.dropdownMaxHeightMargin;
             dropdownElement.style.maxHeight = dropdownMaxHeight + 'px';
             const dropdownRect = dropdownElement.getBoundingClientRect();
 
             if (level === 0) {
-                dropdownElement.style.top = openerRect.y + openerRect.height + 'px';
+                dropdownElement.style.top =
+                    openerRect.y + openerRect.height + 'px';
 
                 let left = openerRect.x;
                 if (left + dropdownRect.width > vw) {
@@ -421,8 +513,12 @@ class GUI_menu_class {
                 dropdownElement.style.left = left + 'px';
             } else {
                 let top = openerRect.y;
-                if (top + dropdownRect.height > vh - this.dropdownMaxHeightMargin) {
-                    top = vh - this.dropdownMaxHeightMargin - dropdownRect.height;
+                if (
+                    top + dropdownRect.height >
+                    vh - this.dropdownMaxHeightMargin
+                ) {
+                    top =
+                        vh - this.dropdownMaxHeightMargin - dropdownRect.height;
                 }
                 dropdownElement.style.top = top + 'px';
 

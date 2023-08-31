@@ -22,11 +22,14 @@ export class Set_selection_action extends Base_action {
     async do() {
         super.do();
         this.settings_reference = app.Layers.Base_selection.find_settings();
-        this.old_settings_data = JSON.parse(JSON.stringify(this.settings_reference.data));
+        this.old_settings_data = JSON.parse(
+            JSON.stringify(this.settings_reference.data),
+        );
         if (this.x != null) this.settings_reference.data.x = this.x;
         if (this.y != null) this.settings_reference.data.y = this.y;
         if (this.width != null) this.settings_reference.data.width = this.width;
-        if (this.height != null) this.settings_reference.data.height = this.height;
+        if (this.height != null)
+            this.settings_reference.data.height = this.height;
 
         config.need_render = true;
     }
@@ -35,11 +38,13 @@ export class Set_selection_action extends Base_action {
         super.undo();
         if (this.old_settings_override) {
             for (let prop in this.old_settings_override) {
-                this.settings_reference.data[prop] = this.old_settings_override[prop];
+                this.settings_reference.data[prop] =
+                    this.old_settings_override[prop];
             }
         } else {
             for (let prop in this.old_settings_data) {
-                this.settings_reference.data[prop] = this.old_settings_data[prop];
+                this.settings_reference.data[prop] =
+                    this.old_settings_data[prop];
             }
         }
         this.settings_reference = null;

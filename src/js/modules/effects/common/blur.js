@@ -33,7 +33,10 @@ class Effects_blur_class extends Effects_common_class {
     convert_value(value, params, type) {
         //adapt size to real canvas dimensions
         if (type == 'preview') {
-            var diff = this.POP.width_mini / this.POP.height_mini / (config.WIDTH / config.HEIGHT);
+            var diff =
+                this.POP.width_mini /
+                this.POP.height_mini /
+                (config.WIDTH / config.HEIGHT);
 
             value = value * diff;
         }

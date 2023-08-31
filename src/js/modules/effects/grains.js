@@ -16,7 +16,9 @@ class Effects_grains_class {
         var _this = this;
 
         if (config.layer.type != 'image') {
-            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            alertify.error(
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
+            );
             return;
         }
 
@@ -24,7 +26,9 @@ class Effects_grains_class {
             title: 'Grains',
             preview: true,
             effects: true,
-            params: [{ name: 'level', title: 'Level:', value: '30', range: [0, 50] }],
+            params: [
+                { name: 'level', title: 'Level:', value: '30', range: [0, 50] },
+            ],
             on_change: function (params, canvas_preview, w, h) {
                 var img = canvas_preview.getImageData(0, 0, w, h);
                 var data = _this.change(img, params);
@@ -48,7 +52,9 @@ class Effects_grains_class {
         ctx.putImageData(data, 0, 0);
 
         //save
-        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
+        return app.State.do_action(
+            new app.Actions.Update_layer_image_action(canvas),
+        );
     }
 
     change(data, params) {
@@ -68,9 +74,11 @@ class Effects_grains_class {
 
                 if (imgData[x] - delta < 0) imgData[x] = -(imgData[x] - delta);
                 else imgData[x] = imgData[x] - delta;
-                if (imgData[x + 1] - delta < 0) imgData[x + 1] = -(imgData[x + 1] - delta);
+                if (imgData[x + 1] - delta < 0)
+                    imgData[x + 1] = -(imgData[x + 1] - delta);
                 else imgData[x + 1] = imgData[x + 1] - delta;
-                if (imgData[x + 2] - delta < 0) imgData[x + 2] = -(imgData[x + 2] - delta);
+                if (imgData[x + 2] - delta < 0)
+                    imgData[x + 2] = -(imgData[x + 2] - delta);
                 else imgData[x + 2] = imgData[x + 2] - delta;
             }
         }
@@ -84,7 +92,12 @@ class Effects_grains_class {
         ctx.drawImage(canvas_thumb, 0, 0);
 
         //now update
-        var img = ctx.getImageData(0, 0, canvas_thumb.width, canvas_thumb.height);
+        var img = ctx.getImageData(
+            0,
+            0,
+            canvas_thumb.width,
+            canvas_thumb.height,
+        );
         var params = {
             level: 30,
         };

@@ -89,7 +89,10 @@ export function updatePreviewSize(preview) {
     const sizerHeight = preview.PREVIEW_SIZE.w * config.RATIO;
 
     log(`setting --canvas-preview-height CSS variable to ${sizerHeight}px`);
-    document.documentElement.style.setProperty('--canvas-preview-height', sizerHeight + 'px');
+    document.documentElement.style.setProperty(
+        '--canvas-preview-height',
+        sizerHeight + 'px',
+    );
 
     log(`setting canvas_preview.height to ${sizerHeight}`);
     canvas.height = sizerHeight;
@@ -113,20 +116,31 @@ export function tweakMenuDefinition(menuDefinition) {
         const fileMenuGroup = findMenuDefinition(menuDefinition, 'File');
         removeMenuItem(fileMenuGroup.children, 'New');
 
-        'Search Images,Save As,Save As Data URL,Quick Save,Quick Load'.split(',').forEach((menuTitle) => {
-            removeMenuItem(fileMenuGroup.children, menuTitle);
-        });
+        'Search Images,Save As,Save As Data URL,Quick Save,Quick Load'
+            .split(',')
+            .forEach((menuTitle) => {
+                removeMenuItem(fileMenuGroup.children, menuTitle);
+            });
 
-        const fileOpenMenuItem = findMenuDefinition(fileMenuGroup.children, 'Open');
+        const fileOpenMenuItem = findMenuDefinition(
+            fileMenuGroup.children,
+            'Open',
+        );
 
-        'Open URL,Open Data URL,Open Test Template,Open from Webcam'.split(',').forEach((menuTitle) => {
-            removeMenuItem(fileOpenMenuItem.children, menuTitle);
-        });
+        'Open URL,Open Data URL,Open Test Template,Open from Webcam'
+            .split(',')
+            .forEach((menuTitle) => {
+                removeMenuItem(fileOpenMenuItem.children, menuTitle);
+            });
 
-        const saveAndReturnMenuItem = appendMenuDefinition(fileMenuGroup.children, lastItem(fileMenuGroup.children), {
-            name: 'Save and Return',
-            target: 'file/save.dataworks_save_copy', // TODO: popup_saveCopy
-        });
+        const saveAndReturnMenuItem = appendMenuDefinition(
+            fileMenuGroup.children,
+            lastItem(fileMenuGroup.children),
+            {
+                name: 'Save and Return',
+                target: 'file/save.dataworks_save_copy', // TODO: popup_saveCopy
+            },
+        );
 
         appendMenuDefinition(fileMenuGroup.children, saveAndReturnMenuItem, {
             name: 'Cancel Image Editing',
@@ -136,10 +150,14 @@ export function tweakMenuDefinition(menuDefinition) {
 
     {
         const editMenuGroup = findMenuDefinition(menuDefinition, 'Edit');
-        appendMenuDefinition(editMenuGroup.children, findMenuDefinition(editMenuGroup.children, 'Redo'), {
-            name: 'Restore Original Image',
-            target: 'edit/restore.restore',
-        });
+        appendMenuDefinition(
+            editMenuGroup.children,
+            findMenuDefinition(editMenuGroup.children, 'Redo'),
+            {
+                name: 'Restore Original Image',
+                target: 'edit/restore.restore',
+            },
+        );
 
         removeMenuItem(editMenuGroup.children, 'Select All');
     }
@@ -162,19 +180,31 @@ export function tweakMenuDefinition(menuDefinition) {
                 removeMenuItem(effectsMenuGroup.children, menuTitle);
             });
 
-        const commonFiltersMenuGroup = findMenuDefinition(effectsMenuGroup.children, 'Common Filters');
-        'Gaussian Blur,Hue Rotate,Negative,Sepia,Shadow'.split(',').forEach((menuTitle) => {
-            removeMenuItem(commonFiltersMenuGroup.children, menuTitle);
-        });
+        const commonFiltersMenuGroup = findMenuDefinition(
+            effectsMenuGroup.children,
+            'Common Filters',
+        );
+        'Gaussian Blur,Hue Rotate,Negative,Sepia,Shadow'
+            .split(',')
+            .forEach((menuTitle) => {
+                removeMenuItem(commonFiltersMenuGroup.children, menuTitle);
+            });
 
         // move commonFilters up one level
         'Brightness,Contrast,Grayscale,Saturate'
             .split(',')
             .reverse()
             .forEach((menuTitle) => {
-                const menuDef = findMenuDefinition(commonFiltersMenuGroup.children, menuTitle);
+                const menuDef = findMenuDefinition(
+                    commonFiltersMenuGroup.children,
+                    menuTitle,
+                );
                 removeMenuItem(commonFiltersMenuGroup.children, menuDef.name);
-                appendMenuDefinition(effectsMenuGroup.children, commonFiltersMenuGroup, menuDef);
+                appendMenuDefinition(
+                    effectsMenuGroup.children,
+                    commonFiltersMenuGroup,
+                    menuDef,
+                );
             });
         removeMenuItem(effectsMenuGroup.children, commonFiltersMenuGroup.name);
         appendMenuDefinition(effectsMenuGroup.children, null, {
@@ -188,10 +218,14 @@ export function tweakMenuDefinition(menuDefinition) {
 
         // Completely obliterate the existing 'Tools' menu
         removeMenuItem(menuDefinition, 'Tools');
-        const toolsMenuGroup = appendMenuDefinition(menuDefinition, effectsMenuGroup, {
-            name: 'Tools',
-            children: [],
-        });
+        const toolsMenuGroup = appendMenuDefinition(
+            menuDefinition,
+            effectsMenuGroup,
+            {
+                name: 'Tools',
+                children: [],
+            },
+        );
 
         appendMenuDefinition(toolsMenuGroup.children, null, {
             divider: true,
@@ -211,15 +245,23 @@ export function tweakMenuDefinition(menuDefinition) {
 
     {
         const toolsMenuGroup = findMenuDefinition(menuDefinition, 'Tools');
-        const addImageMenuItem = appendMenuDefinition(menuDefinition, toolsMenuGroup, {
-            name: 'Add Image',
-            children: [],
-        });
+        const addImageMenuItem = appendMenuDefinition(
+            menuDefinition,
+            toolsMenuGroup,
+            {
+                name: 'Add Image',
+                children: [],
+            },
+        );
 
-        const beardsMenuItem = appendMenuDefinition(addImageMenuItem.children, null, {
-            name: 'Beards',
-            children: [],
-        });
+        const beardsMenuItem = appendMenuDefinition(
+            addImageMenuItem.children,
+            null,
+            {
+                name: 'Beards',
+                children: [],
+            },
+        );
 
         'Blond,Brown,Black & White'.split(',').forEach((menuTitle) => {
             appendMenuDefinition(beardsMenuItem.children, null, {
@@ -228,10 +270,14 @@ export function tweakMenuDefinition(menuDefinition) {
             });
         });
 
-        const moustachesMenuItem = appendMenuDefinition(addImageMenuItem.children, beardsMenuItem, {
-            name: 'Moustaches',
-            children: [],
-        });
+        const moustachesMenuItem = appendMenuDefinition(
+            addImageMenuItem.children,
+            beardsMenuItem,
+            {
+                name: 'Moustaches',
+                children: [],
+            },
+        );
 
         'Blond,Brown,Black & White'.split(',').forEach((menuTitle) => {
             appendMenuDefinition(moustachesMenuItem.children, null, {
@@ -240,10 +286,14 @@ export function tweakMenuDefinition(menuDefinition) {
             });
         });
 
-        const hatsMenuItem = appendMenuDefinition(addImageMenuItem.children, moustachesMenuItem, {
-            name: 'Hats',
-            children: [],
-        });
+        const hatsMenuItem = appendMenuDefinition(
+            addImageMenuItem.children,
+            moustachesMenuItem,
+            {
+                name: 'Hats',
+                children: [],
+            },
+        );
 
         'Brown,Black & White'.split(',').forEach((menuTitle) => {
             appendMenuDefinition(hatsMenuItem.children, null, {
@@ -252,10 +302,14 @@ export function tweakMenuDefinition(menuDefinition) {
             });
         });
 
-        const eyewearMenuItem = appendMenuDefinition(addImageMenuItem.children, hatsMenuItem, {
-            name: 'Eyewear',
-            children: [],
-        });
+        const eyewearMenuItem = appendMenuDefinition(
+            addImageMenuItem.children,
+            hatsMenuItem,
+            {
+                name: 'Eyewear',
+                children: [],
+            },
+        );
 
         'Black,Gold,Green'.split(',').forEach((menuTitle) => {
             appendMenuDefinition(eyewearMenuItem.children, null, {
@@ -306,7 +360,9 @@ export function callIfImageTooSmall(layer, cb) {
     sleep(1000).then(() => {
         if (config.MIN_WIDTH) {
             if (layer.width_original < config.MIN_WIDTH) {
-                warn(`Image width ${layer.width_original} is less than minimum ${config.MIN_WIDTH}`);
+                warn(
+                    `Image width ${layer.width_original} is less than minimum ${config.MIN_WIDTH}`,
+                );
                 $('#errorModalDimensions').modal('show');
                 cb();
                 return;
@@ -314,7 +370,9 @@ export function callIfImageTooSmall(layer, cb) {
         }
         if (config.MIN_HEIGHT) {
             if (layer.height_original < config.MIN_HEIGHT) {
-                warn(`Image height ${layer.height_original} is less than minimum ${config.MIN_HEIGHT}`);
+                warn(
+                    `Image height ${layer.height_original} is less than minimum ${config.MIN_HEIGHT}`,
+                );
                 $('#errorModalDimensions').modal('show');
                 cb();
                 return;
@@ -328,7 +386,9 @@ export function callIfImageTooSmall(layer, cb) {
  */
 export function tweakLayout(app) {
     const tools_container = document.getElementById('tools_container');
-    const toolbarItems = Array.from(tools_container.querySelectorAll('span.item'));
+    const toolbarItems = Array.from(
+        tools_container.querySelectorAll('span.item'),
+    );
     toolbarItems.forEach((item) => {
         const title = item.getAttribute('title');
         if (title) {
@@ -339,7 +399,11 @@ export function tweakLayout(app) {
     aliasTool(app, 'rotate', 'image/rotate.rotate');
     aliasTool(app, 'grayscale', 'effects/common/grayscale.grayscale');
     aliasTool(app, 'brightness', 'effects/common/brightness.brightness');
-    aliasTool(app, 'backgroundReplace', 'image/dataworks-background_replace.backgroundReplace');
+    aliasTool(
+        app,
+        'backgroundReplace',
+        'image/dataworks-background_replace.backgroundReplace',
+    );
 }
 
 function aliasTool(app, toolName, menuName) {
@@ -396,7 +460,8 @@ function isUndefined(value) {
 
 function readSystemValue(name, defaultValue) {
     let result = $(`#${name}`).val();
-    if (hasQueryString('debug') && hasQueryString(name)) return getQueryString(name);
+    if (hasQueryString('debug') && hasQueryString(name))
+        return getQueryString(name);
     if (!isUndefined(result)) return result;
     if (hasQueryString(name)) return getQueryString(name);
     return defaultValue;
@@ -417,16 +482,19 @@ export function tweakConfig(config) {
     sleep(250).then(() => {
         config.MIN_WIDTH = parseInt(readSystemValue('minWidth', '0'));
         config.MIN_HEIGHT = parseInt(readSystemValue('minHeight', '0'));
-        config.REQUIRE_DIMENSIONS = '1' === readSystemValue('requireDimensions', '0');
+        config.REQUIRE_DIMENSIONS =
+            '1' === readSystemValue('requireDimensions', '0');
         config.REQUIRE_CROP = '1' === readSystemValue('requireCrop', '0');
     });
     config.COLOR = '#757575';
     config.RATIO = 1.25;
     config.need_render = true;
 
-    'selection,shape,media,text,clone,blur,sharpen,desaturate,bulge_pinch,animation'.split(',').forEach((name) => {
-        modifyFromConfig(config, name).visible = false;
-    });
+    'selection,shape,media,text,clone,blur,sharpen,desaturate,bulge_pinch,animation'
+        .split(',')
+        .forEach((name) => {
+            modifyFromConfig(config, name).visible = false;
+        });
 
     // modify the title of "Crop" action to "Apply Crop"
     const crop = modifyFromConfig(config, 'crop');

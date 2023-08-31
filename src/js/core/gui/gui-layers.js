@@ -46,57 +46,87 @@ class GUI_layers_class {
     set_events() {
         var _this = this;
 
-        document.getElementById('layers_base').addEventListener('click', function (event) {
-            var target = event.target;
-            if (target.id == 'insert_layer') {
-                //new layer
-                app.State.do_action(new app.Actions.Insert_layer_action());
-            } else if (target.id == 'layer_duplicate') {
-                //duplicate
-                _this.Layer_duplicate.duplicate();
-            } else if (target.id == 'layer_raster') {
-                //raster
-                _this.Layer_raster.raster();
-            } else if (target.id == 'layer_up') {
-                //move layer up
-                app.State.do_action(new app.Actions.Reorder_layer_action(config.layer.id, 1));
-            } else if (target.id == 'layer_down') {
-                //move layer down
-                app.State.do_action(new app.Actions.Reorder_layer_action(config.layer.id, -1));
-            } else if (target.id == 'visibility') {
-                //change visibility
-                return app.State.do_action(new app.Actions.Toggle_layer_visibility_action(target.dataset.id));
-            } else if (target.id == 'delete') {
-                //delete layer
-                app.State.do_action(new app.Actions.Delete_layer_action(target.dataset.id));
-            } else if (target.id == 'layer_name') {
-                //select layer
-                if (target.dataset.id == config.layer.id) return;
-                app.State.do_action(new app.Actions.Select_layer_action(target.dataset.id));
-            } else if (target.id == 'delete_filter') {
-                //delete filter
-                app.State.do_action(new app.Actions.Delete_layer_filter_action(target.dataset.pid, target.dataset.id));
-            } else if (target.id == 'filter_name') {
-                //edit filter
-                var effects = _this.Effects_browser.get_effects_list();
-                var key = target.dataset.filter.toLowerCase();
-                for (var i in effects) {
-                    if (effects[i].title.toLowerCase() == key) {
-                        _this.Base_layers.select(target.dataset.pid);
-                        var function_name = _this.Effects_browser.get_function_from_path(key);
-                        effects[i].object[function_name](target.dataset.id);
+        document
+            .getElementById('layers_base')
+            .addEventListener('click', function (event) {
+                var target = event.target;
+                if (target.id == 'insert_layer') {
+                    //new layer
+                    app.State.do_action(new app.Actions.Insert_layer_action());
+                } else if (target.id == 'layer_duplicate') {
+                    //duplicate
+                    _this.Layer_duplicate.duplicate();
+                } else if (target.id == 'layer_raster') {
+                    //raster
+                    _this.Layer_raster.raster();
+                } else if (target.id == 'layer_up') {
+                    //move layer up
+                    app.State.do_action(
+                        new app.Actions.Reorder_layer_action(
+                            config.layer.id,
+                            1,
+                        ),
+                    );
+                } else if (target.id == 'layer_down') {
+                    //move layer down
+                    app.State.do_action(
+                        new app.Actions.Reorder_layer_action(
+                            config.layer.id,
+                            -1,
+                        ),
+                    );
+                } else if (target.id == 'visibility') {
+                    //change visibility
+                    return app.State.do_action(
+                        new app.Actions.Toggle_layer_visibility_action(
+                            target.dataset.id,
+                        ),
+                    );
+                } else if (target.id == 'delete') {
+                    //delete layer
+                    app.State.do_action(
+                        new app.Actions.Delete_layer_action(target.dataset.id),
+                    );
+                } else if (target.id == 'layer_name') {
+                    //select layer
+                    if (target.dataset.id == config.layer.id) return;
+                    app.State.do_action(
+                        new app.Actions.Select_layer_action(target.dataset.id),
+                    );
+                } else if (target.id == 'delete_filter') {
+                    //delete filter
+                    app.State.do_action(
+                        new app.Actions.Delete_layer_filter_action(
+                            target.dataset.pid,
+                            target.dataset.id,
+                        ),
+                    );
+                } else if (target.id == 'filter_name') {
+                    //edit filter
+                    var effects = _this.Effects_browser.get_effects_list();
+                    var key = target.dataset.filter.toLowerCase();
+                    for (var i in effects) {
+                        if (effects[i].title.toLowerCase() == key) {
+                            _this.Base_layers.select(target.dataset.pid);
+                            var function_name =
+                                _this.Effects_browser.get_function_from_path(
+                                    key,
+                                );
+                            effects[i].object[function_name](target.dataset.id);
+                        }
                     }
                 }
-            }
-        });
+            });
 
-        document.getElementById('layers_base').addEventListener('dblclick', function (event) {
-            var target = event.target;
-            if (target.id == 'layer_name') {
-                //rename layer
-                _this.Layer_rename.rename(target.dataset.id);
-            }
-        });
+        document
+            .getElementById('layers_base')
+            .addEventListener('dblclick', function (event) {
+                var target = event.target;
+                if (target.id == 'layer_name') {
+                    //rename layer
+                    _this.Layer_rename.rename(target.dataset.id);
+                }
+            });
     }
 
     /**
@@ -131,15 +161,27 @@ class GUI_layers_class {
                         '" title="Hide"></button>';
                 else
                     html +=
-                        '	<button class="visibility" id="visibility" data-id="' + value.id + '" title="Show"></button>';
-                html += '	<button class="delete" id="delete" data-id="' + value.id + '" title="Delete"></button>';
+                        '	<button class="visibility" id="visibility" data-id="' +
+                        value.id +
+                        '" title="Show"></button>';
+                html +=
+                    '	<button class="delete" id="delete" data-id="' +
+                    value.id +
+                    '" title="Delete"></button>';
 
                 if (value.composition === 'source-atop') {
-                    html += '	<button class="arrow_down" data-id="' + value.id + '" ></button>';
+                    html +=
+                        '	<button class="arrow_down" data-id="' +
+                        value.id +
+                        '" ></button>';
                 }
 
                 html +=
-                    '	<button class="layer_name" id="layer_name" data-id="' + value.id + '">' + value.name + '</button>';
+                    '	<button class="layer_name" id="layer_name" data-id="' +
+                    value.id +
+                    '">' +
+                    value.name +
+                    '</button>';
                 html += '	<div class="clear"></div>';
                 html += '</div>';
 

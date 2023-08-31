@@ -142,17 +142,28 @@ class GUI_details_class {
 
         //text - special case
         if (config.layer != undefined && config.layer.type == 'text') {
-            document.getElementById('text_detail_params').style.display = 'block';
-            document.getElementById('detail_color').closest('.row').style.display = 'none';
+            document.getElementById('text_detail_params').style.display =
+                'block';
+            document
+                .getElementById('detail_color')
+                .closest('.row').style.display = 'none';
         } else {
-            document.getElementById('text_detail_params').style.display = 'none';
+            document.getElementById('text_detail_params').style.display =
+                'none';
 
-            if (config.layer != undefined && (config.layer.color === null || config.layer.type == 'image')) {
+            if (
+                config.layer != undefined &&
+                (config.layer.color === null || config.layer.type == 'image')
+            ) {
                 //hide color
-                document.getElementById('detail_color').closest('.row').style.display = 'none';
+                document
+                    .getElementById('detail_color')
+                    .closest('.row').style.display = 'none';
             } else {
                 //show color
-                document.getElementById('detail_color').closest('.row').style.display = 'block';
+                document
+                    .getElementById('detail_color')
+                    .closest('.row').style.display = 'block';
             }
         }
 
@@ -184,7 +195,12 @@ class GUI_details_class {
             } else {
                 var value = layer[key];
 
-                if (key == 'x' || key == 'y' || key == 'width' || key == 'height') {
+                if (
+                    key == 'x' ||
+                    key == 'y' ||
+                    key == 'width' ||
+                    key == 'height'
+                ) {
                     //convert units
                     value = this.Helper.get_user_unit(value, units, resolution);
                 } else {
@@ -201,7 +217,9 @@ class GUI_details_class {
             //events
             var target = document.getElementById('detail_' + key);
             if (target == undefined) {
-                console.log('Error: missing details event target ' + 'detail_' + key);
+                console.log(
+                    'Error: missing details event target ' + 'detail_' + key,
+                );
                 return;
             }
             let focus_value = null;
@@ -209,9 +227,18 @@ class GUI_details_class {
                 focus_value = parseFloat(this.value);
             });
             target.addEventListener('blur', function (e) {
-                if (key == 'x' || key == 'y' || key == 'width' || key == 'height') {
+                if (
+                    key == 'x' ||
+                    key == 'y' ||
+                    key == 'width' ||
+                    key == 'height'
+                ) {
                     //convert units
-                    var value = _this.Helper.get_internal_unit(this.value, units, resolution);
+                    var value = _this.Helper.get_internal_unit(
+                        this.value,
+                        units,
+                        resolution,
+                    );
                 } else {
                     var value = parseInt(this.value);
                 }
@@ -219,27 +246,48 @@ class GUI_details_class {
                 layer[key] = focus_value;
                 if (focus_value !== value) {
                     app.State.do_action(
-                        new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-                            new app.Actions.Update_layer_action(layer.id, {
-                                [key]: value,
-                            }),
-                        ]),
+                        new app.Actions.Bundle_action(
+                            'change_layer_details',
+                            'Change Layer Details',
+                            [
+                                new app.Actions.Update_layer_action(layer.id, {
+                                    [key]: value,
+                                }),
+                            ],
+                        ),
                     );
                 }
             });
             target.addEventListener('change', function (e) {
-                if (key == 'x' || key == 'y' || key == 'width' || key == 'height') {
+                if (
+                    key == 'x' ||
+                    key == 'y' ||
+                    key == 'width' ||
+                    key == 'height'
+                ) {
                     //convert units
-                    var value = _this.Helper.get_internal_unit(this.value, units, resolution);
+                    var value = _this.Helper.get_internal_unit(
+                        this.value,
+                        units,
+                        resolution,
+                    );
                 } else {
                     var value = parseInt(this.value);
                 }
 
-                if (this.min != undefined && this.min != '' && value < this.min) {
+                if (
+                    this.min != undefined &&
+                    this.min != '' &&
+                    value < this.min
+                ) {
                     document.getElementById('detail_opacity').value = value;
                     value = this.min;
                 }
-                if (this.max != undefined && this.min != '' && value > this.max) {
+                if (
+                    this.max != undefined &&
+                    this.min != '' &&
+                    value > this.max
+                ) {
                     document.getElementById('detail_opacity').value = value;
                     value = this.max;
                 }
@@ -253,18 +301,35 @@ class GUI_details_class {
                     return;
                 }
 
-                if (key == 'x' || key == 'y' || key == 'width' || key == 'height') {
+                if (
+                    key == 'x' ||
+                    key == 'y' ||
+                    key == 'width' ||
+                    key == 'height'
+                ) {
                     //convert units
-                    var value = _this.Helper.get_internal_unit(this.value, units, resolution);
+                    var value = _this.Helper.get_internal_unit(
+                        this.value,
+                        units,
+                        resolution,
+                    );
                 } else {
                     var value = parseInt(this.value);
                 }
 
-                if (this.min != undefined && this.min != '' && value < this.min) {
+                if (
+                    this.min != undefined &&
+                    this.min != '' &&
+                    value < this.min
+                ) {
                     document.getElementById('detail_opacity').value = value;
                     value = this.min;
                 }
-                if (this.max != undefined && this.min != '' && value > this.max) {
+                if (
+                    this.max != undefined &&
+                    this.min != '' &&
+                    value > this.max
+                ) {
                     document.getElementById('detail_opacity').value = value;
                     value = this.max;
                 }
@@ -311,15 +376,24 @@ class GUI_details_class {
             target.addEventListener('blur', function (e) {
                 var value = parseInt(this.value);
                 config.layer.params[key] = focus_value;
-                let params_copy = JSON.parse(JSON.stringify(config.layer.params));
+                let params_copy = JSON.parse(
+                    JSON.stringify(config.layer.params),
+                );
                 params_copy[key] = value;
                 if (focus_value !== value) {
                     app.State.do_action(
-                        new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-                            new app.Actions.Update_layer_action(config.layer.id, {
-                                params: params_copy,
-                            }),
-                        ]),
+                        new app.Actions.Bundle_action(
+                            'change_layer_details',
+                            'Change Layer Details',
+                            [
+                                new app.Actions.Update_layer_action(
+                                    config.layer.id,
+                                    {
+                                        params: params_copy,
+                                    },
+                                ),
+                            ],
+                        ),
                     );
                 }
             });
@@ -349,7 +423,8 @@ class GUI_details_class {
                 target.value = '';
                 target.disabled = true;
             } else {
-                if (typeof layer.params[key] == 'object') target.value = layer.params[key].value; //legacy
+                if (typeof layer.params[key] == 'object')
+                    target.value = layer.params[key].value; //legacy
                 else target.value = layer.params[key];
                 target.disabled = false;
             }
@@ -365,15 +440,24 @@ class GUI_details_class {
             target.addEventListener('blur', function (e) {
                 var value = this.value;
                 config.layer.params[key] = focus_value;
-                let params_copy = JSON.parse(JSON.stringify(config.layer.params));
+                let params_copy = JSON.parse(
+                    JSON.stringify(config.layer.params),
+                );
                 params_copy[key] = value;
                 if (focus_value !== value) {
                     app.State.do_action(
-                        new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-                            new app.Actions.Update_layer_action(config.layer.id, {
-                                params: params_copy,
-                            }),
-                        ]),
+                        new app.Actions.Bundle_action(
+                            'change_layer_details',
+                            'Change Layer Details',
+                            [
+                                new app.Actions.Update_layer_action(
+                                    config.layer.id,
+                                    {
+                                        params: params_copy,
+                                    },
+                                ),
+                            ],
+                        ),
                     );
                 }
             });
@@ -394,7 +478,9 @@ class GUI_details_class {
 
         let $colorInput;
         if (events) {
-            $colorInput = $(document.getElementById('detail_color')).uiColorInput();
+            $colorInput = $(
+                document.getElementById('detail_color'),
+            ).uiColorInput();
         } else {
             $colorInput = $(document.getElementById('detail_color'));
         }
@@ -414,11 +500,18 @@ class GUI_details_class {
                 config.layer.color = focus_value;
                 if (focus_value !== value) {
                     app.State.do_action(
-                        new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-                            new app.Actions.Update_layer_action(config.layer.id, {
-                                color: value,
-                            }),
-                        ]),
+                        new app.Actions.Bundle_action(
+                            'change_layer_details',
+                            'Change Layer Details',
+                            [
+                                new app.Actions.Update_layer_action(
+                                    config.layer.id,
+                                    {
+                                        color: value,
+                                    },
+                                ),
+                            ],
+                        ),
                     );
                 }
             });
@@ -434,7 +527,9 @@ class GUI_details_class {
         if (layer != undefined) {
             //size
             if (layer.width_original != null) {
-                document.getElementById('reset_size').classList.remove('hidden');
+                document
+                    .getElementById('reset_size')
+                    .classList.remove('hidden');
             } else {
                 document.getElementById('reset_size').classList.add('hidden');
             }
@@ -442,65 +537,111 @@ class GUI_details_class {
 
         if (events) {
             //events
-            document.getElementById('reset_x').addEventListener('click', function (e) {
-                if (config.layer.x) {
-                    app.State.do_action(
-                        new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-                            new app.Actions.Update_layer_action(config.layer.id, {
-                                x: 0,
-                            }),
-                        ]),
-                    );
-                }
-            });
-            document.getElementById('reset_y').addEventListener('click', function (e) {
-                if (config.layer.y) {
-                    app.State.do_action(
-                        new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-                            new app.Actions.Update_layer_action(config.layer.id, {
-                                y: 0,
-                            }),
-                        ]),
-                    );
-                }
-            });
-            document.getElementById('reset_size').addEventListener('click', function (e) {
-                if (
-                    config.layer.width !== config.layer.width_original ||
-                    config.layer.height !== config.layer.height_original
-                ) {
-                    app.State.do_action(
-                        new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-                            new app.Actions.Update_layer_action(config.layer.id, {
-                                width: config.layer.width_original,
-                                height: config.layer.height_original,
-                            }),
-                        ]),
-                    );
-                }
-            });
-            document.getElementById('reset_rotate').addEventListener('click', function (e) {
-                if (config.layer.rotate) {
-                    app.State.do_action(
-                        new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-                            new app.Actions.Update_layer_action(config.layer.id, {
-                                rotate: 0,
-                            }),
-                        ]),
-                    );
-                }
-            });
-            document.getElementById('reset_opacity').addEventListener('click', function (e) {
-                if (config.layer.opacity != 100) {
-                    app.State.do_action(
-                        new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-                            new app.Actions.Update_layer_action(config.layer.id, {
-                                opacity: 100,
-                            }),
-                        ]),
-                    );
-                }
-            });
+            document
+                .getElementById('reset_x')
+                .addEventListener('click', function (e) {
+                    if (config.layer.x) {
+                        app.State.do_action(
+                            new app.Actions.Bundle_action(
+                                'change_layer_details',
+                                'Change Layer Details',
+                                [
+                                    new app.Actions.Update_layer_action(
+                                        config.layer.id,
+                                        {
+                                            x: 0,
+                                        },
+                                    ),
+                                ],
+                            ),
+                        );
+                    }
+                });
+            document
+                .getElementById('reset_y')
+                .addEventListener('click', function (e) {
+                    if (config.layer.y) {
+                        app.State.do_action(
+                            new app.Actions.Bundle_action(
+                                'change_layer_details',
+                                'Change Layer Details',
+                                [
+                                    new app.Actions.Update_layer_action(
+                                        config.layer.id,
+                                        {
+                                            y: 0,
+                                        },
+                                    ),
+                                ],
+                            ),
+                        );
+                    }
+                });
+            document
+                .getElementById('reset_size')
+                .addEventListener('click', function (e) {
+                    if (
+                        config.layer.width !== config.layer.width_original ||
+                        config.layer.height !== config.layer.height_original
+                    ) {
+                        app.State.do_action(
+                            new app.Actions.Bundle_action(
+                                'change_layer_details',
+                                'Change Layer Details',
+                                [
+                                    new app.Actions.Update_layer_action(
+                                        config.layer.id,
+                                        {
+                                            width: config.layer.width_original,
+                                            height: config.layer
+                                                .height_original,
+                                        },
+                                    ),
+                                ],
+                            ),
+                        );
+                    }
+                });
+            document
+                .getElementById('reset_rotate')
+                .addEventListener('click', function (e) {
+                    if (config.layer.rotate) {
+                        app.State.do_action(
+                            new app.Actions.Bundle_action(
+                                'change_layer_details',
+                                'Change Layer Details',
+                                [
+                                    new app.Actions.Update_layer_action(
+                                        config.layer.id,
+                                        {
+                                            rotate: 0,
+                                        },
+                                    ),
+                                ],
+                            ),
+                        );
+                    }
+                });
+            document
+                .getElementById('reset_opacity')
+                .addEventListener('click', function (e) {
+                    if (config.layer.opacity != 100) {
+                        app.State.do_action(
+                            new app.Actions.Bundle_action(
+                                'change_layer_details',
+                                'Change Layer Details',
+                                [
+                                    new app.Actions.Update_layer_action(
+                                        config.layer.id,
+                                        {
+                                            opacity: 100,
+                                        },
+                                    ),
+                                ],
+                            ),
+                        );
+                    }
+                });
         }
     }
 
@@ -510,11 +651,13 @@ class GUI_details_class {
     render_text(events) {
         if (events) {
             //events
-            document.getElementById('detail_param_text').addEventListener('click', function (e) {
-                document.querySelector('#tools_container #text').click();
-                document.getElementById('text_tool_keyboard_input').focus();
-                config.need_render = true;
-            });
+            document
+                .getElementById('detail_param_text')
+                .addEventListener('click', function (e) {
+                    document.querySelector('#tools_container #text').click();
+                    document.getElementById('text_tool_keyboard_input').focus();
+                    config.need_render = true;
+                });
         }
     }
 
@@ -529,7 +672,11 @@ class GUI_details_class {
 
         itemContainer.innerHTML = '';
 
-        if (!config.layer || typeof config.layer.params == 'undefined' || config.layer.type == 'text') {
+        if (
+            !config.layer ||
+            typeof config.layer.params == 'undefined' ||
+            config.layer.type == 'text'
+        ) {
             return;
         }
 
@@ -571,7 +718,10 @@ class GUI_details_class {
             item_row.appendChild(item_title);
 
             //value
-            if (typeof item == 'boolean' || (typeof item == 'object' && typeof item.value == 'boolean')) {
+            if (
+                typeof item == 'boolean' ||
+                (typeof item == 'object' && typeof item.value == 'boolean')
+            ) {
                 //boolean - true, false
 
                 const elementInput = document.createElement('button');
@@ -590,8 +740,11 @@ class GUI_details_class {
                     //on leave
                     let layer = config.layer;
                     let key = this.dataset.key;
-                    let new_value = elementInput.getAttribute('aria-pressed') !== 'true';
-                    let params = JSON.parse(JSON.stringify(config.layer.params));
+                    let new_value =
+                        elementInput.getAttribute('aria-pressed') !== 'true';
+                    let params = JSON.parse(
+                        JSON.stringify(config.layer.params),
+                    );
                     params[key] = new_value;
 
                     app.State.do_action(
@@ -600,7 +753,10 @@ class GUI_details_class {
                         }),
                     );
                 });
-            } else if (typeof item == 'number' || (typeof item == 'object' && typeof item.value == 'number')) {
+            } else if (
+                typeof item == 'number' ||
+                (typeof item == 'object' && typeof item.value == 'number')
+            ) {
                 //numbers
 
                 const elementInput = document.createElement('input');
@@ -643,7 +799,9 @@ class GUI_details_class {
                     let layer = config.layer;
                     let key = this.dataset.key;
                     let new_value = parseInt(this.value);
-                    let params = JSON.parse(JSON.stringify(config.layer.params));
+                    let params = JSON.parse(
+                        JSON.stringify(config.layer.params),
+                    );
                     params[key] = new_value;
 
                     if (focus_value !== new_value) {
@@ -677,7 +835,9 @@ class GUI_details_class {
                         let layer = config.layer;
                         let key = $colorInput.uiColorInput('get_id');
                         let new_value = $colorInput.uiColorInput('get_value');
-                        let params = JSON.parse(JSON.stringify(config.layer.params));
+                        let params = JSON.parse(
+                            JSON.stringify(config.layer.params),
+                        );
                         params[key] = new_value;
 
                         app.State.do_action(
@@ -690,7 +850,12 @@ class GUI_details_class {
 
                 item_row.appendChild($colorInput[0]);
             } else {
-                alertify.error('Error: unsupported attribute type:' + typeof item + ', ' + k);
+                alertify.error(
+                    'Error: unsupported attribute type:' +
+                        typeof item +
+                        ', ' +
+                        k,
+                );
             }
         }
     }

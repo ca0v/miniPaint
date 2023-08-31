@@ -34,14 +34,18 @@ export class Delete_layer_action extends Base_action {
             throw new Error('Aborted - Layer to delete not found');
         }
 
-        if (config.layers.length == 1 && (force == undefined || force == false)) {
+        if (
+            config.layers.length == 1 &&
+            (force == undefined || force == false)
+        ) {
             // Only 1 layer left
             if (config.layer.type == null) {
                 //STOP
                 throw new Error('Aborted - Will not delete last layer');
             } else {
                 // Delete it, but before that - create new empty layer
-                this.insert_layer_action = new app.Actions.Insert_layer_action();
+                this.insert_layer_action =
+                    new app.Actions.Insert_layer_action();
                 this.insert_layer_action.do();
             }
         }
@@ -49,11 +53,14 @@ export class Delete_layer_action extends Base_action {
         if (config.layers.length > 1 && config.layer.id == id) {
             // Select next or previous layer
             try {
-                const select_action = new app.Actions.Select_next_layer_action(id);
+                const select_action = new app.Actions.Select_next_layer_action(
+                    id,
+                );
                 await select_action.do();
                 this.select_layer_action = select_action;
             } catch (error) {
-                const select_action = new app.Actions.Select_previous_layer_action(id);
+                const select_action =
+                    new app.Actions.Select_previous_layer_action(id);
                 await select_action.do();
                 this.select_layer_action = select_action;
             }
@@ -63,7 +70,11 @@ export class Delete_layer_action extends Base_action {
         this.deleted_layer = config.layers.splice(this.delete_index, 1)[0];
 
         // Estimate memory
-        if (this.deleted_layer.link && this.deleted_layer.link.src && typeof this.deleted_layer.link.src === 'string') {
+        if (
+            this.deleted_layer.link &&
+            this.deleted_layer.link.src &&
+            typeof this.deleted_layer.link.src === 'string'
+        ) {
             this.memory_estimate = new Blob([this.deleted_layer.link.src]).size;
         }
 

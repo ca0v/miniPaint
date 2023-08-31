@@ -29,7 +29,11 @@ class Image_autoAdjust_class {
                 var code = event.keyCode;
                 if (this.Helper.is_input(event.target)) return;
 
-                if (code == 70 && event.ctrlKey != true && event.metaKey != true) {
+                if (
+                    code == 70 &&
+                    event.ctrlKey != true &&
+                    event.metaKey != true
+                ) {
                     //F - adjust
                     this.auto_adjust();
                     event.preventDefault();
@@ -41,7 +45,9 @@ class Image_autoAdjust_class {
 
     auto_adjust() {
         if (config.layer.type != 'image') {
-            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            alertify.error(
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
+            );
             return;
         }
 
@@ -55,7 +61,9 @@ class Image_autoAdjust_class {
         ctx.putImageData(data, 0, 0);
 
         //save
-        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
+        return app.State.do_action(
+            new app.Actions.Update_layer_image_action(canvas),
+        );
     }
 
     get_adjust_data(data) {
@@ -77,7 +85,8 @@ class Image_autoAdjust_class {
         var n_valid = 0;
         for (var i = 0; i < imgData.length; i += 4) {
             if (imgData[i + 3] == 0) continue; //transparent
-            if ((imgData[i] + imgData[i + 1] + imgData[i + 2]) / 3 > white) n_valid++;
+            if ((imgData[i] + imgData[i + 1] + imgData[i + 2]) / 3 > white)
+                n_valid++;
             n++;
         }
         var target = target_white;
@@ -105,7 +114,8 @@ class Image_autoAdjust_class {
             n_valid = 0;
             for (var i = 0; i < imgData.length; i += 4) {
                 if (imgData[i + 3] == 0) continue; //transparent
-                if ((imgData[i] + imgData[i + 1] + imgData[i + 2]) / 3 > white) n_valid++;
+                if ((imgData[i] + imgData[i + 1] + imgData[i + 2]) / 3 > white)
+                    n_valid++;
             }
         }
 
@@ -113,7 +123,8 @@ class Image_autoAdjust_class {
         n_valid = 0;
         for (var i = 0; i < imgData.length; i += 4) {
             if (imgData[i + 3] == 0) continue; //transparent
-            if ((imgData[i] + imgData[i + 1] + imgData[i + 2]) / 3 < black) n_valid++;
+            if ((imgData[i] + imgData[i + 1] + imgData[i + 2]) / 3 < black)
+                n_valid++;
         }
         target = target_black;
         var n_fix_black = 0;
@@ -130,7 +141,8 @@ class Image_autoAdjust_class {
                     var x = i + c;
                     if (imgData[x] > 240) continue;
                     //increase black
-                    imgData[x] -= (255 - imgData[x]) * modify - (255 - imgData[x]);
+                    imgData[x] -=
+                        (255 - imgData[x]) * modify - (255 - imgData[x]);
                     imgData[x] = Math.round(imgData[x]);
                 }
             }
@@ -139,7 +151,8 @@ class Image_autoAdjust_class {
             n_valid = 0;
             for (var i = 0; i < imgData.length; i += 4) {
                 if (imgData[i + 3] == 0) continue; //transparent
-                if ((imgData[i] + imgData[i + 1] + imgData[i + 2]) / 3 < black) n_valid++;
+                if ((imgData[i] + imgData[i + 1] + imgData[i + 2]) / 3 < black)
+                    n_valid++;
             }
         }
         //log('Iterations: brighten='+n_fix_white+", darken="+n_fix_black);

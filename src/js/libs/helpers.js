@@ -108,14 +108,22 @@ class Helper_class {
     _setCookie(NameOfCookie, value, expire_days) {
         if (expire_days == undefined) expire_days = 180;
         var ExpireDate = new Date();
-        ExpireDate.setTime(ExpireDate.getTime() + expire_days * 24 * 3600 * 1000);
+        ExpireDate.setTime(
+            ExpireDate.getTime() + expire_days * 24 * 3600 * 1000,
+        );
         document.cookie =
-            NameOfCookie + '=' + value + (expire_days == null ? '' : '; expires=' + ExpireDate.toGMTString());
+            NameOfCookie +
+            '=' +
+            value +
+            (expire_days == null
+                ? ''
+                : '; expires=' + ExpireDate.toGMTString());
     }
 
     delCookie(NameOfCookie) {
         if (this.getCookie(NameOfCookie)) {
-            document.cookie = NameOfCookie + '=' + '; expires=Thu, 01-Jan-70 00:00:01 GMT';
+            document.cookie =
+                NameOfCookie + '=' + '; expires=Thu, 01-Jan-70 00:00:01 GMT';
         }
     }
 
@@ -162,7 +170,9 @@ class Helper_class {
             temp = /^([a-f0-9])([a-f0-9])([a-f0-9])$/i.exec(temp).slice(1);
             for (var i = 0; i < 3; i++) hex += temp[i] + temp[i];
         }
-        var triplets = /^([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})/i.exec(hex).slice(1);
+        var triplets = /^([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})/i
+            .exec(hex)
+            .slice(1);
         return {
             r: parseInt(triplets[0], 16),
             g: parseInt(triplets[1], 16),
@@ -363,7 +373,9 @@ class Helper_class {
     hsvToHsl(h, s, v) {
         return {
             h,
-            s: (s * v) / Math.max(0.00000001, (h = (2 - s) * v) < 1 ? h : 2 - h),
+            s:
+                (s * v) /
+                Math.max(0.00000001, (h = (2 - s) * v) < 1 ? h : 2 - h),
             l: h / 2,
         };
     }
@@ -453,7 +465,11 @@ class Helper_class {
         var byteCharacters = atob(b64Data);
         var byteArrays = [];
 
-        for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+        for (
+            var offset = 0;
+            offset < byteCharacters.length;
+            offset += sliceSize
+        ) {
             var slice = byteCharacters.slice(offset, offset + sliceSize);
 
             var byteNumbers = new Array(slice.length);
@@ -514,7 +530,15 @@ class Helper_class {
         canvas.getContext('2d').drawImage(tmp, -offset_x, -offset_y);
     }
 
-    image_round(ctx_main, mouse_x, mouse_y, size_w, size_h, img_data, anti_aliasing = false) {
+    image_round(
+        ctx_main,
+        mouse_x,
+        mouse_y,
+        size_w,
+        size_h,
+        img_data,
+        anti_aliasing = false,
+    ) {
         //create tmp canvas
         var canvasTmp = document.createElement('canvas');
         canvasTmp.width = size_w;
@@ -535,7 +559,14 @@ class Helper_class {
         ctx.globalCompositeOperation = 'destination-in';
 
         //create form
-        var gradient = ctx.createRadialGradient(size_half_w, size_half_h, 0, size_half_w, size_half_h, size_half_w);
+        var gradient = ctx.createRadialGradient(
+            size_half_w,
+            size_half_h,
+            0,
+            size_half_w,
+            size_half_h,
+            size_half_w,
+        );
         gradient.addColorStop(0, '#ffffff');
         if (anti_aliasing == true) gradient.addColorStop(0.8, '#ffffff');
         else gradient.addColorStop(0.99, '#ffffff');
@@ -543,9 +574,27 @@ class Helper_class {
         ctx.fillStyle = gradient;
 
         ctx.beginPath();
-        ctx.ellipse(size_half_w, size_half_h, size_w * 2, size_h * 2, 0, 0, 2 * Math.PI);
+        ctx.ellipse(
+            size_half_w,
+            size_half_h,
+            size_w * 2,
+            size_h * 2,
+            0,
+            0,
+            2 * Math.PI,
+        );
         ctx.fill();
-        ctx_main.drawImage(canvasTmp, 0, 0, size_w, size_h, xx, yy, size_w, size_h);
+        ctx_main.drawImage(
+            canvasTmp,
+            0,
+            0,
+            size_w,
+            size_h,
+            xx,
+            yy,
+            size_w,
+            size_h,
+        );
         //reset
         ctx.restore();
         ctx.clearRect(0, 0, width, height);
@@ -555,10 +604,18 @@ class Helper_class {
         if (!element) {
             return false;
         }
-        if (element.type == 'text' || element.tagName == 'INPUT' || element.type == 'textarea') {
+        if (
+            element.type == 'text' ||
+            element.tagName == 'INPUT' ||
+            element.type == 'textarea'
+        ) {
             return true;
         } else {
-            return element.closest('.ui_color_picker_gradient, .ui_number_input, .ui_range, .ui_swatches') != null;
+            return (
+                element.closest(
+                    '.ui_color_picker_gradient, .ui_number_input, .ui_range, .ui_swatches',
+                ) != null
+            );
         }
     }
 
@@ -652,7 +709,13 @@ class Helper_class {
 
         //create path
         const circle = new Path2D();
-        circle.arc(x + dx * block_size, y + dy * block_size, block_size / 2, 0, 2 * Math.PI);
+        circle.arc(
+            x + dx * block_size,
+            y + dy * block_size,
+            block_size / 2,
+            0,
+            2 * Math.PI,
+        );
 
         //draw
         ctx.fill(circle);

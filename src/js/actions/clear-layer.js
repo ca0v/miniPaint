@@ -40,7 +40,10 @@ export class Clear_layer_action extends Base_action {
             //clean image
             new_settings.link = null;
         }
-        this.update_layer_action = new app.Actions.Update_layer_action(this.layer_id, new_settings);
+        this.update_layer_action = new app.Actions.Update_layer_action(
+            this.layer_id,
+            new_settings,
+        );
         await this.update_layer_action.do();
         let delete_setting_names = [];
         for (let prop_name in layer) {
@@ -50,10 +53,11 @@ export class Clear_layer_action extends Base_action {
             }
         }
         if (delete_setting_names.length > 0) {
-            this.delete_layer_settings_action = new app.Actions.Delete_layer_settings_action(
-                this.layer_id,
-                delete_setting_names,
-            );
+            this.delete_layer_settings_action =
+                new app.Actions.Delete_layer_settings_action(
+                    this.layer_id,
+                    delete_setting_names,
+                );
             await this.delete_layer_settings_action.do();
         }
     }

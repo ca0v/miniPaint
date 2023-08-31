@@ -52,9 +52,11 @@ class Rectangle_class extends Base_tools_class {
             is_vector: true,
         };
         app.State.do_action(
-            new app.Actions.Bundle_action('new_rectangle_layer', 'New Rectangle Layer', [
-                new app.Actions.Insert_layer_action(this.layer),
-            ]),
+            new app.Actions.Bundle_action(
+                'new_rectangle_layer',
+                'New Rectangle Layer',
+                [new app.Actions.Insert_layer_action(this.layer)],
+            ),
         );
     }
 
@@ -73,7 +75,12 @@ class Rectangle_class extends Base_tools_class {
         var click_y = Math.round(this.mouse_click.y);
 
         //apply snap
-        var snap_info = this.calc_snap_position(e, mouse_x, mouse_y, config.layer.id);
+        var snap_info = this.calc_snap_position(
+            e,
+            mouse_x,
+            mouse_y,
+            config.layer.id,
+        );
         if (snap_info != null) {
             if (snap_info.x != null) {
                 mouse_x = snap_info.x;
@@ -126,7 +133,12 @@ class Rectangle_class extends Base_tools_class {
         var click_y = Math.round(this.mouse_click.y);
 
         //apply snap
-        var snap_info = this.calc_snap_position(e, mouse_x, mouse_y, config.layer.id);
+        var snap_info = this.calc_snap_position(
+            e,
+            mouse_x,
+            mouse_y,
+            config.layer.id,
+        );
         if (snap_info != null) {
             if (snap_info.x != null) {
                 mouse_x = snap_info.x;
@@ -209,12 +221,33 @@ class Rectangle_class extends Base_tools_class {
         ctx.lineWidth = params.border_size;
 
         if (rotateSupport == false) {
-            this.roundRect(ctx, layer.x, layer.y, layer.width, layer.height, radius, fill, stroke);
+            this.roundRect(
+                ctx,
+                layer.x,
+                layer.y,
+                layer.width,
+                layer.height,
+                radius,
+                fill,
+                stroke,
+            );
         } else {
             //rotate
-            ctx.translate(layer.x + layer.width / 2, layer.y + layer.height / 2);
+            ctx.translate(
+                layer.x + layer.width / 2,
+                layer.y + layer.height / 2,
+            );
             ctx.rotate((layer.rotate * Math.PI) / 180);
-            this.roundRect(ctx, -layer.width / 2, -layer.height / 2, layer.width, layer.height, radius, fill, stroke);
+            this.roundRect(
+                ctx,
+                -layer.width / 2,
+                -layer.height / 2,
+                layer.width,
+                layer.height,
+                radius,
+                fill,
+                stroke,
+            );
         }
 
         ctx.restore();
@@ -264,7 +297,10 @@ class Rectangle_class extends Base_tools_class {
             y -= 0.5;
         }
 
-        var stroke_offset = !fill && ctx.lineWidth % 2 == 1 && width > 1 && height > 1 ? 0.5 : 0;
+        var stroke_offset =
+            !fill && ctx.lineWidth % 2 == 1 && width > 1 && height > 1
+                ? 0.5
+                : 0;
 
         if (smaller_dimension < 2) fill = true;
 
@@ -278,7 +314,10 @@ class Rectangle_class extends Base_tools_class {
             x + width - stroke_offset,
             y + radius.tr + stroke_offset,
         );
-        ctx.lineTo(x + width - stroke_offset, y + height - radius.br - stroke_offset);
+        ctx.lineTo(
+            x + width - stroke_offset,
+            y + height - radius.br - stroke_offset,
+        );
         ctx.quadraticCurveTo(
             x + width - stroke_offset,
             y + height - stroke_offset,
@@ -293,7 +332,12 @@ class Rectangle_class extends Base_tools_class {
             y + height - radius.bl - stroke_offset,
         );
         ctx.lineTo(x + stroke_offset, y + radius.tl + stroke_offset);
-        ctx.quadraticCurveTo(x + stroke_offset, y + stroke_offset, x + radius.tl + stroke_offset, y + stroke_offset);
+        ctx.quadraticCurveTo(
+            x + stroke_offset,
+            y + stroke_offset,
+            x + radius.tl + stroke_offset,
+            y + stroke_offset,
+        );
         ctx.closePath();
         if (fill) {
             ctx.fill();

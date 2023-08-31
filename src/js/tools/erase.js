@@ -26,7 +26,8 @@ class Erase_class extends Base_tools_class {
         //mouse cursor
         var mouse = this.get_mouse_info(event);
         var params = this.getParams();
-        if (params.circle == true) this.show_mouse_cursor(mouse.x, mouse.y, params.size, 'circle');
+        if (params.circle == true)
+            this.show_mouse_cursor(mouse.x, mouse.y, params.size, 'circle');
         else this.show_mouse_cursor(mouse.x, mouse.y, params.size, 'rect');
     }
 
@@ -51,15 +52,21 @@ class Erase_class extends Base_tools_class {
             return;
         }
         if (config.layer.type != 'image') {
-            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            alertify.error(
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
+            );
             return;
         }
         if (config.layer.is_vector == true) {
-            alertify.error('Layer is vector, convert it to raster to apply this tool.');
+            alertify.error(
+                'Layer is vector, convert it to raster to apply this tool.',
+            );
             return;
         }
         if (config.layer.rotate || 0 > 0) {
-            alertify.error('Erase on rotate object is disabled. Please rasterize first.');
+            alertify.error(
+                'Erase on rotate object is disabled. Please rasterize first.',
+            );
             return;
         }
         this.started = true;
@@ -77,7 +84,14 @@ class Erase_class extends Base_tools_class {
         );
 
         //do erase
-        this.erase_general(this.tmpCanvasCtx, 'click', mouse, params.size, params.strict, params.circle);
+        this.erase_general(
+            this.tmpCanvasCtx,
+            'click',
+            mouse,
+            params.size,
+            params.strict,
+            params.circle,
+        );
 
         //register tmp canvas for faster redraw
         config.layer.link_canvas = this.tmpCanvas;
@@ -100,7 +114,15 @@ class Erase_class extends Base_tools_class {
         }
 
         //do erase
-        this.erase_general(this.tmpCanvasCtx, 'move', mouse, params.size, params.strict, params.circle, is_touch);
+        this.erase_general(
+            this.tmpCanvasCtx,
+            'move',
+            mouse,
+            params.size,
+            params.strict,
+            params.circle,
+            is_touch,
+        );
 
         //draw draft preview
         config.need_render = true;
@@ -136,7 +158,8 @@ class Erase_class extends Base_tools_class {
         ctx.lineWidth = size;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        if (alpha < 255) ctx.strokeStyle = 'rgba(255, 255, 255, ' + alpha / 255 / 10 + ')';
+        if (alpha < 255)
+            ctx.strokeStyle = 'rgba(255, 255, 255, ' + alpha / 255 / 10 + ')';
         else ctx.strokeStyle = 'rgba(255, 255, 255, 1)';
 
         if (is_circle == false) {
@@ -158,15 +181,31 @@ class Erase_class extends Base_tools_class {
             ctx.save();
 
             if (strict == false) {
-                var radgrad = ctx.createRadialGradient(mouse_x, mouse_y, size / 8, mouse_x, mouse_y, size / 2);
-                if (type == 'click') radgrad.addColorStop(0, 'rgba(255, 255, 255, ' + alpha / 255 + ')');
-                else if (type == 'move') radgrad.addColorStop(0, 'rgba(255, 255, 255, ' + alpha / 255 / 2 + ')');
+                var radgrad = ctx.createRadialGradient(
+                    mouse_x,
+                    mouse_y,
+                    size / 8,
+                    mouse_x,
+                    mouse_y,
+                    size / 2,
+                );
+                if (type == 'click')
+                    radgrad.addColorStop(
+                        0,
+                        'rgba(255, 255, 255, ' + alpha / 255 + ')',
+                    );
+                else if (type == 'move')
+                    radgrad.addColorStop(
+                        0,
+                        'rgba(255, 255, 255, ' + alpha / 255 / 2 + ')',
+                    );
                 radgrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
             }
 
             //set Composite
             ctx.globalCompositeOperation = 'destination-out';
-            if (strict == true) ctx.fillStyle = 'rgba(255, 255, 255, ' + alpha / 255 + ')';
+            if (strict == true)
+                ctx.fillStyle = 'rgba(255, 255, 255, ' + alpha / 255 + ')';
             else ctx.fillStyle = radgrad;
             ctx.beginPath();
             ctx.arc(mouse_x, mouse_y, size / 2, 0, Math.PI * 2, true);

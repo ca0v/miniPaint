@@ -115,7 +115,10 @@ class Tools_settings_class {
         this.save_setting('safe_search', params.safe_search);
         this.save_setting('exit_confirm', params.exit_confirm);
         this.save_setting('default_units', params.default_units);
-        this.save_setting('default_units_short', this.default_units_config[params.default_units]);
+        this.save_setting(
+            'default_units_short',
+            this.default_units_config[params.default_units],
+        );
         this.save_setting('resolution', params.resolution);
         this.save_setting('thick_guides', params.thick_guides);
         this.save_setting('enable_autoresize', params.enable_autoresize);
@@ -177,7 +180,10 @@ class Tools_settings_class {
             //set default value
             value = default_values[key];
         }
-        if (key == 'safe_search' && config.safe_search_can_be_disabled === false) {
+        if (
+            key == 'safe_search' &&
+            config.safe_search_can_be_disabled === false
+        ) {
             //not allowed
             value = 1;
         }

@@ -62,7 +62,8 @@ var CanvasToTIFF = {
                 entries = 0,
                 offsetList = [],
                 idfOffset,
-                sid = '\x63\x61\x6e\x76\x61\x73\x2d\x74\x6f\x2d\x74\x69\x66\x66\x20\x30\x2e\x34\0',
+                sid =
+                    '\x63\x61\x6e\x76\x61\x73\x2d\x74\x6f\x2d\x74\x69\x66\x66\x20\x30\x2e\x34\0',
                 lsb = !!options.littleEndian,
                 dpiX = +(options.dpiX || options.dpi || 96) | 0,
                 dpiY = +(options.dpiY || options.dpi || 96) | 0,
@@ -124,8 +125,19 @@ var CanvasToTIFF = {
             setStr(sid);
 
             // date
-            dateStr = date.getFullYear() + ':' + pad2(date.getMonth() + 1) + ':' + pad2(date.getDate()) + ' ';
-            dateStr += pad2(date.getHours()) + ':' + pad2(date.getMinutes()) + ':' + pad2(date.getSeconds());
+            dateStr =
+                date.getFullYear() +
+                ':' +
+                pad2(date.getMonth() + 1) +
+                ':' +
+                pad2(date.getDate()) +
+                ' ';
+            dateStr +=
+                pad2(date.getHours()) +
+                ':' +
+                pad2(date.getMinutes()) +
+                ':' +
+                pad2(date.getSeconds());
             setStr(dateStr);
 
             // Image data here (todo if very large, split into block based copy)
@@ -157,7 +169,8 @@ var CanvasToTIFF = {
 
         function setStr(str) {
             var i = 0;
-            while (i < str.length) view.setUint8(pos++, str.charCodeAt(i++) & 0xff, lsb);
+            while (i < str.length)
+                view.setUint8(pos++, str.charCodeAt(i++) & 0xff, lsb);
             if (pos & 1) pos++;
         }
 
@@ -291,7 +304,8 @@ var CanvasToTIFF = {
                 // Will do for now, impacts only with very large bitmaps (in which
                 // case toBlob should be used).
                 (function prepBase64() {
-                    while (i < l && block-- > 0) bs += String.fromCharCode(buffer[i++]);
+                    while (i < l && block-- > 0)
+                        bs += String.fromCharCode(buffer[i++]);
 
                     if (i < l) {
                         block = blockSize;
@@ -305,7 +319,9 @@ var CanvasToTIFF = {
                         (function toBase64() {
                             base64 += btoa(bs.substr(i, block));
                             i += block;
-                            i < l ? setTimeout(toBase64, me._dly) : callback('data:image/tiff;base64,' + base64);
+                            i < l
+                                ? setTimeout(toBase64, me._dly)
+                                : callback('data:image/tiff;base64,' + base64);
                         })();
                     }
                 })();

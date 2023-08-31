@@ -25,10 +25,14 @@ class Layer_raster_class {
             opacity: current_layer.opacity,
         };
         app.State.do_action(
-            new app.Actions.Bundle_action('convert_to_raster', 'Convert to Raster', [
-                new app.Actions.Insert_layer_action(params, false),
-                new app.Actions.Delete_layer_action(current_id),
-            ]),
+            new app.Actions.Bundle_action(
+                'convert_to_raster',
+                'Convert to Raster',
+                [
+                    new app.Actions.Insert_layer_action(params, false),
+                    new app.Actions.Delete_layer_action(current_id),
+                ],
+            ),
         );
     }
 }

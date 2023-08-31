@@ -43,7 +43,11 @@ class Crop_class extends Base_tools_class {
             },
         };
         this.mousedown_selection = null;
-        this.Base_selection = new Base_selection_class(ctx, sel_config, this.name);
+        this.Base_selection = new Base_selection_class(
+            ctx,
+            sel_config,
+            this.name,
+        );
     }
 
     load() {
@@ -70,7 +74,8 @@ class Crop_class extends Base_tools_class {
         };
         mouseDownState.mode = '';
 
-        if (this.Base_selection.is_drag == false || mouse.click_valid == false) return;
+        if (this.Base_selection.is_drag == false || mouse.click_valid == false)
+            return;
 
         this.mousedown_selection = JSON.parse(JSON.stringify(this.selection));
 
@@ -84,9 +89,16 @@ class Crop_class extends Base_tools_class {
             const top = this.selection.y;
             const right = this.selection.x + this.selection.width;
             const bottom = this.selection.y + this.selection.height;
-            if (mouse.x > left && mouse.x < right && mouse.y > top && mouse.y < bottom) {
+            if (
+                mouse.x > left &&
+                mouse.x < right &&
+                mouse.y > top &&
+                mouse.y < bottom
+            ) {
                 //move
-                log(`dataworks entering 'move' mode because mouse is inside selection`);
+                log(
+                    `dataworks entering 'move' mode because mouse is inside selection`,
+                );
                 mouseDownState.mode = 'move'; // dataworks: from bundle_9771.js line 33544
                 return;
             }
@@ -135,7 +147,10 @@ class Crop_class extends Base_tools_class {
             var width_new = Math.round(height * ratio);
             var height_new = Math.round(width / ratio);
 
-            if (Math.abs((width * 100) / width_new) > Math.abs((height * 100) / height_new)) {
+            if (
+                Math.abs((width * 100) / width_new) >
+                Math.abs((height * 100) / height_new)
+            ) {
                 if ((width * 100) / width_new > 0) height = height_new;
                 else height = -height_new;
             } else {
@@ -145,7 +160,9 @@ class Crop_class extends Base_tools_class {
         } else if (!e.shiftKey) {
             if (USE_DATAWORKS) {
                 const dh = width * config.RATIO - height;
-                log(`dataworks is modifying height by ${dh} to enforce ratio ${config.RATIO}`);
+                log(
+                    `dataworks is modifying height by ${dh} to enforce ratio ${config.RATIO}`,
+                );
                 height += dh;
             }
         }
@@ -210,7 +227,9 @@ class Crop_class extends Base_tools_class {
         if (USE_DATAWORKS) {
             let skip = false;
             if (!config.MIN_WIDTH) {
-                log('dataworks is not checking the minimum width because #minWidth is not loaded');
+                log(
+                    'dataworks is not checking the minimum width because #minWidth is not loaded',
+                );
             } else if (config.REQUIRE_DIMENSIONS) {
                 if (config.layers.length != 1) {
                     log(
@@ -236,7 +255,9 @@ class Crop_class extends Base_tools_class {
                 {
                     const desiredWidth = this.selection.height / config.RATIO;
                     const dw = desiredWidth - this.selection.width;
-                    log(`dataworks is adjusting width by ${dw} to enforce ratio ${config.RATIO}`);
+                    log(
+                        `dataworks is adjusting width by ${dw} to enforce ratio ${config.RATIO}`,
+                    );
                     this.selection.width += dw;
                 }
 
@@ -244,30 +265,44 @@ class Crop_class extends Base_tools_class {
                     if (this.selection.width < config.MIN_WIDTH) {
                         const dw = config.MIN_WIDTH - this.selection.width;
                         if (dw) {
-                            log(`dataworks is adjusting width by ${dw} to enforce minimum width ${config.MIN_WIDTH}`);
+                            log(
+                                `dataworks is adjusting width by ${dw} to enforce minimum width ${config.MIN_WIDTH}`,
+                            );
                             this.selection.width += dw;
                         }
                         // adjust height to honor aspect ratio
-                        const dh = this.selection.width * config.RATIO - this.selection.height;
+                        const dh =
+                            this.selection.width * config.RATIO -
+                            this.selection.height;
                         if (dh) {
-                            log(`dataworks is adjusting height by ${dh} to enforce ratio ${config.RATIO}`);
+                            log(
+                                `dataworks is adjusting height by ${dh} to enforce ratio ${config.RATIO}`,
+                            );
                             this.selection.height += dh;
                         }
                     }
                 }
 
                 if (this.selection.x + this.selection.width > config.WIDTH) {
-                    const dx = config.WIDTH - (this.selection.width + this.selection.x);
+                    const dx =
+                        config.WIDTH -
+                        (this.selection.width + this.selection.x);
                     if (dx < 0) {
-                        log(`dataworks is adjusting horizontal position by ${dx}`);
+                        log(
+                            `dataworks is adjusting horizontal position by ${dx}`,
+                        );
                         this.selection.x += dx;
                     }
                 }
 
                 if (this.selection.y + this.selection.height > config.HEIGHT) {
-                    const dy = config.HEIGHT - (this.selection.height + this.selection.y);
+                    const dy =
+                        config.HEIGHT -
+                        (this.selection.height + this.selection.y);
                     if (dy < 0) {
-                        log(`dataworks is adjusting vertical position by ${dy}`);
+                        log(
+                            `dataworks is adjusting vertical position by ${dy}`,
+                        );
                         this.selection.y += dy;
                     }
                 }
@@ -335,7 +370,11 @@ class Crop_class extends Base_tools_class {
         // dataworks disabled this line: params.crop = true;
         this.GUI_tools.show_action_attributes();
 
-        if (selection.width == null || selection.width == 0 || selection.height == 0) {
+        if (
+            selection.width == null ||
+            selection.width == 0 ||
+            selection.height == 0
+        ) {
             alertify.error('Empty selection');
             return;
         }
@@ -354,7 +393,10 @@ class Crop_class extends Base_tools_class {
         }
         if (rotated_name !== false) {
             alertify.error(
-                'Crop on rotated layer is not supported. Convert it to raster to continue.' + '(' + rotated_name + ')',
+                'Crop on rotated layer is not supported. Convert it to raster to continue.' +
+                    '(' +
+                    rotated_name +
+                    ')',
             );
             return;
         }
@@ -389,9 +431,11 @@ class Crop_class extends Base_tools_class {
                 let top = 0;
                 if (y < 0) top = -y;
                 let right = 0;
-                if (x + width > selection.width) right = x + width - selection.width;
+                if (x + width > selection.width)
+                    right = x + width - selection.width;
                 let bottom = 0;
-                if (y + height > selection.height) bottom = y + height - selection.height;
+                if (y + height > selection.height)
+                    bottom = y + height - selection.height;
                 let crop_width = width - left - right;
                 let crop_height = height - top - bottom;
 
@@ -409,7 +453,9 @@ class Crop_class extends Base_tools_class {
                 ctx.translate(-left / width_ratio, -top / height_ratio);
                 canvas.getContext('2d').drawImage(link.link, 0, 0);
                 ctx.translate(0, 0);
-                actions.push(new app.Actions.Update_layer_image_action(canvas, link.id));
+                actions.push(
+                    new app.Actions.Update_layer_image_action(canvas, link.id),
+                );
 
                 //update attributes
                 width = Math.ceil(canvas.width * width_ratio);
@@ -441,7 +487,9 @@ class Crop_class extends Base_tools_class {
             new app.Actions.Prepare_canvas_action('do'),
             new app.Actions.Reset_selection_action(this.selection),
         );
-        await app.State.do_action(new app.Actions.Bundle_action('crop_tool', 'Crop Tool', actions));
+        await app.State.do_action(
+            new app.Actions.Bundle_action('crop_tool', 'Crop Tool', actions),
+        );
     }
 
     on_leave() {

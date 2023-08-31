@@ -1,4 +1,8 @@
-import { updateConfigurationSize, interceptMenuItem, log } from '../dataworks-plus-extensions.js';
+import {
+    updateConfigurationSize,
+    interceptMenuItem,
+    log,
+} from '../dataworks-plus-extensions.js';
 
 /*
  * miniPaint - https://github.com/viliusle/miniPaint
@@ -179,7 +183,12 @@ class Base_gui_class {
                 return;
             }
             if (this.modules[module][function_name] == undefined) {
-                alertify.error('Module function not found. ' + module + '.' + function_name);
+                alertify.error(
+                    'Module function not found. ' +
+                        module +
+                        '.' +
+                        function_name,
+                );
                 return;
             }
 
@@ -195,17 +204,26 @@ class Base_gui_class {
                 var target = document.getElementById(this.dataset.target);
                 target.classList.toggle('hidden');
                 //save
-                if (target.classList.contains('hidden') == false) _this.Helper.setCookie(this.dataset.target, 1);
+                if (target.classList.contains('hidden') == false)
+                    _this.Helper.setCookie(this.dataset.target, 1);
                 else _this.Helper.setCookie(this.dataset.target, 0);
             });
         }
 
-        document.getElementById('left_mobile_menu_button').addEventListener('click', function (event) {
-            document.querySelector('.sidebar_left').classList.toggle('active');
-        });
-        document.getElementById('mobile_menu_button').addEventListener('click', function (event) {
-            document.querySelector('.sidebar_right').classList.toggle('active');
-        });
+        document
+            .getElementById('left_mobile_menu_button')
+            .addEventListener('click', function (event) {
+                document
+                    .querySelector('.sidebar_left')
+                    .classList.toggle('active');
+            });
+        document
+            .getElementById('mobile_menu_button')
+            .addEventListener('click', function (event) {
+                document
+                    .querySelector('.sidebar_right')
+                    .classList.toggle('active');
+            });
         window.addEventListener(
             'resize',
             function (event) {
@@ -222,7 +240,8 @@ class Base_gui_class {
         window.addEventListener('beforeunload', function (e) {
             if (
                 exit_confirm &&
-                (config.layers.length > 1 || _this.Base_layers.is_layer_empty(config.layer.id) == false)
+                (config.layers.length > 1 ||
+                    _this.Base_layers.is_layer_empty(config.layer.id) == false)
             ) {
                 e.preventDefault();
                 e.returnValue = '';
@@ -242,7 +261,9 @@ class Base_gui_class {
     check_canvas_offset() {
         //calc canvas position offset
         var bodyRect = document.body.getBoundingClientRect();
-        var canvas_el = document.getElementById('canvas_minipaint').getBoundingClientRect();
+        var canvas_el = document
+            .getElementById('canvas_minipaint')
+            .getBoundingClientRect();
         this.canvas_offset.x = canvas_el.left - bodyRect.left;
         this.canvas_offset.y = canvas_el.top - bodyRect.top;
     }
@@ -316,7 +337,10 @@ class Base_gui_class {
 
         //use largest possible
         for (var i = this.common_dimensions.length - 1; i >= 0; i--) {
-            if (this.common_dimensions[i][0] > page_w || this.common_dimensions[i][1] > page_h) {
+            if (
+                this.common_dimensions[i][0] > page_w ||
+                this.common_dimensions[i][1] > page_h
+            ) {
                 //browser size is too small
                 continue;
             }
@@ -358,7 +382,8 @@ class Base_gui_class {
         var height = config.HEIGHT;
 
         //size
-        if (gap_x != undefined && gap_y != undefined) this.grid_size = [gap_x, gap_y];
+        if (gap_x != undefined && gap_y != undefined)
+            this.grid_size = [gap_x, gap_y];
         else {
             gap_x = this.grid_size[0];
             gap_y = this.grid_size[1];
@@ -454,8 +479,14 @@ class Base_gui_class {
         var page_h = wrapper.clientHeight;
 
         //find visible size in pixels, but make sure its correct even if image smaller then screen
-        var w = Math.min(Math.ceil(config.WIDTH * config.ZOOM), Math.ceil(page_w / config.ZOOM));
-        var h = Math.min(Math.ceil(config.HEIGHT * config.ZOOM), Math.ceil(page_h / config.ZOOM));
+        var w = Math.min(
+            Math.ceil(config.WIDTH * config.ZOOM),
+            Math.ceil(page_w / config.ZOOM),
+        );
+        var h = Math.min(
+            Math.ceil(config.HEIGHT * config.ZOOM),
+            Math.ceil(page_h / config.ZOOM),
+        );
 
         return {
             width: w,
@@ -480,7 +511,9 @@ class Base_gui_class {
         }
 
         for (var i in config.themes) {
-            document.querySelector('body').classList.remove('theme-' + config.themes[i]);
+            document
+                .querySelector('body')
+                .classList.remove('theme-' + config.themes[i]);
         }
         document.querySelector('body').classList.add('theme-' + theme_name);
     }

@@ -39,7 +39,9 @@ class Magic_erase_class extends Base_tools_class {
             return;
         }
         if (config.layer.rotate || 0 > 0) {
-            alertify.error('Erase on rotate object is disabled. Please rasterize first.');
+            alertify.error(
+                'Erase on rotate object is disabled. Please rasterize first.',
+            );
             return;
         }
 
@@ -54,11 +56,15 @@ class Magic_erase_class extends Base_tools_class {
         }
 
         if (config.layer.type != 'image') {
-            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            alertify.error(
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
+            );
             return;
         }
         if (config.layer.is_vector == true) {
-            alertify.error('Layer is vector, convert it to raster to apply this tool.');
+            alertify.error(
+                'Layer is vector, convert it to raster to apply this tool.',
+            );
             return;
         }
 
@@ -94,9 +100,11 @@ class Magic_erase_class extends Base_tools_class {
         );
 
         app.State.do_action(
-            new app.Actions.Bundle_action('magic_erase_tool', 'Magic Eraser Tool', [
-                new app.Actions.Update_layer_image_action(canvas),
-            ]),
+            new app.Actions.Bundle_action(
+                'magic_erase_tool',
+                'Magic Eraser Tool',
+                [new app.Actions.Update_layer_image_action(canvas)],
+            ),
         );
         //prevent crash bug on touch screen - hard to explain and debug
         await new Promise((r) => setTimeout(r, 10));
@@ -114,7 +122,16 @@ class Magic_erase_class extends Base_tools_class {
      * @param {int} sensitivity max 100
      * @param {Boolean} anti_aliasing
      */
-    magic_erase_general(context, W, H, x, y, sensitivity, anti_aliasing, contiguous = false) {
+    magic_erase_general(
+        context,
+        W,
+        H,
+        x,
+        y,
+        sensitivity,
+        anti_aliasing,
+        contiguous = false,
+    ) {
         sensitivity = (sensitivity * 255) / 100; //convert to 0-255 interval
         x = parseInt(x);
         y = parseInt(y);
@@ -164,14 +181,22 @@ class Magic_erase_class extends Base_tools_class {
                 for (var i = 0; i < 4; i++) {
                     var nextPointX = curPoint[0] + dx[i];
                     var nextPointY = curPoint[1] + dy[i];
-                    if (nextPointX < 0 || nextPointY < 0 || nextPointX >= W || nextPointY >= H) continue;
+                    if (
+                        nextPointX < 0 ||
+                        nextPointY < 0 ||
+                        nextPointX >= W ||
+                        nextPointY >= H
+                    )
+                        continue;
                     var k = (nextPointY * W + nextPointX) * 4;
                     if (imgData_tmp[k + 3] != 0) continue; //already parsed
 
                     if (
                         Math.abs(imgData[k] - color_from.r) <= sensitivity &&
-                        Math.abs(imgData[k + 1] - color_from.g) <= sensitivity &&
-                        Math.abs(imgData[k + 2] - color_from.b) <= sensitivity &&
+                        Math.abs(imgData[k + 1] - color_from.g) <=
+                            sensitivity &&
+                        Math.abs(imgData[k + 2] - color_from.b) <=
+                            sensitivity &&
                         Math.abs(imgData[k + 3] - color_from.a) <= sensitivity
                     ) {
                         //erase
@@ -196,8 +221,10 @@ class Magic_erase_class extends Base_tools_class {
 
                     if (
                         Math.abs(imgData[k] - color_from.r) <= sensitivity &&
-                        Math.abs(imgData[k + 1] - color_from.g) <= sensitivity &&
-                        Math.abs(imgData[k + 2] - color_from.b) <= sensitivity &&
+                        Math.abs(imgData[k + 1] - color_from.g) <=
+                            sensitivity &&
+                        Math.abs(imgData[k + 2] - color_from.b) <=
+                            sensitivity &&
                         Math.abs(imgData[k + 3] - color_from.a) <= sensitivity
                     ) {
                         imgData_tmp[k] = color_to.r; //r

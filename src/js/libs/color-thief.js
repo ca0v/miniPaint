@@ -94,7 +94,11 @@ ColorThief.prototype.getColor = function (sourceImage, quality) {
  *
  */
 ColorThief.prototype.getPalette = function (sourceImage, colorCount, quality) {
-    if (typeof colorCount === 'undefined' || colorCount < 2 || colorCount > 256) {
+    if (
+        typeof colorCount === 'undefined' ||
+        colorCount < 2 ||
+        colorCount > 256
+    ) {
         colorCount = 10;
     }
     if (typeof quality === 'undefined' || quality < 1) {
@@ -311,7 +315,10 @@ var MMCQ = (function () {
         volume: function (force) {
             var vbox = this;
             if (!vbox._volume || force) {
-                vbox._volume = (vbox.r2 - vbox.r1 + 1) * (vbox.g2 - vbox.g1 + 1) * (vbox.b2 - vbox.b1 + 1);
+                vbox._volume =
+                    (vbox.r2 - vbox.r1 + 1) *
+                    (vbox.g2 - vbox.g1 + 1) *
+                    (vbox.b2 - vbox.b1 + 1);
             }
             return vbox._volume;
         },
@@ -339,7 +346,15 @@ var MMCQ = (function () {
         },
         copy: function () {
             var vbox = this;
-            return new VBox(vbox.r1, vbox.r2, vbox.g1, vbox.g2, vbox.b1, vbox.b2, vbox.histo);
+            return new VBox(
+                vbox.r1,
+                vbox.r2,
+                vbox.g1,
+                vbox.g2,
+                vbox.b1,
+                vbox.b2,
+                vbox.histo,
+            );
         },
         avg: function (force) {
             var vbox = this,
@@ -368,7 +383,11 @@ var MMCQ = (function () {
                     }
                 }
                 if (ntot) {
-                    vbox._avg = [~~(rsum / ntot), ~~(gsum / ntot), ~~(bsum / ntot)];
+                    vbox._avg = [
+                        ~~(rsum / ntot),
+                        ~~(gsum / ntot),
+                        ~~(bsum / ntot),
+                    ];
                 } else {
                     vbox._avg = [
                         ~~((mult * (vbox.r1 + vbox.r2 + 1)) / 2),
@@ -398,7 +417,10 @@ var MMCQ = (function () {
     // Color map
     function CMap() {
         this.vboxes = new PQueue(function (a, b) {
-            return pv.naturalOrder(a.vbox.count() * a.vbox.volume(), b.vbox.count() * b.vbox.volume());
+            return pv.naturalOrder(
+                a.vbox.count() * a.vbox.volume(),
+                b.vbox.count() * b.vbox.volume(),
+            );
         });
     }
     CMap.prototype = {
@@ -452,12 +474,14 @@ var MMCQ = (function () {
 
             // force darkest color to black if everything < 5
             var lowest = vboxes[0].color;
-            if (lowest[0] < 5 && lowest[1] < 5 && lowest[2] < 5) vboxes[0].color = [0, 0, 0];
+            if (lowest[0] < 5 && lowest[1] < 5 && lowest[2] < 5)
+                vboxes[0].color = [0, 0, 0];
 
             // force lightest color to white if everything > 251
             var idx = vboxes.length - 1,
                 highest = vboxes[idx].color;
-            if (highest[0] > 251 && highest[1] > 251 && highest[2] > 251) vboxes[idx].color = [255, 255, 255];
+            if (highest[0] > 251 && highest[1] > 251 && highest[2] > 251)
+                vboxes[idx].color = [255, 255, 255];
         },
     };
 
@@ -581,12 +605,14 @@ var MMCQ = (function () {
                     vbox2 = vbox.copy();
                     left = i - vbox[dim1];
                     right = vbox[dim2] - i;
-                    if (left <= right) d2 = Math.min(vbox[dim2] - 1, ~~(i + right / 2));
+                    if (left <= right)
+                        d2 = Math.min(vbox[dim2] - 1, ~~(i + right / 2));
                     else d2 = Math.max(vbox[dim1], ~~(i - 1 - left / 2));
                     // avoid 0-count boxes
                     while (!partialsum[d2]) d2++;
                     count2 = lookaheadsum[d2];
-                    while (!count2 && partialsum[d2 - 1]) count2 = lookaheadsum[--d2];
+                    while (!count2 && partialsum[d2 - 1])
+                        count2 = lookaheadsum[--d2];
                     // set dimensions
                     vbox1[dim2] = d2;
                     vbox2[dim1] = vbox1[dim2] + 1;
@@ -664,7 +690,10 @@ var MMCQ = (function () {
 
         // Re-sort by the product of pixel occupancy times the size in color space.
         var pq2 = new PQueue(function (a, b) {
-            return pv.naturalOrder(a.count() * a.volume(), b.count() * b.volume());
+            return pv.naturalOrder(
+                a.count() * a.volume(),
+                b.count() * b.volume(),
+            );
         });
         while (pq.size()) {
             pq2.push(pq.pop());

@@ -273,7 +273,9 @@ class Dialog_class {
 
         if (this.onchange != false) {
             if (this.preview != false) {
-                var canvas_right = this.el.querySelector('[data-id="pop_post"]');
+                var canvas_right = this.el.querySelector(
+                    '[data-id="pop_post"]',
+                );
                 var ctx_right = canvas_right.getContext('2d');
 
                 ctx_right.clearRect(0, 0, this.width_mini, this.height_mini);
@@ -285,7 +287,13 @@ class Dialog_class {
                     this.height_mini - this.preview_padding * 2,
                 );
 
-                this.onchange(params, ctx_right, this.width_mini, this.height_mini, canvas_right);
+                this.onchange(
+                    params,
+                    ctx_right,
+                    this.width_mini,
+                    this.height_mini,
+                    canvas_right,
+                );
             } else {
                 this.onchange(params);
             }
@@ -327,7 +335,8 @@ class Dialog_class {
         for (var i = 0; i < inputs.length; i++) {
             if (inputs[i].id.substr(0, 9) == 'pop_data_') {
                 var key = inputs[i].id.substr(9);
-                if (this.strpos(key, '_poptmp') != false) key = key.substring(0, this.strpos(key, '_poptmp'));
+                if (this.strpos(key, '_poptmp') != false)
+                    key = key.substring(0, this.strpos(key, '_poptmp'));
                 var value = inputs[i].value;
                 if (inputs[i].type == 'radio') {
                     if (inputs[i].checked == true) response[key] = value;
@@ -408,11 +417,15 @@ class Dialog_class {
         html_params += this.generateParamsHtml();
 
         this.el.innerHTML = template;
-        this.el.querySelector('[data-id="pretitle_area"]').innerHTML = html_pretitle_area;
+        this.el.querySelector('[data-id="pretitle_area"]').innerHTML =
+            html_pretitle_area;
         this.el.querySelector('[data-id="popup_title"]').innerHTML = this.title;
-        this.el.querySelector('[data-id="popup_comment"]').innerHTML = this.comment;
-        this.el.querySelector('[data-id="preview_content"]').innerHTML = html_preview_content;
-        this.el.querySelector('[data-id="params_content"]').innerHTML = html_params;
+        this.el.querySelector('[data-id="popup_comment"]').innerHTML =
+            this.comment;
+        this.el.querySelector('[data-id="preview_content"]').innerHTML =
+            html_preview_content;
+        this.el.querySelector('[data-id="params_content"]').innerHTML =
+            html_params;
 
         const popupOk = this.el.querySelector('[data-id="popup_ok"]');
 
@@ -430,9 +443,11 @@ class Dialog_class {
         }
 
         if (this.onfinish != false) {
-            this.el.querySelector('[data-id="popup_cancel"]').style.display = '';
+            this.el.querySelector('[data-id="popup_cancel"]').style.display =
+                '';
         } else {
-            this.el.querySelector('[data-id="popup_cancel"]').style.display = 'none';
+            this.el.querySelector('[data-id="popup_cancel"]').style.display =
+                'none';
         }
 
         this.el.style.display = 'block';
@@ -441,35 +456,45 @@ class Dialog_class {
         }
 
         //replace color inputs
-        this.el.querySelectorAll('input[type="color"]').forEach((colorInput) => {
-            const id = colorInput.getAttribute('id');
-            colorInput.removeAttribute('id');
-            $(colorInput)
-                .uiColorInput({ inputId: id })
-                .on('change', (e) => {
-                    this.onChangeEvent(e);
-                });
-        });
+        this.el
+            .querySelectorAll('input[type="color"]')
+            .forEach((colorInput) => {
+                const id = colorInput.getAttribute('id');
+                colorInput.removeAttribute('id');
+                $(colorInput)
+                    .uiColorInput({ inputId: id })
+                    .on('change', (e) => {
+                        this.onChangeEvent(e);
+                    });
+            });
 
         //events
-        this.el.querySelector('[data-id="popup_ok"]').addEventListener('click', (event) => {
-            this.save();
-        });
+        this.el
+            .querySelector('[data-id="popup_ok"]')
+            .addEventListener('click', (event) => {
+                this.save();
+            });
 
         {
             // dataworks
-            document.querySelector('[data-id="popup_save"]').addEventListener('click', function (event) {
-                $.isServerSave = true;
-                _this.save();
-            });
+            document
+                .querySelector('[data-id="popup_save"]')
+                .addEventListener('click', function (event) {
+                    $.isServerSave = true;
+                    _this.save();
+                });
         }
 
-        this.el.querySelector('[data-id="popup_cancel"]').addEventListener('click', (event) => {
-            this.hide(false);
-        });
-        this.el.querySelector('[data-id="popup_close"]').addEventListener('click', (event) => {
-            this.hide(false);
-        });
+        this.el
+            .querySelector('[data-id="popup_cancel"]')
+            .addEventListener('click', (event) => {
+                this.hide(false);
+            });
+        this.el
+            .querySelector('[data-id="popup_close"]')
+            .addEventListener('click', (event) => {
+                this.hide(false);
+            });
         var targets = this.el.querySelectorAll('input');
         for (var i = 0; i < targets.length; i++) {
             targets[i].addEventListener('keyup', (event) => {
@@ -495,25 +520,45 @@ class Dialog_class {
             pop_pre.rect(0, 0, this.width_mini, this.height_mini);
             pop_pre.fillStyle = '#ffffff';
             pop_pre.fill();
-            this.draw_background(pop_pre, this.width_mini, this.height_mini, 10);
+            this.draw_background(
+                pop_pre,
+                this.width_mini,
+                this.height_mini,
+                10,
+            );
 
-            pop_pre.scale(this.width_mini / canvas.width, this.height_mini / canvas.height);
+            pop_pre.scale(
+                this.width_mini / canvas.width,
+                this.height_mini / canvas.height,
+            );
             pop_pre.drawImage(canvas, 0, 0);
             pop_pre.scale(1, 1);
 
             //prepare temp canvas for faster repaint
             this.layer_active_small.width = POP.width_mini;
             this.layer_active_small.height = POP.height_mini;
-            this.layer_active_small_ctx.scale(this.width_mini / canvas.width, this.height_mini / canvas.height);
+            this.layer_active_small_ctx.scale(
+                this.width_mini / canvas.width,
+                this.height_mini / canvas.height,
+            );
             this.layer_active_small_ctx.drawImage(canvas, 0, 0);
             this.layer_active_small_ctx.scale(1, 1);
 
             //draw right background
-            var canvas_right_back = this.el.querySelector('[data-id="pop_post_back"]').getContext('2d');
-            this.draw_background(canvas_right_back, this.width_mini, this.height_mini, 10);
+            var canvas_right_back = this.el
+                .querySelector('[data-id="pop_post_back"]')
+                .getContext('2d');
+            this.draw_background(
+                canvas_right_back,
+                this.width_mini,
+                this.height_mini,
+                10,
+            );
 
             //copy to right side
-            var canvas_right = this.el.querySelector('[data-id="pop_post"]').getContext('2d');
+            var canvas_right = this.el
+                .querySelector('[data-id="pop_post"]')
+                .getContext('2d');
             canvas_right.clearRect(0, 0, this.width_mini, this.height_mini);
             canvas_right.drawImage(
                 canvas_left,
@@ -543,7 +588,10 @@ class Dialog_class {
                 html += '<th class="trn">' + parameter.title + '</th>';
             if (parameter.name != undefined) {
                 if (parameter.values != undefined) {
-                    if (parameter.values.length > 10 || parameter.type == 'select') {
+                    if (
+                        parameter.values.length > 10 ||
+                        parameter.type == 'select'
+                    ) {
                         //drop down
                         html +=
                             '<td colspan="2"><select onchange="POP.onChangeEvent();" id="pop_data_' +
@@ -552,8 +600,10 @@ class Dialog_class {
                         var k = 0;
                         for (var j in parameter.values) {
                             var sel = '';
-                            if (parameter.value == parameter.values[j]) sel = 'selected="selected"';
-                            if (parameter.value == undefined && k == 0) sel = 'selected="selected"';
+                            if (parameter.value == parameter.values[j])
+                                sel = 'selected="selected"';
+                            if (parameter.value == undefined && k == 0)
+                                sel = 'selected="selected"';
                             html +=
                                 '<option ' +
                                 sel +
@@ -569,17 +619,26 @@ class Dialog_class {
                         //radio
                         html += '<td class="radios" colspan="2">';
                         if (parameter.values.length > 2)
-                            html += '<div class="group" id="popup-group-' + this.parameters[i].name + '">';
+                            html +=
+                                '<div class="group" id="popup-group-' +
+                                this.parameters[i].name +
+                                '">';
                         var k = 0;
                         for (var j in parameter.values) {
                             var ch = '';
-                            if (parameter.value == parameter.values[j]) ch = 'checked="checked"';
-                            if (parameter.value == undefined && k == 0) ch = 'checked="checked"';
+                            if (parameter.value == parameter.values[j])
+                                ch = 'checked="checked"';
+                            if (parameter.value == undefined && k == 0)
+                                ch = 'checked="checked"';
 
                             var title = parameter.values[j];
                             var parts = parameter.values[j].split(' - ');
                             if (parts.length > 1) {
-                                title = parts[0] + ' - <span class="trn">' + parts[1] + '</span>';
+                                title =
+                                    parts[0] +
+                                    ' - <span class="trn">' +
+                                    parts[1] +
+                                    '</span>';
                             }
 
                             html +=
@@ -632,7 +691,12 @@ class Dialog_class {
                             "').innerHTML = " +
                             'Math.round(this.value*100) / 100;POP.preview_handler();" ' +
                             'onchange="POP.onChangeEvent();" /></td>';
-                        html += '<td class="range_value" id="pv' + i + '">' + parameter.value + '</td>';
+                        html +=
+                            '<td class="range_value" id="pv' +
+                            i +
+                            '">' +
+                            parameter.value +
+                            '</td>';
                     } else if (parameter.type == 'color') {
                         //color
                         html +=
@@ -654,7 +718,8 @@ class Dialog_class {
                             '">Toggle</label></td>';
                     } else {
                         //input or textarea
-                        if (parameter.placeholder == undefined) parameter.placeholder = '';
+                        if (parameter.placeholder == undefined)
+                            parameter.placeholder = '';
                         if (parameter.type == 'textarea') {
                             //textarea
                             html +=
@@ -663,20 +728,32 @@ class Dialog_class {
                                 '" onchange="POP.onChangeEvent();" placeholder="' +
                                 parameter.placeholder +
                                 '" ' +
-                                (parameter.prevent_submission ? 'data-prevent-submission=""' : '') +
+                                (parameter.prevent_submission
+                                    ? 'data-prevent-submission=""'
+                                    : '') +
                                 '>' +
                                 parameter.value +
                                 '</textarea></td>';
                         } else {
                             //text or number
                             var input_type = 'text';
-                            if (parameter.placeholder != '' && !isNaN(parameter.placeholder)) input_type = 'number';
-                            if (parameter.value != undefined && typeof parameter.value == 'number')
+                            if (
+                                parameter.placeholder != '' &&
+                                !isNaN(parameter.placeholder)
+                            )
+                                input_type = 'number';
+                            if (
+                                parameter.value != undefined &&
+                                typeof parameter.value == 'number'
+                            )
                                 input_type = 'number';
 
                             var comment_html = '';
                             if (typeof parameter.comment !== 'undefined') {
-                                comment_html = '<span class="field_comment trn">' + parameter.comment + '</span>';
+                                comment_html =
+                                    '<span class="field_comment trn">' +
+                                    parameter.comment +
+                                    '</span>';
                             }
 
                             html +=
@@ -689,7 +766,9 @@ class Dialog_class {
                                 '" placeholder="' +
                                 parameter.placeholder +
                                 '" ' +
-                                (parameter.prevent_submission ? 'data-prevent-submission=""' : '') +
+                                (parameter.prevent_submission
+                                    ? 'data-prevent-submission=""'
+                                    : '') +
                                 ' />' +
                                 comment_html +
                                 '</td>';
@@ -703,7 +782,10 @@ class Dialog_class {
                 html += '<td colspan="3">' + result + '</td>';
             } else if (parameter.html != undefined) {
                 //html
-                html += '<td class="html_value" colspan="2">' + parameter.html + '</td>';
+                html +=
+                    '<td class="html_value" colspan="2">' +
+                    parameter.html +
+                    '</td>';
             } else if (parameter.title == undefined) {
                 //gap
                 html += '<td colspan="2"></td>';

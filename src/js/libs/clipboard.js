@@ -54,7 +54,8 @@ class Clipboard_class {
         this.pasteCatcher = document.createElement('div');
         this.pasteCatcher.setAttribute('id', 'paste_ff');
         this.pasteCatcher.setAttribute('contenteditable', '');
-        this.pasteCatcher.style.cssText = 'opacity:0;position:fixed;top:0px;left:0px;';
+        this.pasteCatcher.style.cssText =
+            'opacity:0;position:fixed;top:0px;left:0px;';
         this.pasteCatcher.style.marginLeft = '-20px';
         this.pasteCatcher.style.width = '10px';
         document.body.appendChild(this.pasteCatcher);
@@ -62,7 +63,11 @@ class Clipboard_class {
         // create an observer instance
         var observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {
-                if (this.paste_mode == 'auto' || this.ctrl_pressed == false || mutation.type != 'childList')
+                if (
+                    this.paste_mode == 'auto' ||
+                    this.ctrl_pressed == false ||
+                    mutation.type != 'childList'
+                )
                     return true;
 
                 //if paste handle failed - capture pasted object manually
@@ -126,7 +131,8 @@ class Clipboard_class {
                 return false;
             }
 
-            if (this.ctrl_pressed == true && !window.Clipboard) this.pasteCatcher.focus();
+            if (this.ctrl_pressed == true && !window.Clipboard)
+                this.pasteCatcher.focus();
         }
     }
 

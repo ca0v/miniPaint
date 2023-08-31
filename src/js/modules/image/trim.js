@@ -62,14 +62,34 @@ class Image_trim_class {
                 if (params.trim_layer == true) {
                     //first trim
                     let actions = [];
-                    actions = actions.concat(this.trim_layer(config.layer.id, params.remove_white, params.power));
-                    await app.State.do_action(new app.Actions.Bundle_action('trim_layers', 'Trim Layers', actions));
+                    actions = actions.concat(
+                        this.trim_layer(
+                            config.layer.id,
+                            params.remove_white,
+                            params.power,
+                        ),
+                    );
+                    await app.State.do_action(
+                        new app.Actions.Bundle_action(
+                            'trim_layers',
+                            'Trim Layers',
+                            actions,
+                        ),
+                    );
                 }
                 if (params.trim_all == true) {
                     //second trim
                     let actions = [];
-                    actions = actions.concat(_this.trim_all(params.remove_white, params.power));
-                    app.State.do_action(new app.Actions.Bundle_action('trim_layers', 'Trim Layers', actions));
+                    actions = actions.concat(
+                        _this.trim_all(params.remove_white, params.power),
+                    );
+                    app.State.do_action(
+                        new app.Actions.Bundle_action(
+                            'trim_layers',
+                            'Trim Layers',
+                            actions,
+                        ),
+                    );
                 }
             },
         };
@@ -149,9 +169,18 @@ class Image_trim_class {
         for (let i = 0; i < config.layers.length; i++) {
             let layer = config.layers[i];
 
-            if (layer.width == null || layer.height == null || layer.x == null || layer.y == null) {
+            if (
+                layer.width == null ||
+                layer.height == null ||
+                layer.x == null ||
+                layer.y == null
+            ) {
                 //layer without dimensions
-                const trim_info = this.get_trim_info(layer.id, removeWhiteColor, power);
+                const trim_info = this.get_trim_info(
+                    layer.id,
+                    removeWhiteColor,
+                    power,
+                );
 
                 all_top = Math.min(all_top, trim_info.top);
                 all_left = Math.min(all_left, trim_info.left);
@@ -160,15 +189,22 @@ class Image_trim_class {
             } else {
                 all_top = Math.min(all_top, layer.y);
                 all_left = Math.min(all_left, layer.x);
-                all_bottom = Math.min(all_bottom, config.HEIGHT - layer.height - layer.y);
-                all_right = Math.min(all_right, config.WIDTH - layer.width - layer.x);
+                all_bottom = Math.min(
+                    all_bottom,
+                    config.HEIGHT - layer.height - layer.y,
+                );
+                all_right = Math.min(
+                    all_right,
+                    config.WIDTH - layer.width - layer.x,
+                );
             }
         }
 
         //move every layer
         for (let i = 0; i < config.layers.length; i++) {
             let layer = config.layers[i];
-            if (layer.x == null || layer.y == null || layer.type == null) continue;
+            if (layer.x == null || layer.y == null || layer.type == null)
+                continue;
 
             actions.push(
                 new app.Actions.Update_layer_action(layer.id, {
@@ -210,7 +246,11 @@ class Image_trim_class {
         }
         var layer = this.Base_layers.get_layer(layer_id);
 
-        var canvas = this.Base_layers.convert_layer_to_canvas(layer_id, null, false);
+        var canvas = this.Base_layers.convert_layer_to_canvas(
+            layer_id,
+            null,
+            false,
+        );
         var ctx = canvas.getContext('2d');
         var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
         var imgData = img.data;

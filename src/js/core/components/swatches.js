@@ -65,7 +65,9 @@
             if (hexArray[i]) {
                 const hex = hexArray[i];
                 if (/^\#[0-9A-F]{6}$/gi.test(hex)) {
-                    $(swatches[i]).data('hex', hex).css('background-color', hex);
+                    $(swatches[i])
+                        .data('hex', hex)
+                        .css('background-color', hex);
                 }
             } else {
                 break;
@@ -79,15 +81,23 @@
             let el = this[i];
 
             // Constructor
-            if (Object.prototype.toString.call(behavior) !== '[object String]') {
+            if (
+                Object.prototype.toString.call(behavior) !== '[object String]'
+            ) {
                 const definition = behavior || {};
 
-                const id = definition.id != null ? definition.id : el.getAttribute('id');
+                const id =
+                    definition.id != null
+                        ? definition.id
+                        : el.getAttribute('id');
                 const cols = definition.cols;
                 const rows = definition.rows || 1;
                 const count = definition.count || 10;
                 const readonly = definition.readonly || false;
-                const selectedIndex = definition.selectedIndex != null ? definition.selectedIndex : 0;
+                const selectedIndex =
+                    definition.selectedIndex != null
+                        ? definition.selectedIndex
+                        : 0;
 
                 $(el).after(template);
                 const oldEl = el;
@@ -129,7 +139,10 @@
                     readonly,
                 });
 
-                $el.on('click', on_click_swatches).on('keydown', on_key_down_swatches);
+                $el.on('click', on_click_swatches).on(
+                    'keydown',
+                    on_key_down_swatches,
+                );
             }
             // Behaviors
             else if (behavior === 'set_selected_hex') {

@@ -65,17 +65,26 @@ class Media_class extends Base_tools_class {
 
             //paging
             html_paging += '<div class="media-paging" id="media_paging">';
-            html_paging += '<button type="button" data-value="1" title="Previous">&lt;</button> ';
+            html_paging +=
+                '<button type="button" data-value="1" title="Previous">&lt;</button> ';
             for (var i = 1; i <= Math.min(10, pages); i++) {
                 var selected = '';
                 if (this.page == i) {
                     var selected = 'selected';
                 }
                 html_paging +=
-                    '<button type="button" class="' + selected + '" data-value="' + i + '">' + i + '</button> ';
+                    '<button type="button" class="' +
+                    selected +
+                    '" data-value="' +
+                    i +
+                    '">' +
+                    i +
+                    '</button> ';
             }
             html_paging +=
-                '<button type="button" data-value="' + Math.min(this.page + 1, pages) + '" title="Next">&gt;</button> ';
+                '<button type="button" data-value="' +
+                Math.min(this.page + 1, pages) +
+                '" title="Next">&gt;</button> ';
             html_paging += '</div>';
         } else {
             this.page = 1;
@@ -135,7 +144,9 @@ class Media_class extends Base_tools_class {
                         var data = _this.cache[URL];
 
                         if (parseInt(data.totalHits) == 0) {
-                            alertify.error('Your search did not match any images.');
+                            alertify.error(
+                                'Your search did not match any images.',
+                            );
                         }
 
                         var pages = Math.ceil(data.totalHits / _this.per_page);
@@ -147,7 +158,9 @@ class Media_class extends Base_tools_class {
                         _this.cache[URL] = data;
 
                         if (parseInt(data.totalHits) == 0) {
-                            alertify.error('Your search did not match any images.');
+                            alertify.error(
+                                'Your search did not match any images.',
+                            );
                         }
 
                         var pages = Math.ceil(data.totalHits / _this.per_page);

@@ -12,7 +12,9 @@ class Effects_heatmap_class {
 
     heatmap() {
         if (config.layer.type != 'image') {
-            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            alertify.error(
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
+            );
             return;
         }
 
@@ -26,7 +28,9 @@ class Effects_heatmap_class {
         ctx.putImageData(data, 0, 0);
 
         //save
-        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
+        return app.State.do_action(
+            new app.Actions.Update_layer_image_action(canvas),
+        );
     }
 
     change(data) {
@@ -35,7 +39,11 @@ class Effects_heatmap_class {
 
         for (var i = 0; i < imgData.length; i += 4) {
             if (imgData[i + 3] == 0) continue; //transparent
-            grey = Math.round(0.2126 * imgData[i] + 0.7152 * imgData[i + 1] + 0.0722 * imgData[i + 2]);
+            grey = Math.round(
+                0.2126 * imgData[i] +
+                    0.7152 * imgData[i + 1] +
+                    0.0722 * imgData[i + 2],
+            );
             RGB = this.color2heat(grey);
             imgData[i] = RGB.R;
             imgData[i + 1] = RGB.G;
@@ -92,7 +100,12 @@ class Effects_heatmap_class {
         ctx.drawImage(canvas_thumb, 0, 0);
 
         //now update
-        var img = ctx.getImageData(0, 0, canvas_thumb.width, canvas_thumb.height);
+        var img = ctx.getImageData(
+            0,
+            0,
+            canvas_thumb.width,
+            canvas_thumb.height,
+        );
         var data = this.change(img);
         ctx.putImageData(data, 0, 0);
     }

@@ -18,7 +18,9 @@ class Image_flip_class {
 
     flip(mode) {
         if (config.layer.type != 'image') {
-            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            alertify.error(
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
+            );
             return;
         }
 
@@ -44,7 +46,9 @@ class Image_flip_class {
         }
 
         //save
-        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas2));
+        return app.State.do_action(
+            new app.Actions.Update_layer_image_action(canvas2),
+        );
     }
 }
 

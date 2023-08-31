@@ -12,7 +12,10 @@ const DEFAULT_COLOR = '#757575';
 const ALTERNATIVE_COLORS = ['#72d6ef'];
 
 function injectCustomColorsIntoColorPicker(colorPicker) {
-    const colors = readSetting('CUSTOM_COLORS', [DEFAULT_COLOR, ...ALTERNATIVE_COLORS]);
+    const colors = readSetting('CUSTOM_COLORS', [
+        DEFAULT_COLOR,
+        ...ALTERNATIVE_COLORS,
+    ]);
     updateColorPicker(colorPicker, colors);
 
     colorPicker.addEventListener(
@@ -83,7 +86,10 @@ function getCustomColors() {
     const distinct = [...new Set(colors)];
     const customColors = readSetting('CUSTOM_COLORS', []);
     const colorsToAdd = [];
-    while (distinct.length + colorsToAdd.length < COLORS_TO_RENDER && customColors.length) {
+    while (
+        distinct.length + colorsToAdd.length < COLORS_TO_RENDER &&
+        customColors.length
+    ) {
         const color = customColors.pop();
         if (!distinct.includes(color)) {
             colorsToAdd.push(color);
@@ -162,7 +168,12 @@ function GetNewReplacement(colorInput, options) {
                     canvas.height = NewImage.height;
 
                     context.drawImage(NewImage, 0, 0, w, h);
-                    var myData = context.getImageData(0, 0, NewImage.width, NewImage.height);
+                    var myData = context.getImageData(
+                        0,
+                        0,
+                        NewImage.width,
+                        NewImage.height,
+                    );
 
                     canvas_preview.putImageData(myData, 0, 0);
 
@@ -200,7 +211,9 @@ class Effects_backgroundReplace_class {
     backgroundReplace() {
         const _this = this;
         if (config.layer.type != 'image') {
-            reportError('Please merge layers to apply this tool. Layers -> Merge Down.');
+            reportError(
+                'Please merge layers to apply this tool. Layers -> Merge Down.',
+            );
             //return;
         }
 
@@ -256,7 +269,9 @@ class Effects_backgroundReplace_class {
                 $div.append($.parseHTML(template));
 
                 // find the element where the 'data-id' is 'params_content'
-                const target = document.querySelector('[data-id="params_content"]');
+                const target = document.querySelector(
+                    '[data-id="params_content"]',
+                );
                 $(target).append($label).append($div);
 
                 const colorPicker = target.querySelector('input.color-picker');
@@ -274,7 +289,10 @@ class Effects_backgroundReplace_class {
 
                 const autoReplace = target.querySelector('.auto-replace');
                 if (autoReplace) {
-                    autoReplace.checked = readSetting('AUTO_REPLACE_BACKGROUND', true);
+                    autoReplace.checked = readSetting(
+                        'AUTO_REPLACE_BACKGROUND',
+                        true,
+                    );
                     autoReplace.addEventListener(
                         'change',
                         () => {
@@ -300,13 +318,18 @@ class Effects_backgroundReplace_class {
         function createColorPickerButtons(target, options) {
             const flex = target.querySelector('.flex');
             // remove all the button elements
-            flex.querySelectorAll('button').forEach((button) => button.remove());
+            flex.querySelectorAll('button').forEach((button) =>
+                button.remove(),
+            );
             const colors = getCustomColors();
             colors.forEach((color) => {
                 const button = $.parseHTML(
                     `<button class="btn btn-md BackgroundReplaceColorButton" type="button" style="background-color:${color}"></button>`,
                 )[0];
-                flex.insertBefore(button, flex.querySelector('label.color-picker'));
+                flex.insertBefore(
+                    button,
+                    flex.querySelector('label.color-picker'),
+                );
                 button.addEventListener('click', (e) => {
                     replaceBackground(e.target, options);
                 });
@@ -319,7 +342,9 @@ class Effects_backgroundReplace_class {
         this.Base_layers.convert_layer_to_canvas(null, true);
 
         //change data
-        const NewImage = document.getElementById('backgroundReplaceImageHolder');
+        const NewImage = document.getElementById(
+            'backgroundReplaceImageHolder',
+        );
         if (!NewImage) {
             warn("'#backgroundReplaceImageHolder' is not defined.");
             return;

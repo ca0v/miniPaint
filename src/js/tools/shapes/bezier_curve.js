@@ -118,9 +118,11 @@ class Bezier_Curve_class extends Base_tools_class {
                 status: 'draft',
             };
             app.State.do_action(
-                new app.Actions.Bundle_action('new_bezier_layer', 'New Bezier Layer', [
-                    new app.Actions.Insert_layer_action(this.layer),
-                ]),
+                new app.Actions.Bundle_action(
+                    'new_bezier_layer',
+                    'New Bezier Layer',
+                    [new app.Actions.Insert_layer_action(this.layer)],
+                ),
             );
             this.params_hash = params_hash;
         } else {
@@ -156,7 +158,12 @@ class Bezier_Curve_class extends Base_tools_class {
         }
 
         //apply snap
-        var snap_info = this.calc_snap_position(e, mouse_x, mouse_y, config.layer.id);
+        var snap_info = this.calc_snap_position(
+            e,
+            mouse_x,
+            mouse_y,
+            config.layer.id,
+        );
         if (snap_info != null) {
             if (snap_info.x != null) {
                 mouse_x = snap_info.x;
@@ -200,7 +207,12 @@ class Bezier_Curve_class extends Base_tools_class {
         }
 
         //apply snap
-        var snap_info = this.calc_snap_position(e, mouse_x, mouse_y, config.layer.id);
+        var snap_info = this.calc_snap_position(
+            e,
+            mouse_x,
+            mouse_y,
+            config.layer.id,
+        );
         if (snap_info != null) {
             if (snap_info.x != null) {
                 mouse_x = snap_info.x;
@@ -247,16 +259,18 @@ class Bezier_Curve_class extends Base_tools_class {
                     y + bezier.cp1.y,
                 );
                 if (config.TOOL.name == 'select') {
-                    this.selected_obj_positions.cp1_start = this.Helper.draw_control_point(
-                        this.ctx,
-                        x + bezier.start.x,
-                        y + bezier.start.y,
-                    );
-                    this.selected_obj_positions.cp1_end = this.Helper.draw_control_point(
-                        this.ctx,
-                        x + bezier.cp1.x,
-                        y + bezier.cp1.y,
-                    );
+                    this.selected_obj_positions.cp1_start =
+                        this.Helper.draw_control_point(
+                            this.ctx,
+                            x + bezier.start.x,
+                            y + bezier.start.y,
+                        );
+                    this.selected_obj_positions.cp1_end =
+                        this.Helper.draw_control_point(
+                            this.ctx,
+                            x + bezier.cp1.x,
+                            y + bezier.cp1.y,
+                        );
                 }
             }
             if (bezier.end.x != null && bezier.cp2.x != null) {
@@ -268,16 +282,18 @@ class Bezier_Curve_class extends Base_tools_class {
                     y + bezier.cp2.y,
                 );
                 if (config.TOOL.name == 'select') {
-                    this.selected_obj_positions.cp2_start = this.Helper.draw_control_point(
-                        this.ctx,
-                        x + bezier.end.x,
-                        y + bezier.end.y,
-                    );
-                    this.selected_obj_positions.cp2_end = this.Helper.draw_control_point(
-                        this.ctx,
-                        x + bezier.cp2.x,
-                        y + bezier.cp2.y,
-                    );
+                    this.selected_obj_positions.cp2_start =
+                        this.Helper.draw_control_point(
+                            this.ctx,
+                            x + bezier.end.x,
+                            y + bezier.end.y,
+                        );
+                    this.selected_obj_positions.cp2_end =
+                        this.Helper.draw_control_point(
+                            this.ctx,
+                            x + bezier.cp2.x,
+                            y + bezier.cp2.y,
+                        );
                 }
             }
         }
@@ -300,7 +316,14 @@ class Bezier_Curve_class extends Base_tools_class {
 
     render(ctx, layer) {
         var params = layer.params;
-        this.draw_bezier(ctx, layer.x, layer.y, layer.data, params.size, layer.color);
+        this.draw_bezier(
+            ctx,
+            layer.x,
+            layer.y,
+            layer.data,
+            params.size,
+            layer.color,
+        );
     }
 
     draw_bezier(ctx, x, y, data, lineWidth, color) {
@@ -329,7 +352,11 @@ class Bezier_Curve_class extends Base_tools_class {
     }
 
     selected_object_actions(e) {
-        if (config.TOOL.name != 'select' || config.layer.type != this.name || config.layer.status == 'draft') {
+        if (
+            config.TOOL.name != 'select' ||
+            config.layer.type != this.name ||
+            config.layer.status == 'draft'
+        ) {
             return;
         }
 
@@ -361,7 +388,11 @@ class Bezier_Curve_class extends Base_tools_class {
             return;
         }
 
-        if (event_type == 'mousemove' && this.mouse_lock == 'move_point' && mouse.is_drag) {
+        if (
+            event_type == 'mousemove' &&
+            this.mouse_lock == 'move_point' &&
+            mouse.is_drag
+        ) {
             mainWrapper.style.cursor = 'move';
 
             if (e.buttons == 1 || typeof e.buttons == 'undefined') {
@@ -381,7 +412,8 @@ class Bezier_Curve_class extends Base_tools_class {
                         //one direction only
                         var width = mouse_x - bezier.cp1.x;
                         var height = mouse_y - bezier.cp1.y;
-                        if (Math.abs(width) > Math.abs(height)) bezier.start.y = bezier.cp1.y;
+                        if (Math.abs(width) > Math.abs(height))
+                            bezier.start.y = bezier.cp1.y;
                         else bezier.start.x = bezier.cp1.x;
                     }
                 } else if (type == 'cp1_end') {
@@ -392,7 +424,8 @@ class Bezier_Curve_class extends Base_tools_class {
                         //one direction only
                         var width = mouse_x - bezier.start.x;
                         var height = mouse_y - bezier.start.y;
-                        if (Math.abs(width) > Math.abs(height)) bezier.cp1.y = bezier.start.y;
+                        if (Math.abs(width) > Math.abs(height))
+                            bezier.cp1.y = bezier.start.y;
                         else bezier.cp1.x = bezier.start.x;
                     }
                 } else if (type == 'cp2_start') {
@@ -403,7 +436,8 @@ class Bezier_Curve_class extends Base_tools_class {
                         //one direction only
                         var width = mouse_x - bezier.cp2.x;
                         var height = mouse_y - bezier.cp2.y;
-                        if (Math.abs(width) > Math.abs(height)) bezier.end.y = bezier.cp2.y;
+                        if (Math.abs(width) > Math.abs(height))
+                            bezier.end.y = bezier.cp2.y;
                         else bezier.end.x = bezier.cp2.x;
                     }
                 } else if (type == 'cp2_end') {
@@ -414,7 +448,8 @@ class Bezier_Curve_class extends Base_tools_class {
                         //one direction only
                         var width = mouse_x - bezier.end.x;
                         var height = mouse_y - bezier.end.y;
-                        if (Math.abs(width) > Math.abs(height)) bezier.cp2.y = bezier.end.y;
+                        if (Math.abs(width) > Math.abs(height))
+                            bezier.cp2.y = bezier.end.y;
                         else bezier.cp2.x = bezier.end.x;
                     }
                 }
@@ -433,11 +468,15 @@ class Bezier_Curve_class extends Base_tools_class {
 
             //save state
             app.State.do_action(
-                new app.Actions.Bundle_action('change_layer_details', 'Change Layer Details', [
-                    new app.Actions.Update_layer_action(config.layer.id, {
-                        data: bezier,
-                    }),
-                ]),
+                new app.Actions.Bundle_action(
+                    'change_layer_details',
+                    'Change Layer Details',
+                    [
+                        new app.Actions.Update_layer_action(config.layer.id, {
+                            data: bezier,
+                        }),
+                    ],
+                ),
             );
 
             config.need_render = true;
@@ -450,7 +489,10 @@ class Bezier_Curve_class extends Base_tools_class {
         if (!this.mouse_lock) {
             for (let current_drag_type in this.selected_obj_positions) {
                 const position = this.selected_obj_positions[current_drag_type];
-                if (position && this.ctx.isPointInPath(position, mouse.x, mouse.y)) {
+                if (
+                    position &&
+                    this.ctx.isPointInPath(position, mouse.x, mouse.y)
+                ) {
                     // match
                     if (event_type == 'mousedown') {
                         if (e.buttons == 1 || typeof e.buttons == 'undefined') {
@@ -458,7 +500,9 @@ class Bezier_Curve_class extends Base_tools_class {
                             this.selected_object_drag_type = current_drag_type;
                         }
                         config.mouse_lock = true;
-                        this.old_data = JSON.parse(JSON.stringify(config.layer.data));
+                        this.old_data = JSON.parse(
+                            JSON.stringify(config.layer.data),
+                        );
                     }
                     if (event_type == 'mousemove') {
                         mainWrapper.style.cursor = 'move';

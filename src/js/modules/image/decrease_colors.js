@@ -18,7 +18,9 @@ class Image_decreaseColors_class {
         var _this = this;
 
         if (config.layer.type != 'image') {
-            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            alertify.error(
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
+            );
             return;
         }
 
@@ -27,7 +29,11 @@ class Image_decreaseColors_class {
             preview: true,
             on_change: function (params, canvas_preview, w, h) {
                 var img = canvas_preview.getImageData(0, 0, w, h);
-                var data = _this.get_decreased_data(img, params.colors, params.greyscale);
+                var data = _this.get_decreased_data(
+                    img,
+                    params.colors,
+                    params.greyscale,
+                );
                 canvas_preview.putImageData(data, 0, 0);
             },
             params: [
@@ -53,11 +59,17 @@ class Image_decreaseColors_class {
 
         //change data
         var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        var data = this.get_decreased_data(img, params.colors, params.greyscale);
+        var data = this.get_decreased_data(
+            img,
+            params.colors,
+            params.greyscale,
+        );
         ctx.putImageData(data, 0, 0);
 
         //save
-        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
+        return app.State.do_action(
+            new app.Actions.Update_layer_image_action(canvas),
+        );
     }
 
     get_decreased_data(data, colors, greyscale) {
@@ -75,15 +87,35 @@ class Image_decreaseColors_class {
         canvas.height = H;
 
         //collect top colors
-        ctx.drawImage(config.layer.link, 0, 0, Math.ceil(W / block_size), Math.ceil(H / block_size));
-        var img_p = ctx.getImageData(0, 0, Math.ceil(W / block_size), Math.ceil(H / block_size));
+        ctx.drawImage(
+            config.layer.link,
+            0,
+            0,
+            Math.ceil(W / block_size),
+            Math.ceil(H / block_size),
+        );
+        var img_p = ctx.getImageData(
+            0,
+            0,
+            Math.ceil(W / block_size),
+            Math.ceil(H / block_size),
+        );
         var imgData_p = img_p.data;
         ctx.clearRect(0, 0, W, H);
 
         for (var i = 0; i < imgData_p.length; i += 4) {
             if (imgData_p[i + 3] == 0) continue; //transparent
-            var grey = Math.round(0.2126 * imgData_p[i] + 0.7152 * imgData_p[i + 1] + 0.0722 * imgData_p[i + 2]);
-            palette.push([imgData_p[i], imgData_p[i + 1], imgData_p[i + 2], grey]);
+            var grey = Math.round(
+                0.2126 * imgData_p[i] +
+                    0.7152 * imgData_p[i + 1] +
+                    0.0722 * imgData_p[i + 2],
+            );
+            palette.push([
+                imgData_p[i],
+                imgData_p[i + 1],
+                imgData_p[i + 2],
+                grey,
+            ]);
         }
 
         //calculate weights
@@ -106,7 +138,10 @@ class Image_decreaseColors_class {
                             Math.abs(palette[i][2] - palette[j][2]) <
                         max
                     ) {
-                        if (grey_palette[palette[i][3]] > grey_palette[palette[j][3]]) {
+                        if (
+                            grey_palette[palette[i][3]] >
+                            grey_palette[palette[j][3]]
+                        ) {
                             //remove color
                             palette.splice(j, 1);
                             j--;
@@ -153,7 +188,11 @@ class Image_decreaseColors_class {
                 imgData[k + 2] = palette[index1][2];
 
                 if (greyscale == true) {
-                    var mid = Math.round(0.2126 * imgData[k] + 0.7152 * imgData[k + 1] + 0.0722 * imgData[k + 2]);
+                    var mid = Math.round(
+                        0.2126 * imgData[k] +
+                            0.7152 * imgData[k + 1] +
+                            0.0722 * imgData[k + 2],
+                    );
                     imgData[k] = mid;
                     imgData[k + 1] = mid;
                     imgData[k + 2] = mid;

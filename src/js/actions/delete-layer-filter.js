@@ -34,7 +34,9 @@ export class Delete_layer_filter_action extends Base_action {
             }
         }
         if (!this.old_filter) {
-            throw new Error("Aborted - filter with specified id doesn't exist in layer");
+            throw new Error(
+                "Aborted - filter with specified id doesn't exist in layer",
+            );
         }
         config.need_render = true;
         app.GUI.GUI_layers.render_layers();
@@ -43,7 +45,11 @@ export class Delete_layer_filter_action extends Base_action {
     async undo() {
         super.undo();
         if (this.reference_layer && this.old_filter) {
-            this.reference_layer.filters.splice(this.filter_remove_index, 0, this.old_filter);
+            this.reference_layer.filters.splice(
+                this.filter_remove_index,
+                0,
+                this.old_filter,
+            );
         }
         this.reference_layer = null;
         this.old_filter = null;
