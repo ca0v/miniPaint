@@ -1096,41 +1096,14 @@ export default class DwLasso_class extends Base_tools_class {
     lasso.Base_layers.render();
   }
 
-  // not understanding how to read the current zoom position nor how to properly set it
-  hack = null;
-
   panViewport(dx, dy) {
     if (!dx && !dy) return;
     dx = -Math.round(dx);
     dy = -Math.round(dy);
 
     let { x, y } = zoomView.getPosition();
-    // this is set with screen coordinates but then it is modified, so not what I'm looking for (values are negative and scaled)
-    const maybe1 = zoomView.toScreen({ x, y });
-    const maybe2 = zoomView.toWorld(x, y);
-    const probably = { x: -x * this.scale, y: -y * this.scale };
-    console.log(
-      `getPosition: (${x},${y})`,
-      `maybe1: ${JSON.stringify(maybe1)}`,
-      `maybe2: ${JSON.stringify(maybe2)}`,
-      `probably: ${JSON.stringify(probably)}`,
-    );
-
-    if (!this.hack) {
-      this.hack = probably;
-    }
-
-    this.hack.x = x = Math.min(
-      zoomView.getContext().canvas.width - this.GUI_preview.PREVIEW_SIZE.w,
-      Math.max(0, this.hack.x + dx),
-    );
-    this.hack.y = y = Math.min(
-      zoomView.getContext().canvas.height - this.GUI_preview.PREVIEW_SIZE.h,
-      Math.max(0, this.hack.y + dy),
-    );
-
-    console.log(`panViewport: ${JSON.stringify({ x, y })}`);
-    this.GUI_preview.zoom_to_position(x, y);
+    const currentPosition = { x: -x * this.scale, y: -y * this.scale };
+    this.GUI_preview.zoom_to_position(currentPosition.x + dx, currentPosition.y + dy);
   }
 
   panViewport2(e, dx, dy) {
