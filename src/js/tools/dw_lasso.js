@@ -16,6 +16,8 @@
  * - Load an image then move it and the crop is the wrong part of the image...need to compensate for translations, etc.
  * -- Similarly, cut only working for images that have been cropped to the top-left corner, not sure where the problem is
  * -- but the crop.js works correctly, so the solution is in there somewhere
+ * - The initial pan ops are not honoring the current viewport
+ * - Center about a point works okay (not great) but zoom about a point is worse...look at 'wheel' and mimic that
  * - Pan and then zoom and state is out-of-whack
  *
  * ** TODO **
@@ -32,13 +34,6 @@
  * -- Rotate (two fingers moving in a circle, or second finger moving around a first)
  * -- Shake (one finger moving rapidly back and forth)
  * - StateMachine should not be raising pan and zoom events but instead Press+Drag (for pan) and Pinch/Spread (for zoom)
- * - Use acceleration when moving points
- * - The 'wheel' event works great, copy that code to zoom about the pinch/spread center
- * - "1" should place a point in the center of the screen
- * - [Space] should act like a mouse click
- * - Shift+ArrowKeys should move the selected point when "placing"
- * - ArrowKeys should pan when placing
- * - Should be able to zoom when placing, should center about active vertex
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -79,7 +74,9 @@ async function doActions(actions) {
 
 export default class DwLasso_class extends Base_tools_class {
   constructor(ctx) {
-    super(true);
+    // without this change I could not do mouse operations after touch operations, the coordinates did not change
+    const allowSystemToTrackMouseCoordinates = true;
+    super(allowSystemToTrackMouseCoordinates);
 
     this.name = 'dw_lasso';
     this.ctx = ctx;
@@ -1076,8 +1073,11 @@ export default class DwLasso_class extends Base_tools_class {
     {
       // is there an active vertex?
       if (typeof lasso.hover?.pointIndex === 'number') {
+        const point = lasso.data.at(lasso.hover.pointIndex);
+        const screenPoint = zoomView.toScreen(point);
+        lasso.GUI_preview.zoom_data.x = screenPoint.x;
+        lasso.GUI_preview.zoom_data.y = screenPoint.y;
         lasso.GUI_preview.zoom(zoom);
-        lasso.state.actions.centerAt();
         return;
       }
     }
