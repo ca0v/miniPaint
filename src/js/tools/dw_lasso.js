@@ -194,15 +194,10 @@ export default class DwLasso_class extends Base_tools_class {
   }
 
   centerAt(point) {
-    // pan the canvas so that the point is centered
-    const pos_global = zoomView.toScreen(point);
-
-    // preview top-left of point
-    zoomView.move(-pos_global.x, -pos_global.y);
-    zoomView.move(config.WIDTH / 2, config.HEIGHT / 2);
-
-    // scale
-    zoomView.apply();
+    const { x: px, y: py } = point;
+    const dx = -0.5 * config.visible_width * this.scale;
+    const dy = -0.5 * config.visible_height * this.scale;
+    this.GUI_preview.zoom_to_position(px + dx, py + dy);
   }
 
   renderData() {
@@ -711,13 +706,20 @@ export default class DwLasso_class extends Base_tools_class {
       },
 
       centerAt: () => {
-        const isMidpoint = this.hover?.midpointIndex >= 0;
-        let pointIndex = this.hover?.pointIndex || this.hover?.midpointIndex || this.data.length - 1;
+        const isMajorVertex = typeof this.hover?.pointIndex === 'number';
+        const isMinorVertex = !isMajorVertex && typeof this.hover?.midpointIndex === 'number';
 
-        if (isMidpoint) {
+        if (isMajorVertex) {
+          const pointIndex = this.hover.pointIndex;
+          console.log(`centering at point ${pointIndex}`);
+          this.centerAt(this.data[pointIndex]);
+        } else if (isMinorVertex) {
+          const pointIndex = this.hover.midpointIndex;
+          console.log(`centering at midpoint ${pointIndex}`);
           this.centerAt(center(this.data.at(pointIndex), this.data.at((pointIndex + 1) % this.data.length)));
         } else {
-          this.centerAt(this.data[pointIndex]);
+          console.log(`nothing to center about`);
+          return;
         }
         this.Base_layers.render();
       },
