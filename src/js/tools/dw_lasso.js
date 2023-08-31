@@ -16,6 +16,7 @@
  * - Load an image then move it and the crop is the wrong part of the image...need to compensate for translations, etc.
  * -- Similarly, cut only working for images that have been cropped to the top-left corner, not sure where the problem is
  * -- but the crop.js works correctly, so the solution is in there somewhere
+ * - Pan and then zoom and state is out-of-whack
  *
  * ** TODO **
  * - Is there a definitive list of touch gestures?  I came up with these:
@@ -33,6 +34,9 @@
  * - StateMachine should not be raising pan and zoom events but instead Press+Drag (for pan) and Pinch/Spread (for zoom)
  * - Use acceleration when moving points
  * - The 'wheel' event works great, copy that code to zoom about the pinch/spread center
+ * - "1" should place a point in the center of the screen
+ * - Shift+ArrowKeys should move the selected point when "placing"
+ * - ArrowKeys should pan when placing
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -830,112 +834,71 @@ export default class DwLasso_class extends Base_tools_class {
 
     this.state
       .about('pan')
-      .from([Status.drawing, Status.editing, Status.ready])
+      .from([Status.drawing, Status.editing, Status.ready, Status.placing])
       .when(Keyboard.PanLeft)
       .do(this.state.actions.panLeft);
 
     this.state
       .about('pan')
-      .from([Status.drawing, Status.editing, Status.ready])
+      .from([Status.drawing, Status.editing, Status.ready, Status.placing])
       .when(Keyboard.PanRight)
       .do(this.state.actions.panRight);
 
     this.state
       .about('pan')
-      .from([Status.drawing, Status.editing, Status.ready])
+      .from([Status.drawing, Status.editing, Status.ready, Status.placing])
       .when(Keyboard.PanUp)
       .do(this.state.actions.panUp);
 
     this.state
       .about('pan')
-      .from([Status.drawing, Status.editing, Status.ready])
+      .from([Status.drawing, Status.editing, Status.ready, Status.placing])
       .when(Keyboard.PanDown)
       .do(this.state.actions.panDown);
 
     this.state
-      .about('set focus the the prior vertex')
+      .about('set focus to sibling vertex')
       .from([Status.editing, Status.hover])
       .goto(Status.editing)
       .when(Keyboard.PriorVertex)
-      .do(this.state.actions.moveToPriorPoint);
-
-    this.state
-      .about('set focus the the next vertex')
-      .from([Status.editing, Status.hover])
-      .goto(Status.editing)
-      .when(Keyboard.NextVertex)
+      .do(this.state.actions.moveToPriorPoint)
+      .butWhen(Keyboard.NextVertex)
       .do(this.state.actions.moveToNextPoint);
 
     this.state
-      .about('move the point')
-      .from(Status.editing)
+      .about('move the point x1')
+      .from([Status.editing, Status.placing])
       .when(Keyboard.MovePointLeft)
-      .do(this.state.actions.movePointLeft1Units);
-
-    this.state
-      .about('move the point')
-      .from(Status.editing)
-      .when(Keyboard.MovePointRight)
-      .do(this.state.actions.movePointRight1Units);
-
-    this.state
-      .about('move the point')
-      .from(Status.editing)
-      .when(Keyboard.MovePointUp)
-      .do(this.state.actions.movePointUp1Units);
-
-    this.state
-      .about('move the point')
-      .from(Status.editing)
-      .when(Keyboard.MovePointDown)
+      .do(this.state.actions.movePointLeft1Units)
+      .butWhen(Keyboard.MovePointRight)
+      .do(this.state.actions.movePointRight1Units)
+      .butWhen(Keyboard.MovePointUp)
+      .do(this.state.actions.movePointUp1Units)
+      .butWhen(Keyboard.MovePointDown)
       .do(this.state.actions.movePointDown1Units);
 
     this.state
-      .about('move the point')
-      .from(Status.editing)
+      .about('move the point diagonally')
+      .from([Status.editing, Status.placing])
       .when(Keyboard.MovePointUpLeft)
-      .do(this.state.actions.movePointUpLeft1Units);
-
-    this.state
-      .about('move the point')
-      .from(Status.editing)
-      .when(Keyboard.MovePointUpRight)
-      .do(this.state.actions.movePointUpRight1Units);
-
-    this.state
-      .about('move the point')
-      .from(Status.editing)
-      .when(Keyboard.MovePointDownLeft)
-      .do(this.state.actions.movePointDownLeft1Units);
-
-    this.state
-      .about('move the point')
-      .from(Status.editing)
-      .when(Keyboard.MovePointDownRight)
+      .do(this.state.actions.movePointUpLeft1Units)
+      .butWhen(Keyboard.MovePointUpRight)
+      .do(this.state.actions.movePointUpRight1Units)
+      .butWhen(Keyboard.MovePointDownLeft)
+      .do(this.state.actions.movePointDownLeft1Units)
+      .butWhen(Keyboard.MovePointDownRight)
       .do(this.state.actions.movePointDownRight1Units);
 
     this.state
-      .about('move the point')
-      .from(Status.editing)
+      .about('move the point x10')
+      .from([Status.editing, Status.placing])
       .when(Keyboard.MovePointLeft10)
-      .do(this.state.actions.movePointLeft10Units);
-
-    this.state
-      .about('move the point')
-      .from(Status.editing)
-      .when(Keyboard.MovePointRight10)
-      .do(this.state.actions.movePointRight10Units);
-
-    this.state
-      .about('move the point')
-      .from(Status.editing)
-      .when(Keyboard.MovePointUp10)
-      .do(this.state.actions.movePointUp10Units);
-
-    this.state
-      .about('move the point')
-      .from(Status.editing)
-      .when(Keyboard.MovePointDown10)
+      .do(this.state.actions.movePointLeft10Units)
+      .butWhen(Keyboard.MovePointRight10)
+      .do(this.state.actions.movePointRight10Units)
+      .butWhen(Keyboard.MovePointUp10)
+      .do(this.state.actions.movePointUp10Units)
+      .butWhen(Keyboard.MovePointDown10)
       .do(this.state.actions.movePointDown10Units);
 
     this.state

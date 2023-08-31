@@ -284,6 +284,16 @@ class ContextOperands {
     return this;
   }
 
+  butWhen(condition) {
+    // if there is already a when, create a new context
+    if (!this.context.when) throw 'You must call when() before calling butWhen()';
+    const newContext = Object.assign({}, this.context);
+    this.state.contexts.push(newContext);
+    const newOp = new ContextOperands(this.state, newContext);
+    newOp.when(condition);
+    return newOp;
+  }
+
   do(action) {
     // if action is not a value of events, throw
     if (!Object.values(this.state.actions).includes(action))
@@ -308,6 +318,7 @@ class ContextOperands {
     return this;
   }
 }
+
 function touchLocation(touch) {
   return { x: touch.clientX, y: touch.clientY };
 }
