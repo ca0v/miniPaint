@@ -618,13 +618,16 @@ export default class DwLasso_class extends Base_tools_class {
       movePointDown10Units: () => this.movePoint(0, 10),
 
       closePolygon: () => {},
+      deletePointAndClosePolygon: () => {
+        this.deletePoint();
+      },
       dataPoints: () => !!this.data.length,
       noDataPoints: () => !this.data.length,
 
       deleteHoverPoint: () => {
         const hover = !!this.hover?.pointIndex || !!this.hover?.midpointIndex;
         if (hover) {
-          this.deletePoint(this);
+          this.deletePoint();
         }
         return hover;
       },
@@ -995,6 +998,20 @@ export default class DwLasso_class extends Base_tools_class {
       .goto(Status.editing)
       .when(Keyboard.ClosePolygon)
       .do(this.state.actions.closePolygon);
+
+    this.state
+      .about('complete the polygon')
+      .from([Status.drawing, Status.placing])
+      .goto(Status.editing)
+      .when(Keyboard.DeleteAndClosePolygon)
+      .do(this.state.actions.deletePointAndClosePolygon);
+
+    this.state
+      .about('delete the polygon and reset state')
+      .from([Status.editing])
+      .goto(Status.ready)
+      .when(Keyboard.DeleteAndClosePolygon)
+      .do(this.state.actions.reset);
   }
 
   computeHover(data, currentPoint) {
@@ -1145,12 +1162,11 @@ export default class DwLasso_class extends Base_tools_class {
 
   deletePoint() {
     const lasso = this;
-    let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
+    const pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || this.data.length - 1;
 
     lasso.snapshot('before deleting point', () => {
       lasso.data.splice(pointIndex, 1);
     });
-    lasso.Base_layers.render();
   }
 }
 

@@ -25,5 +25,6 @@ export const Keyboard = Object.freeze({
   ClearInterior: 'Shift+X',
   ClearExterior: 'Control+Shift+X',
   Smooth: 'q',
-  ClosePolygon: ['Escape', 'Shift+Left+mousedown'],
+  ClosePolygon: ['Right+mousedown', 'touchend'],
+  DeleteAndClosePolygon: ['Escape'],
 });
