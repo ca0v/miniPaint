@@ -172,7 +172,7 @@ export class StateMachine {
               if (Math.abs(delta) > MINIMAL_SPREAD_DISTANCE) {
                 touchState.pinch = { touch1, touch2 };
                 const pinchDirection = delta > 0 ? 'Spread' : 'Pinch';
-                this.trigger(pinchDirection);
+                this.trigger(pinchDirection, touchEvent);
                 return;
               }
             }

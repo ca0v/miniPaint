@@ -32,6 +32,7 @@
  * -- Shake (one finger moving rapidly back and forth)
  * - StateMachine should not be raising pan and zoom events but instead Press+Drag (for pan) and Pinch/Spread (for zoom)
  * - Use acceleration when moving points
+ * - The 'wheel' event works great, copy that code to zoom about the pinch/spread center
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -651,10 +652,10 @@ export default class DwLasso_class extends Base_tools_class {
 
       zoomIn: (e) => this.zoomViewport(e, 1),
       zoomOut: (e) => this.zoomViewport(e, -1),
-      panLeft: (e) => this.panViewport2(e),
-      panRight: (e) => this.panViewport2(e),
-      panUp: (e) => this.panViewport2(e),
-      panDown: (e) => this.panViewport2(e),
+      panLeft: (e) => this.panViewport2(e, 1, 0),
+      panRight: (e) => this.panViewport2(e, -1, 0),
+      panUp: (e) => this.panViewport2(e, 0, 1),
+      panDown: (e) => this.panViewport2(e, 0, -1),
 
       reset: () => this.reset(),
       cut: () => this.cut(),
@@ -1095,12 +1096,16 @@ export default class DwLasso_class extends Base_tools_class {
     if (!zoom) return;
 
     // is this a pinch gesture?
-    if (mouseEvent.touches?.length > 1) {
+    if (mouseEvent.touches?.length === 2) {
       const touch1 = mouseEvent.touches[0];
       const touch2 = mouseEvent.touches[1];
       const centerPoint = center({ x: touch1.clientX, y: touch1.clientY }, { x: touch2.clientX, y: touch2.clientY });
+
       console.log(`pinch zoom at ${centerPoint.x}, ${centerPoint.y}`);
-      this.centerAt(centerPoint);
+      lasso.GUI_preview.zoom_data.x = centerPoint.x;
+      lasso.GUI_preview.zoom_data.y = centerPoint.y;
+      lasso.GUI_preview.zoom(zoom);
+      return;
     }
 
     lasso.undoredo(
@@ -1143,21 +1148,26 @@ export default class DwLasso_class extends Base_tools_class {
     this.GUI_preview.zoom_to_position(x, y);
   }
 
-  panViewport2(e) {
-    function closeTo(expected, actual, tolerance = 45) {
+  panViewport2(e, dx, dy) {
+    function closeTo(expected, actual, tolerance = 70) {
       return Math.abs(expected - actual) < tolerance;
     }
 
-    const { dragDistanceInPixels: distance, dragDirectionInDegrees: degrees } = e;
-    const draggingUp = closeTo(degrees, -90);
-    const draggingDown = closeTo(degrees, 90);
-    const draggingLeft = closeTo(degrees, 180);
-    const draggingRight = closeTo(degrees, 0);
+    if (e) {
+      const { dragDistanceInPixels: distance, dragDirectionInDegrees: degrees } = e;
+      const draggingUp = closeTo(degrees, -90);
+      const draggingDown = closeTo(degrees, 90);
+      const draggingLeft = closeTo(degrees, 180);
+      const draggingRight = closeTo(degrees, 0);
 
-    if (draggingLeft) this.panViewport(-distance, 0);
-    else if (draggingRight) this.panViewport(distance, 0);
-    else if (draggingUp) this.panViewport(0, -distance);
-    else if (draggingDown) this.panViewport(0, distance);
+      if (draggingLeft) dx = -distance; // pan right
+      else if (draggingRight) dx = distance; // pan left
+
+      if (draggingUp) dy = -distance; // pan down
+      else if (draggingDown) dy = distance; // pan up
+    }
+
+    this.panViewport(dx, dy);
   }
 
   deletePoint() {
