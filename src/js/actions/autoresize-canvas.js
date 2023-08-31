@@ -12,7 +12,13 @@ export class Autoresize_canvas_action extends Base_action {
      * @param {int} layer_id
      * @param {boolean} can_automate
      */
-    constructor(width, height, layer_id, can_automate = true, ignore_same_size = false) {
+    constructor(
+        width,
+        height,
+        layer_id,
+        can_automate = true,
+        ignore_same_size = false,
+    ) {
         super('autoresize_canvas', 'Auto-resize Canvas');
         this.Tools_settings = new Tools_settings_class();
         this.width = width;
@@ -32,7 +38,8 @@ export class Autoresize_canvas_action extends Base_action {
         let need_fit = false;
         let new_config_width = config.WIDTH;
         let new_config_height = config.HEIGHT;
-        var enable_autoresize = this.Tools_settings.get_setting('enable_autoresize');
+        var enable_autoresize =
+            this.Tools_settings.get_setting('enable_autoresize');
 
         if (enable_autoresize == false) {
             return;
@@ -48,13 +55,15 @@ export class Autoresize_canvas_action extends Base_action {
                 need_fit = true;
             }
             if (width > new_config_width) new_config_width = parseInt(width);
-            if (height > new_config_height) new_config_height = parseInt(height);
+            if (height > new_config_height)
+                new_config_height = parseInt(height);
         }
 
         // Resize down
         if (config.layers.length == 1 && can_automate !== false) {
             if (width < new_config_width) new_config_width = parseInt(width);
-            if (height < new_config_height) new_config_height = parseInt(height);
+            if (height < new_config_height)
+                new_config_height = parseInt(height);
         }
 
         if (new_config_width !== config.WIDTH || new_config_height !== height) {

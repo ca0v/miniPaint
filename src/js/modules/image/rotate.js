@@ -45,7 +45,9 @@ class Image_rotate_class {
         var _this = this;
 
         if (config.layer.rotate === null) {
-            alertify.error('Rotate is not supported on this type of object. Convert to raster?');
+            alertify.error(
+                'Rotate is not supported on this type of object. Convert to raster?',
+            );
             return;
         }
 

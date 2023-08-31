@@ -57,7 +57,13 @@ import { StateMachine } from './dw_extensions/StateMachine.js';
 import { log } from './dw_extensions/log.js';
 
 async function doActions(actions) {
-    await app.State.do_action(new app.Actions.Bundle_action('dw_lasso_tool', 'Magic Crop Tool', actions));
+    await app.State.do_action(
+        new app.Actions.Bundle_action(
+            'dw_lasso_tool',
+            'Magic Crop Tool',
+            actions,
+        ),
+    );
 }
 
 export default class DwLasso_class extends Base_tools_class {
@@ -100,7 +106,11 @@ export default class DwLasso_class extends Base_tools_class {
             enable_move: false,
             data_function: () => this.selection,
         };
-        this.Base_selection = new Base_selection_class(ctx, sel_config, this.name);
+        this.Base_selection = new Base_selection_class(
+            ctx,
+            sel_config,
+            this.name,
+        );
 
         this.delayedSnapshot = debounce((about) => {
             this.snapshot(about);
@@ -114,7 +124,8 @@ export default class DwLasso_class extends Base_tools_class {
     on_activate() {
         this.defineStateMachine();
         this.state.setCurrentState(Status.none);
-        this.metrics.prior_action_history_max = this.Base_state.action_history_max;
+        this.metrics.prior_action_history_max =
+            this.Base_state.action_history_max;
         this.Base_state.action_history_max = 1000;
 
         const params_hash = this.get_params_hash();
@@ -140,15 +151,19 @@ export default class DwLasso_class extends Base_tools_class {
                 color: config.COLOR,
             };
             app.State.do_action(
-                new app.Actions.Bundle_action('new_dw_lasso_layer', 'Magic Crop Layer', [
-                    new app.Actions.Insert_layer_action(layer),
-                ]),
+                new app.Actions.Bundle_action(
+                    'new_dw_lasso_layer',
+                    'Magic Crop Layer',
+                    [new app.Actions.Insert_layer_action(layer)],
+                ),
             );
             this.params_hash = params_hash;
         } else {
             // bring layer to the top
             while (app.Layers.find_next(layer.id))
-                app.State.do_action(new app.Actions.Reorder_layer_action(layer.id, 1));
+                app.State.do_action(
+                    new app.Actions.Reorder_layer_action(layer.id, 1),
+                );
             this.renderData();
         }
     }
@@ -156,7 +171,8 @@ export default class DwLasso_class extends Base_tools_class {
     on_leave() {
         this.state.off();
 
-        this.Base_state.action_history_max = this.metrics.prior_action_history_max;
+        this.Base_state.action_history_max =
+            this.metrics.prior_action_history_max;
 
         // delete the magic crop layer
         const actions = [new app.Actions.Reset_selection_action()];
@@ -238,7 +254,10 @@ export default class DwLasso_class extends Base_tools_class {
 
         // now render the drag-points over the top of the lines
         data.forEach((currentPoint, i) => {
-            if (currentPoint === this.metrics.lastPointMoved && age(this.metrics.timeOfMove) < 1000) {
+            if (
+                currentPoint === this.metrics.lastPointMoved &&
+                age(this.metrics.timeOfMove) < 1000
+            ) {
                 cross(ctx, currentPoint, {
                     color: Drawings.lastMoveStrokeColor,
                     size: Drawings.hoverMajor.size * this.scale,
@@ -335,7 +354,15 @@ export default class DwLasso_class extends Base_tools_class {
 
         // for each image layer, fill the selection with the background color
         imageLayers.forEach((imageLayer) => {
-            const { x, y, width, height, width_original, height_original, link } = imageLayer;
+            const {
+                x,
+                y,
+                width,
+                height,
+                width_original,
+                height_original,
+                link,
+            } = imageLayer;
             const sx = width / width_original;
             const sy = height / height_original;
 
@@ -367,7 +394,12 @@ export default class DwLasso_class extends Base_tools_class {
             }
 
             // replace the layer image with the new canvas
-            actions.push(new app.Actions.Update_layer_image_action(canvas, imageLayer.id));
+            actions.push(
+                new app.Actions.Update_layer_image_action(
+                    canvas,
+                    imageLayer.id,
+                ),
+            );
         });
 
         // clear the data and reset the state
@@ -396,7 +428,15 @@ export default class DwLasso_class extends Base_tools_class {
         }
 
         imageLayers.forEach((imageLayer) => {
-            const { x, y, width, height, width_original, height_original, link } = imageLayer;
+            const {
+                x,
+                y,
+                width,
+                height,
+                width_original,
+                height_original,
+                link,
+            } = imageLayer;
 
             // the source image may have been scaled
             const sx = width / width_original;
@@ -424,16 +464,28 @@ export default class DwLasso_class extends Base_tools_class {
 
             if (!this.getParams().dw_transparent) {
                 // now create a solid background
-                const background = document.createElement('canvas').getContext('2d');
+                const background = document
+                    .createElement('canvas')
+                    .getContext('2d');
                 background.canvas.width = canvas.width;
                 background.canvas.height = canvas.height;
                 background.fillStyle = config.COLOR;
                 background.fillRect(0, 0, canvas.width, canvas.height);
                 // now copy the cropped image onto the background
                 background.drawImage(canvas, 0, 0);
-                actions.push(new app.Actions.Update_layer_image_action(background.canvas, imageLayer.id));
+                actions.push(
+                    new app.Actions.Update_layer_image_action(
+                        background.canvas,
+                        imageLayer.id,
+                    ),
+                );
             } else {
-                actions.push(new app.Actions.Update_layer_image_action(canvas, imageLayer.id));
+                actions.push(
+                    new app.Actions.Update_layer_image_action(
+                        canvas,
+                        imageLayer.id,
+                    ),
+                );
             }
         });
 
@@ -501,7 +553,11 @@ export default class DwLasso_class extends Base_tools_class {
         this.state = new StateMachine(Object.values(Status));
 
         this.state.on('execute', (context) =>
-            log(`${context.when}: ${context.about} (state: ${context.from} -> ${context.goto || context.from})`),
+            log(
+                `${context.when}: ${context.about} (state: ${context.from} -> ${
+                    context.goto || context.from
+                })`,
+            ),
         );
 
         this.state.on('PressDrag', (dragEvent) => {
@@ -519,7 +575,10 @@ export default class DwLasso_class extends Base_tools_class {
         });
 
         this.state.on('DragDrag', (dragEvent) => {
-            const { dragDirectionInDegrees: degrees, dragDistanceInPixels: distance } = dragEvent;
+            const {
+                dragDirectionInDegrees: degrees,
+                dragDistanceInPixels: distance,
+            } = dragEvent;
 
             const draggingUp = closeTo(degrees, -90);
             const draggingRight = closeTo(degrees, 0);
@@ -527,7 +586,15 @@ export default class DwLasso_class extends Base_tools_class {
             const draggingLeft = closeTo(degrees, 180);
 
             const eventName = `DragDrag${
-                draggingUp ? 'Up' : draggingRight ? 'Right' : draggingDown ? 'Down' : draggingLeft ? 'Left' : ''
+                draggingUp
+                    ? 'Up'
+                    : draggingRight
+                    ? 'Right'
+                    : draggingDown
+                    ? 'Down'
+                    : draggingLeft
+                    ? 'Left'
+                    : ''
             }`;
 
             this.state.trigger(eventName, dragEvent);
@@ -543,7 +610,8 @@ export default class DwLasso_class extends Base_tools_class {
                     const index = this.hover.pointIndex;
                     this.hover.point = this.data.at(index);
 
-                    const { x: original_x, y: original_y } = this.data.at(index);
+                    const { x: original_x, y: original_y } =
+                        this.data.at(index);
                     let { x: redo_x, y: redo_y } = currentPoint;
                     this.undoredo(
                         `before dragging point ${index} from ${original_x}, ${original_y}`,
@@ -607,11 +675,23 @@ export default class DwLasso_class extends Base_tools_class {
 
                 const d = distance(priorPoint, currentPoint) / this.scale;
                 let drawPoint =
-                    d > (isSecondPoint ? Settings.minimalDistanceBetweenPoints : Settings.distanceBetweenPoints);
+                    d >
+                    (isSecondPoint
+                        ? Settings.minimalDistanceBetweenPoints
+                        : Settings.distanceBetweenPoints);
 
-                if (!drawPoint && data.length > 2 && d > Settings.minimalDistanceBetweenPoints) {
-                    const a = Math.PI - angleOf(data.at(-3), priorPoint, currentPoint);
-                    drawPoint = d * a > Settings.radiusThreshold * Settings.distanceBetweenPoints;
+                if (
+                    !drawPoint &&
+                    data.length > 2 &&
+                    d > Settings.minimalDistanceBetweenPoints
+                ) {
+                    const a =
+                        Math.PI -
+                        angleOf(data.at(-3), priorPoint, currentPoint);
+                    drawPoint =
+                        d * a >
+                        Settings.radiusThreshold *
+                            Settings.distanceBetweenPoints;
                 }
                 if (drawPoint) {
                     data.push(currentPoint);
@@ -622,7 +702,9 @@ export default class DwLasso_class extends Base_tools_class {
                     p.y = currentPoint.y;
                 }
                 this.renderData();
-                this.delayedSnapshot(`before drawing points at location ${data.length}`);
+                this.delayedSnapshot(
+                    `before drawing points at location ${data.length}`,
+                );
             },
 
             placeFirstPointAtMouseLocation: (mouseEvent) => {
@@ -635,7 +717,8 @@ export default class DwLasso_class extends Base_tools_class {
 
             clonePoint: () => this.clonePoint(),
             placePointAtClickLocation: (e) => this.placePointAtClickLocation(e),
-            movingLastPointToMouseLocation: (e) => this.movingLastPointToMouseLocation(e),
+            movingLastPointToMouseLocation: (e) =>
+                this.movingLastPointToMouseLocation(e),
 
             moveToPriorPoint: () => this.moveToNextVertex(-1),
             moveToNextPoint: () => this.moveToNextVertex(1),
@@ -658,7 +741,8 @@ export default class DwLasso_class extends Base_tools_class {
             noDataPoints: () => !this.data.length,
 
             deleteHoverPoint: () => {
-                const hover = !!this.hover?.pointIndex || !!this.hover?.midpointIndex;
+                const hover =
+                    !!this.hover?.pointIndex || !!this.hover?.midpointIndex;
                 if (hover) {
                     this.deletePoint();
                 }
@@ -680,7 +764,8 @@ export default class DwLasso_class extends Base_tools_class {
                 return !!hover;
             },
 
-            notHoveringOverPoint: (e) => !this.state.actions.hoveringOverPoint(e),
+            notHoveringOverPoint: (e) =>
+                !this.state.actions.hoveringOverPoint(e),
 
             zoomIn: (e) => this.zoomViewport(e, 1),
             zoomOut: (e) => this.zoomViewport(e, -1),
@@ -694,20 +779,28 @@ export default class DwLasso_class extends Base_tools_class {
             crop: () => this.crop(),
 
             smooth: () => {
-                if (typeof this.hover?.pointIndex === 'number') return this.state.actions.smoothAroundVertex();
-                if (typeof this.hover?.midpointIndex === 'number') return this.state.actions.smoothAroundMinorVertex();
+                if (typeof this.hover?.pointIndex === 'number')
+                    return this.state.actions.smoothAroundVertex();
+                if (typeof this.hover?.midpointIndex === 'number')
+                    return this.state.actions.smoothAroundMinorVertex();
                 return this.state.actions.smoothAllData();
             },
 
             smoothAllData: () => {
-                this.snapshot('before smoothing', () => (this.data = new Smooth().smooth(this.data)));
+                this.snapshot(
+                    'before smoothing',
+                    () => (this.data = new Smooth().smooth(this.data)),
+                );
             },
 
             smoothAroundVertex: () => {
                 const index = this.hover.pointIndex;
                 if (typeof index !== 'number') return false;
                 this.snapshot(`before smoothing around vertex ${index}`, () => {
-                    const success = new Smooth().smoothAroundVertex(this.data, index);
+                    const success = new Smooth().smoothAroundVertex(
+                        this.data,
+                        index,
+                    );
                     if (success) {
                         this.hover.pointIndex = index + 1;
                     }
@@ -717,25 +810,39 @@ export default class DwLasso_class extends Base_tools_class {
             smoothAroundMinorVertex: () => {
                 const index = this.hover.midpointIndex;
                 if (typeof index !== 'number') return false;
-                this.snapshot(`before smoothing around minor vertex ${index}`, () => {
-                    const success = new Smooth().smoothAroundMinorVertex(this.data, index);
-                    if (success) {
-                        this.hover.pointIndex = index + 1;
-                        this.hover.midpointIndex = null;
-                    }
-                });
+                this.snapshot(
+                    `before smoothing around minor vertex ${index}`,
+                    () => {
+                        const success = new Smooth().smoothAroundMinorVertex(
+                            this.data,
+                            index,
+                        );
+                        if (success) {
+                            this.hover.pointIndex = index + 1;
+                            this.hover.midpointIndex = null;
+                        }
+                    },
+                );
             },
 
             centerAt: () => {
-                const isMajorVertex = typeof this.hover?.pointIndex === 'number';
-                const isMinorVertex = !isMajorVertex && typeof this.hover?.midpointIndex === 'number';
+                const isMajorVertex =
+                    typeof this.hover?.pointIndex === 'number';
+                const isMinorVertex =
+                    !isMajorVertex &&
+                    typeof this.hover?.midpointIndex === 'number';
 
                 if (isMajorVertex) {
                     const pointIndex = this.hover.pointIndex;
                     this.centerAt(this.data[pointIndex]);
                 } else if (isMinorVertex) {
                     const pointIndex = this.hover.midpointIndex;
-                    this.centerAt(center(this.data.at(pointIndex), this.data.at((pointIndex + 1) % this.data.length)));
+                    this.centerAt(
+                        center(
+                            this.data.at(pointIndex),
+                            this.data.at((pointIndex + 1) % this.data.length),
+                        ),
+                    );
                 } else {
                     return;
                 }
@@ -743,27 +850,50 @@ export default class DwLasso_class extends Base_tools_class {
             },
         });
 
-        this.state.about('no data found').from(Status.none).goto(Status.ready).do(this.state.actions.noDataPoints);
+        this.state
+            .about('no data found')
+            .from(Status.none)
+            .goto(Status.ready)
+            .do(this.state.actions.noDataPoints);
 
-        this.state.about('data found').from(Status.none).goto(Status.editing).do(this.state.actions.dataPoints);
+        this.state
+            .about('data found')
+            .from(Status.none)
+            .goto(Status.editing)
+            .do(this.state.actions.dataPoints);
 
         this.state
             .about('reset the tool')
-            .from([Status.editing, Status.drawing, Status.placing, Status.hover])
+            .from([
+                Status.editing,
+                Status.drawing,
+                Status.placing,
+                Status.hover,
+            ])
             .goto(Status.ready)
             .when(Keyboard.Reset)
             .do(this.state.actions.reset);
 
         this.state
             .about('clear the interior during an edit')
-            .from([Status.editing, Status.drawing, Status.placing, Status.hover])
+            .from([
+                Status.editing,
+                Status.drawing,
+                Status.placing,
+                Status.hover,
+            ])
             .goto(Status.ready)
             .when(Keyboard.ClearInterior)
             .do(this.state.actions.cut);
 
         this.state
             .about('clear the exterior during an edit')
-            .from([Status.editing, Status.drawing, Status.placing, Status.hover])
+            .from([
+                Status.editing,
+                Status.drawing,
+                Status.placing,
+                Status.hover,
+            ])
             .goto(Status.ready)
             .when(Keyboard.ClearExterior)
             .do(this.state.actions.crop);
@@ -776,7 +906,12 @@ export default class DwLasso_class extends Base_tools_class {
 
         this.state
             .about('center about the current point')
-            .from([Status.editing, Status.drawing, Status.placing, Status.hover])
+            .from([
+                Status.editing,
+                Status.drawing,
+                Status.placing,
+                Status.hover,
+            ])
             .when(Keyboard.CenterAt)
             .do(this.state.actions.centerAt);
 
@@ -814,7 +949,9 @@ export default class DwLasso_class extends Base_tools_class {
             .do(this.state.actions.drawPoints);
 
         this.state
-            .about('when moving the mouse, move the last point to the mouse location')
+            .about(
+                'when moving the mouse, move the last point to the mouse location',
+            )
             .from(Status.drawing)
             .goto(Status.placing)
             .when('mousemove')
@@ -860,7 +997,12 @@ export default class DwLasso_class extends Base_tools_class {
 
         this.state
             .about('zoom')
-            .from([Status.drawing, Status.editing, Status.ready, Status.placing])
+            .from([
+                Status.drawing,
+                Status.editing,
+                Status.ready,
+                Status.placing,
+            ])
             .when(Keyboard.ZoomIn)
             .do(this.state.actions.zoomIn)
             .butWhen(Keyboard.ZoomOut)
@@ -868,7 +1010,12 @@ export default class DwLasso_class extends Base_tools_class {
 
         this.state
             .about('pan')
-            .from([Status.drawing, Status.editing, Status.ready, Status.placing])
+            .from([
+                Status.drawing,
+                Status.editing,
+                Status.ready,
+                Status.placing,
+            ])
             .when(Keyboard.PanLeft)
             .do(this.state.actions.panLeft)
             .butWhen(Keyboard.PanRight)
@@ -908,7 +1055,9 @@ export default class DwLasso_class extends Base_tools_class {
             .do(this.state.actions.movePointDownRight1Units);
 
         this.state
-            .about('after deleting the last point indicate we are ready for the 1st point')
+            .about(
+                'after deleting the last point indicate we are ready for the 1st point',
+            )
             .from(Status.editing)
             .goto(Status.ready)
             .when(Keyboard.Delete)
@@ -968,7 +1117,9 @@ export default class DwLasso_class extends Base_tools_class {
     computeHover(data, currentPoint) {
         const pointIndex = data.findIndex((point) => {
             const distanceToCurrentPoint = distance(point, currentPoint);
-            return distanceToCurrentPoint < Drawings.hoverMajor.size * this.scale;
+            return (
+                distanceToCurrentPoint < Drawings.hoverMajor.size * this.scale
+            );
         });
 
         if (pointIndex > -1) return { pointIndex };
@@ -978,7 +1129,9 @@ export default class DwLasso_class extends Base_tools_class {
             const nextPoint = data[(i + 1) % data.length];
             const centerPoint = center(point, nextPoint);
             const distanceToCurrentPoint = distance(centerPoint, currentPoint);
-            return distanceToCurrentPoint < Drawings.hoverMinor.size * this.scale;
+            return (
+                distanceToCurrentPoint < Drawings.hoverMinor.size * this.scale
+            );
         });
 
         if (midpointIndex > -1) {
@@ -1001,7 +1154,10 @@ export default class DwLasso_class extends Base_tools_class {
         if (timeOfLastMove && this.metrics.timeOfMove - timeOfLastMove < 100) {
             this.metrics.speed = Math.max(
                 this.metrics.MIN_SPEED,
-                Math.min(this.metrics.MAX_SPEED, this.metrics.speed + this.metrics.ACCELERATION),
+                Math.min(
+                    this.metrics.MAX_SPEED,
+                    this.metrics.speed + this.metrics.ACCELERATION,
+                ),
             );
         } else {
             this.metrics.speed = this.metrics.DEFAULT_SPEED;
@@ -1013,7 +1169,10 @@ export default class DwLasso_class extends Base_tools_class {
         if (isMidpoint) {
             // create the point an select the new point
             const index = lasso.hover.midpointIndex;
-            const point = center(lasso.data.at(index), lasso.data.at((index + 1) % lasso.data.length));
+            const point = center(
+                lasso.data.at(index),
+                lasso.data.at((index + 1) % lasso.data.length),
+            );
             lasso.snapshot('before moving point', () => {
                 lasso.data.splice(index + 1, 0, point);
             });
@@ -1034,21 +1193,24 @@ export default class DwLasso_class extends Base_tools_class {
         const lasso = this;
 
         const isMidpoint = lasso.hover?.midpointIndex >= 0;
-        let pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
+        let pointIndex =
+            lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
 
         if (isMidpoint) {
             pointIndex += indexOffset;
             if (indexOffset < 0) pointIndex++;
 
             lasso.hover = {
-                pointIndex: (pointIndex + lasso.data.length) % lasso.data.length,
+                pointIndex:
+                    (pointIndex + lasso.data.length) % lasso.data.length,
             };
         } else {
             pointIndex += indexOffset;
             if (indexOffset > 0) pointIndex--;
 
             lasso.hover = {
-                midpointIndex: (pointIndex + lasso.data.length) % lasso.data.length,
+                midpointIndex:
+                    (pointIndex + lasso.data.length) % lasso.data.length,
             };
         }
         lasso.Base_layers.render();
@@ -1101,12 +1263,18 @@ export default class DwLasso_class extends Base_tools_class {
 
         let { x, y } = zoomView.getPosition();
         const currentPosition = { x: -x * this.scale, y: -y * this.scale };
-        this.GUI_preview.zoom_to_position(currentPosition.x + dx, currentPosition.y + dy);
+        this.GUI_preview.zoom_to_position(
+            currentPosition.x + dx,
+            currentPosition.y + dy,
+        );
     }
 
     panViewport2(e, dx, dy) {
         if (e) {
-            const { dragDistanceInPixels: distance, dragDirectionInDegrees: degrees } = e;
+            const {
+                dragDistanceInPixels: distance,
+                dragDirectionInDegrees: degrees,
+            } = e;
             const draggingUp = closeTo(degrees, -90);
             const draggingDown = closeTo(degrees, 90);
             const draggingLeft = closeTo(degrees, 180);
@@ -1127,7 +1295,10 @@ export default class DwLasso_class extends Base_tools_class {
 
     deletePoint() {
         const lasso = this;
-        const pointIndex = lasso.hover?.pointIndex || lasso.hover?.midpointIndex || this.data.length - 1;
+        const pointIndex =
+            lasso.hover?.pointIndex ||
+            lasso.hover?.midpointIndex ||
+            this.data.length - 1;
 
         lasso.snapshot('before deleting point', () => {
             lasso.data.splice(pointIndex, 1);

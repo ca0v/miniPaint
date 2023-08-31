@@ -18,7 +18,9 @@ export class Reset_selection_action extends Base_action {
     async do() {
         super.do();
         this.settings_reference = app.Layers.Base_selection.find_settings();
-        this.old_settings_data = JSON.parse(JSON.stringify(this.settings_reference.data));
+        this.old_settings_data = JSON.parse(
+            JSON.stringify(this.settings_reference.data),
+        );
         this.settings_reference.data = {
             x: null,
             y: null,
@@ -38,9 +40,11 @@ export class Reset_selection_action extends Base_action {
         super.undo();
         if (this.old_settings_data) {
             for (let prop of ['x', 'y', 'width', 'height']) {
-                this.settings_reference.data[prop] = this.old_settings_data[prop];
+                this.settings_reference.data[prop] =
+                    this.old_settings_data[prop];
                 if (this.mirror_selection_settings) {
-                    this.mirror_selection_settings[prop] = this.old_settings_data[prop];
+                    this.mirror_selection_settings[prop] =
+                        this.old_settings_data[prop];
                 }
             }
         }

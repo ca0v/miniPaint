@@ -25,14 +25,16 @@ export class StateMachine {
 
         this.events.on('mousemove', (mouseEvent) => {
             const mouseState = computeMouseState(mouseEvent);
-            const preventBubble = false !== this.trigger(mouseState, mouseEvent);
+            const preventBubble =
+                false !== this.trigger(mouseState, mouseEvent);
             if (preventBubble) mouseEvent.preventDefault();
         });
 
         this.events.on('mousedown', (mouseEvent) => {
             mouseDownState.buttons = mouseEvent.buttons;
             const mouseState = computeMouseState(mouseEvent);
-            const preventBubble = false !== this.trigger(mouseState, mouseEvent);
+            const preventBubble =
+                false !== this.trigger(mouseState, mouseEvent);
             if (preventBubble) mouseEvent.preventDefault();
         });
 
@@ -41,7 +43,8 @@ export class StateMachine {
             let mouseState = computeMouseState(mouseEvent);
             if (priorButtons === 1) mouseState = `Left+${mouseState}`;
             if (priorButtons === 2) mouseState = `Right+${mouseState}`;
-            const preventBubble = false !== this.trigger(mouseState, mouseEvent);
+            const preventBubble =
+                false !== this.trigger(mouseState, mouseEvent);
             if (preventBubble) mouseEvent.preventDefault();
         });
 
@@ -49,7 +52,8 @@ export class StateMachine {
         this.events.on('touchstart', (touchEvent) => {
             if (touchEvent.touches[1]) return; // ignore multi-touch
             const mouseState = computeMouseState(touchEvent);
-            const preventBubble = false !== this.trigger(mouseState, touchEvent);
+            const preventBubble =
+                false !== this.trigger(mouseState, touchEvent);
             if (preventBubble) touchEvent.preventDefault();
         });
 
@@ -57,7 +61,8 @@ export class StateMachine {
         this.events.on('touchmove', (touchEvent) => {
             if (touchEvent.touches[1]) return; // ignore multi-touch
             const mouseState = computeMouseState(touchEvent);
-            const preventBubble = false !== this.trigger(mouseState, touchEvent);
+            const preventBubble =
+                false !== this.trigger(mouseState, touchEvent);
             if (preventBubble) touchEvent.preventDefault();
         });
 
@@ -65,7 +70,8 @@ export class StateMachine {
         this.events.on('touchend', (touchEvent) => {
             if (touchEvent.touches[1]) return; // ignore multi-touch
             const mouseState = computeMouseState(touchEvent);
-            const preventBubble = false !== this.trigger(mouseState, touchEvent);
+            const preventBubble =
+                false !== this.trigger(mouseState, touchEvent);
             if (preventBubble) touchEvent.preventDefault();
         });
 
@@ -97,8 +103,14 @@ export class StateMachine {
 
                     {
                         // is this a Drag+Drag (are both fingers moving in the same direction?)
-                        const delta1 = distance(touchState.pinch.touch1, touch1);
-                        const delta2 = distance(touchState.pinch.touch2, touch2);
+                        const delta1 = distance(
+                            touchState.pinch.touch1,
+                            touch1,
+                        );
+                        const delta2 = distance(
+                            touchState.pinch.touch2,
+                            touch2,
+                        );
                         const angle1 = angleOf(touch1, touchState.pinch.touch1);
                         const angle2 = angleOf(touch2, touchState.pinch.touch2);
                         if (
@@ -119,12 +131,24 @@ export class StateMachine {
                     }
                     {
                         // is this a Press+Drag
-                        const delta1 = distance(touchState.pinch.touch1, touch1);
-                        const delta2 = distance(touchState.pinch.touch2, touch2);
-                        if (delta1 < MINIMAL_SPREAD_DISTANCE && delta2 > MINIMAL_SPREAD_DISTANCE) {
+                        const delta1 = distance(
+                            touchState.pinch.touch1,
+                            touch1,
+                        );
+                        const delta2 = distance(
+                            touchState.pinch.touch2,
+                            touch2,
+                        );
+                        if (
+                            delta1 < MINIMAL_SPREAD_DISTANCE &&
+                            delta2 > MINIMAL_SPREAD_DISTANCE
+                        ) {
                             // to be moved outside this control
                             // what is the direction of the drag?
-                            const degrees = angleOf(touch2, touchState.pinch.touch2);
+                            const degrees = angleOf(
+                                touch2,
+                                touchState.pinch.touch2,
+                            );
 
                             const args = {
                                 dragDistanceInPixels: delta2,
@@ -140,8 +164,14 @@ export class StateMachine {
 
                     {
                         // is this a pinch or spread?
-                        const delta1 = distance(touchState.pinch.touch1, touch1);
-                        const delta2 = distance(touchState.pinch.touch2, touch2);
+                        const delta1 = distance(
+                            touchState.pinch.touch1,
+                            touch1,
+                        );
+                        const delta2 = distance(
+                            touchState.pinch.touch2,
+                            touch2,
+                        );
                         const angle1 = angleOf(touch1, touchState.pinch.touch1);
                         const angle2 = angleOf(touch2, touchState.pinch.touch2);
 
@@ -150,7 +180,10 @@ export class StateMachine {
                             delta2 > MINIMAL_SPREAD_DISTANCE &&
                             closeTo(Math.abs(angle1 - angle2), 180, 30)
                         ) {
-                            const startDistance = distance(touchState.pinch.touch1, touchState.pinch.touch2);
+                            const startDistance = distance(
+                                touchState.pinch.touch1,
+                                touchState.pinch.touch2,
+                            );
                             const currentDistance = distance(touch1, touch2);
                             const delta = currentDistance - startDistance;
                             if (Math.abs(delta) > MINIMAL_SPREAD_DISTANCE) {
@@ -159,11 +192,15 @@ export class StateMachine {
                                     currentDistanceInPixels: currentDistance,
                                     priorDistanceInPixels: delta,
                                     dragDistanceInPixels: (delta1 + delta2) / 2,
-                                    dragDirectionInDegrees: angleOf(touch2, touch1),
+                                    dragDirectionInDegrees: angleOf(
+                                        touch2,
+                                        touch1,
+                                    ),
                                     touches: [touch1, touch2],
                                 };
 
-                                const pinchDirection = delta > 0 ? 'Spread' : 'Pinch';
+                                const pinchDirection =
+                                    delta > 0 ? 'Spread' : 'Pinch';
 
                                 this.events.trigger(pinchDirection, args);
                                 return;
@@ -187,8 +224,12 @@ export class StateMachine {
             });
 
             this.events.on('keydown', (keyboardEvent) => {
-                const keyboardState = computeKeyboardState(keyboardEvent, keysThatAreDown);
-                const preventBubble = false !== this.trigger(keyboardState, keyboardEvent);
+                const keyboardState = computeKeyboardState(
+                    keyboardEvent,
+                    keysThatAreDown,
+                );
+                const preventBubble =
+                    false !== this.trigger(keyboardState, keyboardEvent);
                 if (preventBubble) keyboardEvent.preventDefault();
             });
 
@@ -218,12 +259,17 @@ export class StateMachine {
     execute(eventName, eventData) {
         const targetEvents = this.contexts
             .filter((e) => e.from.includes(this.currentState))
-            .filter((e) => !e.when || e.when.some((v) => isShortcutMatch(v, eventName)));
+            .filter(
+                (e) =>
+                    !e.when ||
+                    e.when.some((v) => isShortcutMatch(v, eventName)),
+            );
         if (!targetEvents.length) return false;
         let stateChanged = false;
         return targetEvents.some((targetEvent) => {
             if (targetEvent.do) {
-                if (false === targetEvent.do.call(this, eventData)) return false;
+                if (false === targetEvent.do.call(this, eventData))
+                    return false;
                 this.events.trigger('execute', targetEvent);
                 if (stateChanged)
                     throw new Error(
@@ -240,7 +286,10 @@ export class StateMachine {
 
     trigger(eventName, eventData) {
         const success = false !== this.execute(eventName, eventData);
-        if (!success) log(`No handler found for event ${eventName}, state ${this.currentState}`);
+        if (!success)
+            log(
+                `No handler found for event ${eventName}, state ${this.currentState}`,
+            );
         return success;
     }
 
@@ -279,7 +328,8 @@ class ContextOperands {
 
     butWhen(condition) {
         // if there is already a when, create a new context
-        if (!this.context.when) throw 'You must call when() before calling butWhen()';
+        if (!this.context.when)
+            throw 'You must call when() before calling butWhen()';
         const newContext = Object.assign({}, this.context);
         this.state.contexts.push(newContext);
         const newOp = new ContextOperands(this.state, newContext);
@@ -290,9 +340,9 @@ class ContextOperands {
     do(action) {
         // if action is not a value of events, throw
         if (!Object.values(this.state.actions).includes(action))
-            throw `Action not found in actions: ${Object.keys(this.state.actions).join(', ')}, about: ${
-                this.context.about
-            }`;
+            throw `Action not found in actions: ${Object.keys(
+                this.state.actions,
+            ).join(', ')}, about: ${this.context.about}`;
         this.context.do = action;
         return this;
     }

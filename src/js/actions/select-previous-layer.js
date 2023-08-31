@@ -11,7 +11,9 @@ export class Select_previous_layer_action extends Base_action {
 
     async do() {
         super.do();
-        const previous_layer = app.Layers.find_previous(this.reference_layer_id);
+        const previous_layer = app.Layers.find_previous(
+            this.reference_layer_id,
+        );
         if (!previous_layer) {
             throw new Error('Aborted - Previous layer to select not found');
         }

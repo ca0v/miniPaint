@@ -36,7 +36,9 @@ class Layer_flatten_class {
         //remove rest of layers
         let delete_actions = [];
         for (var i = config.layers.length - 1; i >= 0; i--) {
-            delete_actions.push(new app.Actions.Delete_layer_action(config.layers[i].id));
+            delete_actions.push(
+                new app.Actions.Delete_layer_action(config.layers[i].id),
+            );
         }
         // Run actions
         app.State.do_action(

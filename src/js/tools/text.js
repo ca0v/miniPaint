@@ -55,7 +55,9 @@ function load_font_family({ family, variants }, successCallback) {
         const loadPromise = new Promise((resolve, reject) => {
             WebFont.load({
                 google: {
-                    families: [family + (variants ? ':' + variants.join(',') : '')],
+                    families: [
+                        family + (variants ? ':' + variants.join(',') : ''),
+                    ],
                 },
                 fontactive: (family) => {
                     fontLoadMap.set(family, true);
@@ -89,7 +91,8 @@ function load_font_family({ family, variants }, successCallback) {
 const kerningTestCanvas = document.createElement('canvas');
 kerningTestCanvas.width = 10;
 kerningTestCanvas.height = 10;
-kerningTestCanvas.style = 'font-kerning: normal; text-rendering: optimizeLegibility;';
+kerningTestCanvas.style =
+    'font-kerning: normal; text-rendering: optimizeLegibility;';
 const kerningTestCtx = kerningTestCanvas.getContext('2d');
 class Font_metrics_class {
     constructor(family, size) {
@@ -140,8 +143,17 @@ class Font_metrics_class {
         kerningTestCtx.textAlign = 'left';
         kerningTestCtx.textBaseline = baseline;
         kerningTestCtx.fillStyle = '#000000';
-        kerningTestCtx.fillText(letter, 0, baseline === 'alphabetic' ? this.baseline : 0);
-        const pixels = kerningTestCtx.getImageData(0, 0, this.width, this.height).data;
+        kerningTestCtx.fillText(
+            letter,
+            0,
+            baseline === 'alphabetic' ? this.baseline : 0,
+        );
+        const pixels = kerningTestCtx.getImageData(
+            0,
+            0,
+            this.width,
+            this.height,
+        ).data;
         const pixelLength = pixels.length;
         let start = 0;
         let end = this.height;
@@ -186,7 +198,8 @@ class Font_metrics_class {
                 this.family;
             offset =
                 kerningTestCtx.measureText(letters).width -
-                (kerningTestCtx.measureText(letters[0]).width + kerningTestCtx.measureText(letters[1]).width);
+                (kerningTestCtx.measureText(letters[0]).width +
+                    kerningTestCtx.measureText(letters[1]).width);
             this.kerningMap.set(letters, offset);
         }
         return offset;
@@ -344,8 +357,15 @@ class Text_document_class {
         let spanStartCharacter = 0;
         let wasInserted = false;
         for (let span of lineDef) {
-            if (!wasInserted && character >= spanStartCharacter && character <= spanStartCharacter + span.text.length) {
-                let textBefore = span.text.slice(0, character - spanStartCharacter);
+            if (
+                !wasInserted &&
+                character >= spanStartCharacter &&
+                character <= spanStartCharacter + span.text.length
+            ) {
+                let textBefore = span.text.slice(
+                    0,
+                    character - spanStartCharacter,
+                );
                 let textAfter = span.text.slice(character - spanStartCharacter);
                 if (textBefore.length > 0) {
                     newLine.push({
@@ -387,7 +407,11 @@ class Text_document_class {
     insert_text(text, line, character) {
         let insertedSpan;
         if (this.queuedMetaChanges) {
-            insertedSpan = this.insert_empty_span(line, character, this.queuedMetaChanges);
+            insertedSpan = this.insert_empty_span(
+                line,
+                character,
+                this.queuedMetaChanges,
+            );
             this.queuedMetaChanges = null;
         }
 
@@ -415,7 +439,10 @@ class Text_document_class {
                     modifyingSpan = span;
                 }
                 const textIdx = character - characterCount;
-                modifyingSpan.text = modifyingSpan.text.slice(0, textIdx) + text + modifyingSpan.text.slice(textIdx);
+                modifyingSpan.text =
+                    modifyingSpan.text.slice(0, textIdx) +
+                    text +
+                    modifyingSpan.text.slice(textIdx);
                 if (!textHasNewline) {
                     newCharacter = characterCount + textIdx + text.length;
                     break;
@@ -446,7 +473,10 @@ class Text_document_class {
                     if (!modifiedSpans[i].text && nextSpans.length > 0) {
                         this.lines.splice(line + i + 1, 0, nextSpans);
                     } else {
-                        this.lines.splice(line + i + 1, 0, [modifiedSpans[i], ...nextSpans]);
+                        this.lines.splice(line + i + 1, 0, [
+                            modifiedSpans[i],
+                            ...nextSpans,
+                        ]);
                     }
                     newLine = line + i + 1;
                     newCharacter = text.length - 1 - text.lastIndexOf('\n');
@@ -481,7 +511,8 @@ class Text_document_class {
         startCharacter >= 0 || (startCharacter = 0);
         endLine < this.lines.length || (endLine = this.lines.length - 1);
         const endLineCharacterCount = this.get_line_character_count(endLine);
-        endCharacter <= endLineCharacterCount || (endCharacter = endLineCharacterCount);
+        endCharacter <= endLineCharacterCount ||
+            (endCharacter = endLineCharacterCount);
 
         // Early return if there's nothing to delete
         if (startLine === endLine && startCharacter === endCharacter) {
@@ -506,7 +537,10 @@ class Text_document_class {
                 startCharacter <= characterCount + spanLength
             ) {
                 startSpan = span;
-                startSpanDeleteIndex = Math.max(0, startCharacter - characterCount);
+                startSpanDeleteIndex = Math.max(
+                    0,
+                    startCharacter - characterCount,
+                );
                 break;
             }
             if (!startSpan) {
@@ -537,12 +571,20 @@ class Text_document_class {
 
         // Merge start and end lines
         this.lines[startLine] = [...beforeSpans];
-        if (startSpan === endSpan || this.is_same_span_meta(startSpan.meta, endSpan.meta)) {
+        if (
+            startSpan === endSpan ||
+            this.is_same_span_meta(startSpan.meta, endSpan.meta)
+        ) {
             const combinedSpans = {
                 meta: startSpan.meta,
-                text: startSpan.text.slice(0, startSpanDeleteIndex) + endSpan.text.slice(endSpanDeleteIndex),
+                text:
+                    startSpan.text.slice(0, startSpanDeleteIndex) +
+                    endSpan.text.slice(endSpanDeleteIndex),
             };
-            if (combinedSpans.text || (beforeSpans.length === 0 && afterSpans.length === 0)) {
+            if (
+                combinedSpans.text ||
+                (beforeSpans.length === 0 && afterSpans.length === 0)
+            ) {
                 this.lines[startLine].push(combinedSpans);
             }
         } else {
@@ -565,20 +607,30 @@ class Text_document_class {
             }
             if (isAddedStartSpan && !isAddedEndSpan) {
                 const afterSpan = afterSpans[0];
-                if (afterSpan && this.is_same_span_meta(startSpan.meta, afterSpan.meta)) {
+                if (
+                    afterSpan &&
+                    this.is_same_span_meta(startSpan.meta, afterSpan.meta)
+                ) {
                     afterSpans.shift();
                     startSpan.text += afterSpan.text;
                 }
             } else if (isAddedEndSpan && !isAddedStartSpan) {
                 const beforeSpan = beforeSpans[beforeSpans.length - 1];
-                if (beforeSpan && this.is_same_span_meta(beforeSpan.meta, endSpan.meta)) {
+                if (
+                    beforeSpan &&
+                    this.is_same_span_meta(beforeSpan.meta, endSpan.meta)
+                ) {
                     beforeSpans.pop();
                     beforeSpan.text += endSpan.text;
                 }
             } else if (middleSpans.length === 0) {
                 const beforeSpan = beforeSpans[beforeSpans.length - 1];
                 const afterSpan = afterSpans[0];
-                if (beforeSpan && afterSpan && this.is_same_span_meta(beforeSpan.meta, afterSpan.meta)) {
+                if (
+                    beforeSpan &&
+                    afterSpan &&
+                    this.is_same_span_meta(beforeSpan.meta, afterSpan.meta)
+                ) {
                     afterSpans.shift();
                     beforeSpan.text += afterSpan.text;
                 }
@@ -637,7 +689,12 @@ class Text_document_class {
             }
         }
 
-        return this.delete_range(startLine, startCharacter, endLine, endCharacter);
+        return this.delete_range(
+            startLine,
+            startCharacter,
+            endLine,
+            endCharacter,
+        );
     }
 
     /**
@@ -653,8 +710,10 @@ class Text_document_class {
         startCharacter >= 0 || (startCharacter = 0);
         endLine < this.lines.length || (endLine = this.lines.length - 1);
         const endLineCharacterCount = this.get_line_character_count(endLine);
-        endCharacter <= endLineCharacterCount || (endCharacter = endLineCharacterCount);
-        const isEmpty = startLine === endLine && startCharacter === endCharacter;
+        endCharacter <= endLineCharacterCount ||
+            (endCharacter = endLineCharacterCount);
+        const isEmpty =
+            startLine === endLine && startCharacter === endCharacter;
 
         // Loop through all spans in range and collect meta values
         const metaCollection = {};
@@ -673,10 +732,12 @@ class Text_document_class {
                     if (
                         (!isEmpty &&
                             startCharacter >= spanStartCharacter &&
-                            startCharacter < spanStartCharacter + span.text.length) ||
+                            startCharacter <
+                                spanStartCharacter + span.text.length) ||
                         (isEmpty &&
                             startCharacter > spanStartCharacter &&
-                            startCharacter <= spanStartCharacter + span.text.length) ||
+                            startCharacter <=
+                                spanStartCharacter + span.text.length) ||
                         (startCharacter === 0 && spanStartCharacter === 0)
                     ) {
                         isInsideRange = true;
@@ -685,14 +746,22 @@ class Text_document_class {
                 }
                 if (lineIndex === endLine && isInsideRange) {
                     if (
-                        (!isEmpty && endCharacter <= spanStartCharacter + span.text.length) ||
-                        (isEmpty && endCharacter < spanStartCharacter + span.text.length)
+                        (!isEmpty &&
+                            endCharacter <=
+                                spanStartCharacter + span.text.length) ||
+                        (isEmpty &&
+                            endCharacter <
+                                spanStartCharacter + span.text.length)
                     ) {
                         endSpan = span;
                         isInsideRange = false;
                     }
                 }
-                if (isInsideRange || startSpan === span || (!isEmpty && endSpan === span)) {
+                if (
+                    isInsideRange ||
+                    startSpan === span ||
+                    (!isEmpty && endSpan === span)
+                ) {
                     for (const metaKey in metaCollection) {
                         let metaValue = span.meta[metaKey];
                         if (metaValue == null) {
@@ -730,7 +799,8 @@ class Text_document_class {
         startCharacter >= 0 || (startCharacter = 0);
         endLine < this.lines.length || (endLine = this.lines.length - 1);
         const endLineCharacterCount = this.get_line_character_count(endLine);
-        endCharacter <= endLineCharacterCount || (endCharacter = endLineCharacterCount);
+        endCharacter <= endLineCharacterCount ||
+            (endCharacter = endLineCharacterCount);
 
         // Set meta of spans in selection
         let isInsideRange = false;
@@ -758,12 +828,18 @@ class Text_document_class {
                     startCharacter < spanStartCharacter + spanLength &&
                     lineIndex === startLine
                 ) {
-                    choppedStartCharacters = startCharacter - spanStartCharacter;
+                    choppedStartCharacters =
+                        startCharacter - spanStartCharacter;
                     newLine.push({
-                        text: span.text.slice(0, startCharacter - spanStartCharacter),
+                        text: span.text.slice(
+                            0,
+                            startCharacter - spanStartCharacter,
+                        ),
                         meta: JSON.parse(JSON.stringify(span.meta)),
                     });
-                    span.text = span.text.slice(startCharacter - spanStartCharacter);
+                    span.text = span.text.slice(
+                        startCharacter - spanStartCharacter,
+                    );
                     isInsideRange = true;
                 }
                 newLine.push(span);
@@ -774,10 +850,19 @@ class Text_document_class {
                     lineIndex === endLine
                 ) {
                     newLine.push({
-                        text: span.text.slice(endCharacter - spanStartCharacter - choppedStartCharacters),
+                        text: span.text.slice(
+                            endCharacter -
+                                spanStartCharacter -
+                                choppedStartCharacters,
+                        ),
                         meta: JSON.parse(JSON.stringify(span.meta)),
                     });
-                    span.text = span.text.slice(0, endCharacter - spanStartCharacter - choppedStartCharacters);
+                    span.text = span.text.slice(
+                        0,
+                        endCharacter -
+                            spanStartCharacter -
+                            choppedStartCharacters,
+                    );
                     isInsideRange = true;
                 }
                 // Add meta to span
@@ -811,7 +896,11 @@ class Text_document_class {
             for (spanIndex = 0; spanIndex < line.length; spanIndex++) {
                 const span1 = line[spanIndex];
                 const span2 = line[spanIndex + 1];
-                if (span1 && span2 && this.is_same_span_meta(span1.meta, span2.meta)) {
+                if (
+                    span1 &&
+                    span2 &&
+                    this.is_same_span_meta(span1.meta, span2.meta)
+                ) {
                     line[spanIndex] = {
                         text: span1.text + span2.text,
                         meta: span1.meta,
@@ -860,7 +949,14 @@ class Text_selection_class {
      * @returns {boolean}
      */
     is_empty() {
-        return this.compare_position(this.start.line, this.start.character, this.end.line, this.end.character) === 0;
+        return (
+            this.compare_position(
+                this.start.line,
+                this.start.character,
+                this.end.line,
+                this.end.character,
+            ) === 0
+        );
     }
 
     /**
@@ -908,15 +1004,24 @@ class Text_selection_class {
         // Check upper bounds
         const lineCount = this.editor.document.get_line_count();
         line < lineCount || (line = lineCount - 1);
-        const lineCharacterCount = this.editor.document.get_line_character_count(line);
+        const lineCharacterCount =
+            this.editor.document.get_line_character_count(line);
         character <= lineCharacterCount || (character = lineCharacterCount);
 
         // Add to selection
         if (keepSelection) {
-            const positionCompare = this.compare_position(line, character, this.start.line, this.start.character);
+            const positionCompare = this.compare_position(
+                line,
+                character,
+                this.start.line,
+                this.start.character,
+            );
 
             // Determine whether we should make the start side of the range active, selection moving left or up.
-            if (positionCompare === -1 && (this.is_empty() || line < this.start.line)) {
+            if (
+                positionCompare === -1 &&
+                (this.is_empty() || line < this.start.line)
+            ) {
                 this.isActiveSideEnd = false;
             }
 
@@ -930,7 +1035,14 @@ class Text_selection_class {
             }
 
             // Making sure that end is greater than start and swap if necessary
-            if (this.compare_position(this.start.line, this.start.character, this.end.line, this.end.character) > 0) {
+            if (
+                this.compare_position(
+                    this.start.line,
+                    this.start.character,
+                    this.end.line,
+                    this.end.character,
+                ) > 0
+            ) {
                 this.isActiveSideEnd = !this.isActiveSideEnd;
                 const temp = {
                     line: this.start.line,
@@ -985,18 +1097,32 @@ class Text_selection_class {
             this.end.line,
             this.end.character,
         );
-        const firstLine = positionCompare === 1 ? this.end.line : this.start.line;
-        const lastLine = positionCompare === 1 ? this.start.line : this.end.line;
-        const firstCharacter = positionCompare === 1 ? this.end.character : this.start.character;
-        const lastCharacter = positionCompare === 1 ? this.start.character : this.end.character;
+        const firstLine =
+            positionCompare === 1 ? this.end.line : this.start.line;
+        const lastLine =
+            positionCompare === 1 ? this.start.line : this.end.line;
+        const firstCharacter =
+            positionCompare === 1 ? this.end.character : this.start.character;
+        const lastCharacter =
+            positionCompare === 1 ? this.start.character : this.end.character;
         let textLines = [];
         for (let i = firstLine; i <= lastLine; i++) {
             if (i === firstLine && i === lastLine) {
-                textLines.push(this.editor.document.get_line_text(i).slice(firstCharacter, lastCharacter));
+                textLines.push(
+                    this.editor.document
+                        .get_line_text(i)
+                        .slice(firstCharacter, lastCharacter),
+                );
             } else if (i === firstLine) {
-                textLines.push(this.editor.document.get_line_text(i).slice(firstCharacter));
+                textLines.push(
+                    this.editor.document.get_line_text(i).slice(firstCharacter),
+                );
             } else if (i === lastLine) {
-                textLines.push(this.editor.document.get_line_text(i).slice(0, lastCharacter));
+                textLines.push(
+                    this.editor.document
+                        .get_line_text(i)
+                        .slice(0, lastCharacter),
+                );
             } else {
                 textLines.push(this.editor.document.get_line_text(i));
             }
@@ -1035,7 +1161,10 @@ class Text_selection_class {
      */
     start_blinking() {
         clearInterval(this.blinkIntervalHandle);
-        this.blinkIntervalHandle = setInterval(this.blink.bind(this), this.blinkInterval);
+        this.blinkIntervalHandle = setInterval(
+            this.blink.bind(this),
+            this.blinkInterval,
+        );
     }
 
     /**
@@ -1098,7 +1227,11 @@ class Text_selection_class {
      */
     move_line_end(keepSelection) {
         const position = this.get_position();
-        this.set_position(position.line, this.editor.document.get_line_character_count(position.line), keepSelection);
+        this.set_position(
+            position.line,
+            this.editor.document.get_line_character_count(position.line),
+            keepSelection,
+        );
     }
 
     /**
@@ -1113,12 +1246,18 @@ class Text_selection_class {
             if (position.line > 0) {
                 this.set_position(
                     position.line - 1,
-                    this.editor.document.get_line_character_count(position.line - 1),
+                    this.editor.document.get_line_character_count(
+                        position.line - 1,
+                    ),
                     keepSelection,
                 );
             }
         } else {
-            this.set_position(position.line, position.character - length, keepSelection);
+            this.set_position(
+                position.line,
+                position.character - length,
+                keepSelection,
+            );
         }
     }
 
@@ -1130,13 +1269,19 @@ class Text_selection_class {
     move_character_next(length, keepSelection) {
         length = length == null ? 1 : length;
         const position = this.get_position();
-        const characterCount = this.editor.document.get_line_character_count(position.line);
+        const characterCount = this.editor.document.get_line_character_count(
+            position.line,
+        );
         if (position.character + length > characterCount) {
             if (position.line + 1 < this.editor.document.lines.length) {
                 this.set_position(position.line + 1, 0, keepSelection);
             }
         } else {
-            this.set_position(position.line, position.character + length, keepSelection);
+            this.set_position(
+                position.line,
+                position.character + length,
+                keepSelection,
+            );
         }
     }
 
@@ -1146,8 +1291,15 @@ class Text_selection_class {
      */
     move_word_previous(keepSelection) {
         const position = this.get_position();
-        const newPosition = this.editor.document.get_word_start_position(position.line, position.character);
-        this.set_position(newPosition.line, newPosition.character, keepSelection);
+        const newPosition = this.editor.document.get_word_start_position(
+            position.line,
+            position.character,
+        );
+        this.set_position(
+            newPosition.line,
+            newPosition.character,
+            keepSelection,
+        );
     }
 
     /**
@@ -1156,8 +1308,15 @@ class Text_selection_class {
      */
     move_word_next(keepSelection) {
         const position = this.get_position();
-        const newPosition = this.editor.document.get_word_end_position(position.line, position.character);
-        this.set_position(newPosition.line, newPosition.character, keepSelection);
+        const newPosition = this.editor.document.get_word_end_position(
+            position.line,
+            position.character,
+        );
+        this.set_position(
+            newPosition.line,
+            newPosition.character,
+            keepSelection,
+        );
     }
 }
 
@@ -1168,7 +1327,9 @@ class Text_editor_class {
     constructor(options) {
         options = options || {};
 
-        this.editingCtx = document.getElementById('canvas_minipaint').getContext('2d');
+        this.editingCtx = document
+            .getElementById('canvas_minipaint')
+            .getContext('2d');
         this.hasValueChanged = false;
 
         // Text boundary and offsets are precomputed before drawn
@@ -1180,12 +1341,15 @@ class Text_editor_class {
         this.textBoundaryHeight = 0;
 
         // Styling options during render
-        this.selectionBackgroundColor = options.selectionBackgroundColor || '#1C79C4';
+        this.selectionBackgroundColor =
+            options.selectionBackgroundColor || '#1C79C4';
         this.selectionTextColor = options.selectionTextColor || '#FFFFFF';
 
         // Offset from top/left of layer for cursor visibility
-        this.drawOffsetTop = options.paddingVertical != null ? options.paddingVertical : 6;
-        this.drawOffsetLeft = options.paddingHorizontal != null ? options.paddingHorizontal : 10;
+        this.drawOffsetTop =
+            options.paddingVertical != null ? options.paddingVertical : 6;
+        this.drawOffsetLeft =
+            options.paddingHorizontal != null ? options.paddingHorizontal : 10;
 
         // Tracking internal state for keyboard/mouse/touch control
         this.shiftPressed = false;
@@ -1258,7 +1422,11 @@ class Text_editor_class {
             this.delete_character_at_current_position();
         }
         const position = this.selection.get_position();
-        const newPosition = this.document.insert_text(text, position.line, position.character);
+        const newPosition = this.document.insert_text(
+            text,
+            position.line,
+            position.character,
+        );
         this.selection.set_position(newPosition.line, newPosition.character);
         this.hasValueChanged = true;
     }
@@ -1267,7 +1435,11 @@ class Text_editor_class {
         let newPosition;
         if (this.selection.is_empty()) {
             const position = this.selection.get_position();
-            newPosition = this.document.delete_character(forward, position.line, position.character);
+            newPosition = this.document.delete_character(
+                forward,
+                position.line,
+                position.character,
+            );
         } else {
             newPosition = this.document.delete_range(
                 this.selection.start.line,
@@ -1295,10 +1467,18 @@ class Text_editor_class {
         this.isMouseSelectionActive = true;
         this.mouseSelectionStartX = layerX;
         this.mouseSelectionStartY = layerY;
-        const cursorStart = this.get_cursor_position_from_absolute_position(layer, layerX, layerY);
+        const cursorStart = this.get_cursor_position_from_absolute_position(
+            layer,
+            layerX,
+            layerY,
+        );
         this.mouseSelectionStartLine = cursorStart.line;
         this.mouseSelectionStartCharacter = cursorStart.character;
-        this.selection.set_position(cursorStart.line, cursorStart.character, false);
+        this.selection.set_position(
+            cursorStart.line,
+            cursorStart.character,
+            false,
+        );
     }
 
     trigger_cursor_move(layer, layerX, layerY) {
@@ -1306,9 +1486,21 @@ class Text_editor_class {
         if (this.isMouseSelectionActive && isInsideCanvas) {
             this.mouseSelectionMoveX = layerX;
             this.mouseSelectionMoveY = layerY;
-            const cursorEnd = this.get_cursor_position_from_absolute_position(layer, layerX, layerY);
-            this.selection.set_position(this.mouseSelectionStartLine, this.mouseSelectionStartCharacter, false);
-            this.selection.set_position(cursorEnd.line, cursorEnd.character, true);
+            const cursorEnd = this.get_cursor_position_from_absolute_position(
+                layer,
+                layerX,
+                layerY,
+            );
+            this.selection.set_position(
+                this.mouseSelectionStartLine,
+                this.mouseSelectionStartCharacter,
+                false,
+            );
+            this.selection.set_position(
+                cursorEnd.line,
+                cursorEnd.character,
+                true,
+            );
         }
     }
 
@@ -1325,8 +1517,12 @@ class Text_editor_class {
         if (this.lineRenderInfo) {
             const textDirection = layer.params.text_direction;
             const wrapDirection = layer.params.wrap_direction;
-            const isHorizontalTextDirection = ['ltr', 'rtl'].includes(textDirection);
-            const isNegativeTextDirection = ['rtl', 'btt'].includes(textDirection);
+            const isHorizontalTextDirection = ['ltr', 'rtl'].includes(
+                textDirection,
+            );
+            const isNegativeTextDirection = ['rtl', 'btt'].includes(
+                textDirection,
+            );
 
             let characterPosition = isHorizontalTextDirection ? x : y;
             let wrapPosition = isHorizontalTextDirection ? y : x;
@@ -1335,10 +1531,17 @@ class Text_editor_class {
             let wrapRelativeIndex = -1;
 
             let globalWrapIndex = 0;
-            for (let [lineIndex, lineInfo] of this.lineRenderInfo.lines.entries()) {
+            for (let [
+                lineIndex,
+                lineInfo,
+            ] of this.lineRenderInfo.lines.entries()) {
                 wrapRelativeIndex = 0;
                 for (let wrap of lineInfo.wraps) {
-                    if (wrapPosition < wrapSizes[globalWrapIndex].offset + wrapSizes[globalWrapIndex].size) {
+                    if (
+                        wrapPosition <
+                        wrapSizes[globalWrapIndex].offset +
+                            wrapSizes[globalWrapIndex].size
+                    ) {
                         line = lineIndex;
                         break;
                     }
@@ -1359,18 +1562,32 @@ class Text_editor_class {
             }
             let previousWrapCharacterCount = 0;
             for (let w = 0; w < wrapRelativeIndex; w++) {
-                previousWrapCharacterCount += this.get_wrap_text(wraps[w]).length;
+                previousWrapCharacterCount += this.get_wrap_text(
+                    wraps[w],
+                ).length;
             }
-            const characterCount = this.get_wrap_text(wraps[wrapRelativeIndex]).length;
+            const characterCount = this.get_wrap_text(
+                wraps[wrapRelativeIndex],
+            ).length;
             const characterOffsets = wraps[wrapRelativeIndex].characterOffsets;
-            for (let characterNumber = 0; characterNumber < characterCount; characterNumber++) {
+            for (
+                let characterNumber = 0;
+                characterNumber < characterCount;
+                characterNumber++
+            ) {
                 const leftPosition = characterOffsets[characterNumber];
                 const rightPosition = characterOffsets[characterNumber + 1];
-                if (characterPosition <= leftPosition + (rightPosition - leftPosition) * 0.5) {
+                if (
+                    characterPosition <=
+                    leftPosition + (rightPosition - leftPosition) * 0.5
+                ) {
                     character = previousWrapCharacterCount + characterNumber;
                     break;
                 }
-                if (characterNumber === characterCount - 1 && character === -1) {
+                if (
+                    characterNumber === characterCount - 1 &&
+                    character === -1
+                ) {
                     character = previousWrapCharacterCount + characterCount;
                 }
             }
@@ -1387,12 +1604,16 @@ class Text_editor_class {
         const wrapDirection = layer.params.wrap_direction;
         const halign = layer.params.halign;
         const valign = layer.params.valign;
-        const isHorizontalTextDirection = ['ltr', 'rtl'].includes(textDirection);
+        const isHorizontalTextDirection = ['ltr', 'rtl'].includes(
+            textDirection,
+        );
         const isNegativeTextDirection = ['rtl', 'btt'].includes(textDirection);
 
         let totalTextDirectionSize = 0;
         let totalWrapDirectionSize = 0;
-        let textDirectionMaxSize = isHorizontalTextDirection ? layer.width : layer.height;
+        let textDirectionMaxSize = isHorizontalTextDirection
+            ? layer.width
+            : layer.height;
 
         // Determine new lines based on text wrapping, if applicable
         let lineRenderInfo = {
@@ -1414,7 +1635,10 @@ class Text_editor_class {
                 const kerning = span.meta.kerning || metaDefaults.kerning;
                 const family = span.meta.family || metaDefaults.family;
                 const size = span.meta.size || metaDefaults.size;
-                fontMetrics = this.get_span_font_metrics(span, !fontLoadMap.get(family));
+                fontMetrics = this.get_span_font_metrics(
+                    span,
+                    !fontLoadMap.get(family),
+                );
                 if (isHorizontalTextDirection) {
                     ctx.font =
                         ' ' +
@@ -1431,24 +1655,34 @@ class Text_editor_class {
                     character = span.text[c];
                     if (layer.params.kerning === 'metrics') {
                         nextCharacter = span.text[c + 1];
-                        if (!nextCharacter && c === span.text.length - 1 && currentWrapSpans[s + 1]) {
+                        if (
+                            !nextCharacter &&
+                            c === span.text.length - 1 &&
+                            currentWrapSpans[s + 1]
+                        ) {
                             const nextSpan = currentWrapSpans[s + 1];
                             if (
-                                family === (nextSpan.meta.family || metaDefaults.family) &&
-                                size === (nextSpan.meta.size || metaDefaults.size)
+                                family ===
+                                    (nextSpan.meta.family ||
+                                        metaDefaults.family) &&
+                                size ===
+                                    (nextSpan.meta.size || metaDefaults.size)
                             ) {
                                 nextCharacter = nextSpan.text[0];
                             }
                         }
                         fontKerning =
                             isHorizontalTextDirection && nextCharacter
-                                ? fontMetrics.get_kerning_offset(character + nextCharacter)
+                                ? fontMetrics.get_kerning_offset(
+                                      character + nextCharacter,
+                                  )
                                 : 0;
                     }
                     const characterSize = isHorizontalTextDirection
                         ? ctx.measureText(character).width
                         : fontMetrics.height;
-                    wrapAccumulativeSize += characterSize + fontKerning + kerning;
+                    wrapAccumulativeSize +=
+                        characterSize + fontKerning + kerning;
                     if (
                         boundary !== 'dynamic' &&
                         wrapAccumulativeSize > textDirectionMaxSize &&
@@ -1460,9 +1694,13 @@ class Text_editor_class {
                         for (; bs >= 0; bs--) {
                             const backwardsSpan = currentWrapSpans[bs];
                             const backwardsSpanText =
-                                bs === s ? backwardsSpan.text.substring(0, c) : backwardsSpan.text;
-                            dividerPosition = backwardsSpanText.lastIndexOf(' ');
-                            const dashPosition = backwardsSpanText.lastIndexOf('-');
+                                bs === s
+                                    ? backwardsSpan.text.substring(0, c)
+                                    : backwardsSpan.text;
+                            dividerPosition =
+                                backwardsSpanText.lastIndexOf(' ');
+                            const dashPosition =
+                                backwardsSpanText.lastIndexOf('-');
                             if (dashPosition > dividerPosition) {
                                 dividerPosition = dashPosition;
                             }
@@ -1476,8 +1714,12 @@ class Text_editor_class {
                         if (dividerPosition > -1) {
                             beforeSpans = currentWrapSpans.slice(0, bs);
                             afterSpans = currentWrapSpans.slice(bs + 1);
-                            const beforeText = currentWrapSpans[bs].text.substring(0, dividerPosition + 1);
-                            const afterText = currentWrapSpans[bs].text.substring(dividerPosition + 1);
+                            const beforeText = currentWrapSpans[
+                                bs
+                            ].text.substring(0, dividerPosition + 1);
+                            const afterText = currentWrapSpans[
+                                bs
+                            ].text.substring(dividerPosition + 1);
                             if (beforeText.length > 0) {
                                 beforeSpans.push({
                                     text: beforeText,
@@ -1504,8 +1746,11 @@ class Text_editor_class {
                             }
                             beforeSpans = currentWrapSpans.slice(0, s);
                             afterSpans = currentWrapSpans.slice(s + 1);
-                            const beforeText = currentWrapSpans[s].text.substring(0, c);
-                            const afterText = currentWrapSpans[s].text.substring(c);
+                            const beforeText = currentWrapSpans[
+                                s
+                            ].text.substring(0, c);
+                            const afterText =
+                                currentWrapSpans[s].text.substring(c);
                             if (beforeText.length > 0) {
                                 beforeSpans.push({
                                     text: beforeText,
@@ -1519,7 +1764,10 @@ class Text_editor_class {
                                 });
                             }
                         }
-                        let largestOffset = wrapCharacterOffsets[wrapCharacterOffsets.length - 1];
+                        let largestOffset =
+                            wrapCharacterOffsets[
+                                wrapCharacterOffsets.length - 1
+                            ];
                         if (largestOffset > totalTextDirectionSize) {
                             totalTextDirectionSize = largestOffset;
                         }
@@ -1527,10 +1775,11 @@ class Text_editor_class {
                             characterOffsets: wrapCharacterOffsets,
                             spans: beforeSpans,
                         };
-                        newWrap.characterOffsets = newWrap.characterOffsets.slice(
-                            0,
-                            this.get_wrap_text(newWrap).length + 1,
-                        );
+                        newWrap.characterOffsets =
+                            newWrap.characterOffsets.slice(
+                                0,
+                                this.get_wrap_text(newWrap).length + 1,
+                            );
                         lineWraps.push(newWrap);
                         currentWrapSpans = afterSpans;
                         wrapAccumulativeSize = 0;
@@ -1546,7 +1795,8 @@ class Text_editor_class {
                 }
             }
             if (currentWrapSpans.length > 0) {
-                let largestOffset = wrapCharacterOffsets[wrapCharacterOffsets.length - 1];
+                let largestOffset =
+                    wrapCharacterOffsets[wrapCharacterOffsets.length - 1];
                 if (largestOffset > totalTextDirectionSize) {
                     totalTextDirectionSize = largestOffset;
                 }
@@ -1562,7 +1812,10 @@ class Text_editor_class {
         }
 
         // Adjust offsets for alignment along the text direction
-        if ((isHorizontalTextDirection && halign !== 'left') || (!isHorizontalTextDirection && valign !== 'top')) {
+        if (
+            (isHorizontalTextDirection && halign !== 'left') ||
+            (!isHorizontalTextDirection && valign !== 'top')
+        ) {
             const maxTextDirectionSize =
                 boundary === 'dynamic'
                     ? totalTextDirectionSize
@@ -1577,13 +1830,23 @@ class Text_editor_class {
                     const lastSpan = wrap.spans[wrap.spans.length - 1];
                     const wrapSize =
                         wrap.characterOffsets[
-                            wrap.characterOffsets.length - 1 - (lastSpan.text[lastSpan.text.length - 1] === ' ' ? 1 : 0)
+                            wrap.characterOffsets.length -
+                                1 -
+                                (lastSpan.text[lastSpan.text.length - 1] === ' '
+                                    ? 1
+                                    : 0)
                         ];
                     const startOffset =
-                        (isCentered ? maxTextDirectionSize / 2 : maxTextDirectionSize) -
+                        (isCentered
+                            ? maxTextDirectionSize / 2
+                            : maxTextDirectionSize) -
                         (isCentered ? wrapSize / 2 : wrapSize);
                     if (startOffset > 0) {
-                        for (let oi = 0; oi < wrap.characterOffsets.length; oi++) {
+                        for (
+                            let oi = 0;
+                            oi < wrap.characterOffsets.length;
+                            oi++
+                        ) {
                             wrap.characterOffsets[oi] += startOffset;
                         }
                     }
@@ -1602,9 +1865,15 @@ class Text_editor_class {
                 for (let span of wrap.spans) {
                     let fontMetrics;
                     const family = span.meta.family || metaDefaults.family;
-                    const leading = span.meta.leading != null ? span.meta.leading : metaDefaults.leading;
+                    const leading =
+                        span.meta.leading != null
+                            ? span.meta.leading
+                            : metaDefaults.leading;
                     if (isHorizontalTextDirection) {
-                        fontMetrics = this.get_span_font_metrics(span, !fontLoadMap.get(family));
+                        fontMetrics = this.get_span_font_metrics(
+                            span,
+                            !fontLoadMap.get(family),
+                        );
                     } else {
                         ctx.font =
                             ' ' +
@@ -1656,11 +1925,19 @@ class Text_editor_class {
         this.lastCalculatedLayerHeight = layer.height;
         this.textBoundaryWidth = Math.max(
             1,
-            Math.round(isHorizontalTextDirection ? totalTextDirectionSize : totalWrapDirectionSize),
+            Math.round(
+                isHorizontalTextDirection
+                    ? totalTextDirectionSize
+                    : totalWrapDirectionSize,
+            ),
         );
         this.textBoundaryHeight = Math.max(
             1,
-            Math.round(isHorizontalTextDirection ? totalWrapDirectionSize : totalTextDirectionSize),
+            Math.round(
+                isHorizontalTextDirection
+                    ? totalWrapDirectionSize
+                    : totalTextDirectionSize,
+            ),
         );
         this.lineRenderInfo = lineRenderInfo;
     }
@@ -1691,13 +1968,19 @@ class Text_editor_class {
             let drawOffsetLeft = layer.x + 1;
             const textDirection = layer.params.text_direction;
             const wrapDirection = layer.params.wrap_direction;
-            const isHorizontalTextDirection = ['ltr', 'rtl'].includes(textDirection);
-            const isNegativeTextDirection = ['rtl', 'btt'].includes(textDirection);
+            const isHorizontalTextDirection = ['ltr', 'rtl'].includes(
+                textDirection,
+            );
+            const isNegativeTextDirection = ['rtl', 'btt'].includes(
+                textDirection,
+            );
 
             const wrapSizes = this.lineRenderInfo.wrapSizes;
             let lineIndex = 0;
             let wrapIndex = 0;
-            const cursorLine = this.selection.isActiveSideEnd ? this.selection.end.line : this.selection.start.line;
+            const cursorLine = this.selection.isActiveSideEnd
+                ? this.selection.end.line
+                : this.selection.start.line;
             const cursorCharacter = this.selection.isActiveSideEnd
                 ? this.selection.end.character
                 : this.selection.start.character;
@@ -1705,10 +1988,16 @@ class Text_editor_class {
                 const alpha = (layer.rotate * Math.PI) / 180;
                 ctx.save();
                 // Move the canvas to the center before rotating
-                ctx.translate(layer.x + layer.width / 2, layer.y + layer.height / 2);
+                ctx.translate(
+                    layer.x + layer.width / 2,
+                    layer.y + layer.height / 2,
+                );
                 ctx.rotate(alpha);
                 // Move it back after it
-                ctx.translate(-layer.x - layer.width / 2, -layer.y - layer.height / 2);
+                ctx.translate(
+                    -layer.x - layer.width / 2,
+                    -layer.y - layer.height / 2,
+                );
             }
             for (let line of this.lineRenderInfo.lines) {
                 let lineLetterCount = 0;
@@ -1719,16 +2008,32 @@ class Text_editor_class {
                     let characterIndex = 0;
                     const characterOffsets = wrap.characterOffsets;
                     for (let [spanIndex, span] of wrap.spans.entries()) {
-                        const kerning = span.meta.kerning != null ? span.meta.kerning : metaDefaults.kerning;
-                        const bold = span.meta.bold != null ? span.meta.bold : metaDefaults.bold;
-                        const italic = span.meta.italic != null ? span.meta.italic : metaDefaults.italic;
-                        const underline = span.meta.underline != null ? span.meta.underline : metaDefaults.underline;
+                        const kerning =
+                            span.meta.kerning != null
+                                ? span.meta.kerning
+                                : metaDefaults.kerning;
+                        const bold =
+                            span.meta.bold != null
+                                ? span.meta.bold
+                                : metaDefaults.bold;
+                        const italic =
+                            span.meta.italic != null
+                                ? span.meta.italic
+                                : metaDefaults.italic;
+                        const underline =
+                            span.meta.underline != null
+                                ? span.meta.underline
+                                : metaDefaults.underline;
                         const strikethrough =
-                            span.meta.strikethrough != null ? span.meta.strikethrough : metaDefaults.strikethrough;
+                            span.meta.strikethrough != null
+                                ? span.meta.strikethrough
+                                : metaDefaults.strikethrough;
                         const family = span.meta.family || metaDefaults.family;
 
                         if (fontLoadMap.get(family) !== true) {
-                            const variants = config.user_fonts[family] ? config.user_fonts[family].variants : undefined;
+                            const variants = config.user_fonts[family]
+                                ? config.user_fonts[family].variants
+                                : undefined;
                             load_font_family({ family, variants }, () => {
                                 this.hasValueChanged = true;
                                 this.Base_layers.render();
@@ -1737,7 +2042,10 @@ class Text_editor_class {
 
                         let fontMetrics;
                         if (underline || strikethrough) {
-                            fontMetrics = this.get_span_font_metrics(span, !fontLoadMap.get(family));
+                            fontMetrics = this.get_span_font_metrics(
+                                span,
+                                !fontLoadMap.get(family),
+                            );
                         }
 
                         // Set styles for drawing
@@ -1751,16 +2059,21 @@ class Text_editor_class {
                             'px' +
                             ' ' +
                             family;
-                        const fill_color = span.meta.fill_color || metaDefaults.fill_color;
+                        const fill_color =
+                            span.meta.fill_color || metaDefaults.fill_color;
                         let fillStyle;
                         if (fill_color.startsWith('#')) {
                             fillStyle = fill_color;
                         }
                         const stroke_size =
-                            span.meta.stroke_size != null ? span.meta.stroke_size : metaDefaults.stroke_size;
+                            span.meta.stroke_size != null
+                                ? span.meta.stroke_size
+                                : metaDefaults.stroke_size;
                         let strokeStyle;
                         if (stroke_size) {
-                            const stroke_color = span.meta.stroke_color || metaDefaults.stroke_color;
+                            const stroke_color =
+                                span.meta.stroke_color ||
+                                metaDefaults.stroke_color;
                             if (stroke_color.startsWith('#')) {
                                 strokeStyle = stroke_color;
                             }
@@ -1772,12 +2085,22 @@ class Text_editor_class {
                         // Loop through each letter in each span and draw it
                         for (let c = 0; c < span.text.length; c++) {
                             const letter = span.text.charAt(c);
-                            const lineStart = Math.round(drawOffsetTop + wrapSizes[wrapIndex].offset);
-                            const letterWidth = characterOffsets[characterIndex + 1] - characterOffsets[characterIndex];
-                            const letterHeight = Math.round(wrapSizes[wrapIndex].size);
-                            const textDirectionOffset = drawOffsetLeft + characterOffsets[characterIndex];
+                            const lineStart = Math.round(
+                                drawOffsetTop + wrapSizes[wrapIndex].offset,
+                            );
+                            const letterWidth =
+                                characterOffsets[characterIndex + 1] -
+                                characterOffsets[characterIndex];
+                            const letterHeight = Math.round(
+                                wrapSizes[wrapIndex].size,
+                            );
+                            const textDirectionOffset =
+                                drawOffsetLeft +
+                                characterOffsets[characterIndex];
                             const wrapDirectionOffset = Math.round(
-                                drawOffsetTop + wrapSizes[wrapIndex].offset + wrapSizes[wrapIndex].baseline,
+                                drawOffsetTop +
+                                    wrapSizes[wrapIndex].offset +
+                                    wrapSizes[wrapIndex].baseline,
                             );
                             const letterDrawX = isHorizontalTextDirection
                                 ? textDirectionOffset + kerning
@@ -1789,51 +2112,94 @@ class Text_editor_class {
                             if (this.selection.isVisible) {
                                 if (!isSelectionEmpty) {
                                     isLetterSelected =
-                                        (this.selection.start.line === lineIndex &&
-                                            this.selection.start.character <= lineLetterCount &&
-                                            (this.selection.end.line > lineIndex ||
-                                                this.selection.end.character > lineLetterCount)) ||
-                                        (this.selection.end.line === lineIndex &&
-                                            this.selection.end.character > lineLetterCount &&
-                                            (this.selection.start.line < lineIndex ||
-                                                this.selection.start.character <= lineLetterCount)) ||
-                                        (this.selection.start.line < lineIndex && this.selection.end.line > lineIndex);
+                                        (this.selection.start.line ===
+                                            lineIndex &&
+                                            this.selection.start.character <=
+                                                lineLetterCount &&
+                                            (this.selection.end.line >
+                                                lineIndex ||
+                                                this.selection.end.character >
+                                                    lineLetterCount)) ||
+                                        (this.selection.end.line ===
+                                            lineIndex &&
+                                            this.selection.end.character >
+                                                lineLetterCount &&
+                                            (this.selection.start.line <
+                                                lineIndex ||
+                                                this.selection.start
+                                                    .character <=
+                                                    lineLetterCount)) ||
+                                        (this.selection.start.line <
+                                            lineIndex &&
+                                            this.selection.end.line >
+                                                lineIndex);
                                 }
                                 if (cursorLine === lineIndex) {
                                     if (cursorCharacter === lineLetterCount) {
                                         cursorStartX =
-                                            (isHorizontalTextDirection ? textDirectionOffset : lineStart) - 0.5;
+                                            (isHorizontalTextDirection
+                                                ? textDirectionOffset
+                                                : lineStart) - 0.5;
                                         cursorStartY =
-                                            (isHorizontalTextDirection ? lineStart : textDirectionOffset) - 0.5;
-                                        cursorSize = isHorizontalTextDirection ? letterHeight : letterWidth;
+                                            (isHorizontalTextDirection
+                                                ? lineStart
+                                                : textDirectionOffset) - 0.5;
+                                        cursorSize = isHorizontalTextDirection
+                                            ? letterHeight
+                                            : letterWidth;
                                     } else if (
-                                        cursorCharacter === lineLetterCount + 1 &&
-                                        localWrapIndex === line.wraps.length - 1 &&
+                                        cursorCharacter ===
+                                            lineLetterCount + 1 &&
+                                        localWrapIndex ===
+                                            line.wraps.length - 1 &&
                                         spanIndex === wrap.spans.length - 1 &&
                                         c === span.text.length - 1
                                     ) {
                                         cursorStartX =
                                             (isHorizontalTextDirection
-                                                ? textDirectionOffset + letterWidth
+                                                ? textDirectionOffset +
+                                                  letterWidth
                                                 : lineStart) - 0.5;
                                         cursorStartY =
                                             (isHorizontalTextDirection
                                                 ? lineStart
-                                                : textDirectionOffset + letterHeight) - 0.5;
-                                        cursorSize = isHorizontalTextDirection ? letterHeight : letterWidth;
+                                                : textDirectionOffset +
+                                                  letterHeight) - 0.5;
+                                        cursorSize = isHorizontalTextDirection
+                                            ? letterHeight
+                                            : letterWidth;
                                     }
                                 }
                             }
                             if (isLetterSelected && this.editingCtx === ctx) {
-                                const letterStartX = isHorizontalTextDirection ? textDirectionOffset : lineStart;
-                                const letterStartY = isHorizontalTextDirection ? lineStart : textDirectionOffset;
-                                const letterSizeX = isHorizontalTextDirection ? letterWidth : letterHeight;
-                                const letterSizeY = isHorizontalTextDirection ? letterHeight : letterWidth;
-                                ctx.fillStyle = this.selectionBackgroundColor + '22';
-                                ctx.fillRect(letterStartX, letterStartY, letterSizeX, letterSizeY);
+                                const letterStartX = isHorizontalTextDirection
+                                    ? textDirectionOffset
+                                    : lineStart;
+                                const letterStartY = isHorizontalTextDirection
+                                    ? lineStart
+                                    : textDirectionOffset;
+                                const letterSizeX = isHorizontalTextDirection
+                                    ? letterWidth
+                                    : letterHeight;
+                                const letterSizeY = isHorizontalTextDirection
+                                    ? letterHeight
+                                    : letterWidth;
+                                ctx.fillStyle =
+                                    this.selectionBackgroundColor + '22';
+                                ctx.fillRect(
+                                    letterStartX,
+                                    letterStartY,
+                                    letterSizeX,
+                                    letterSizeY,
+                                );
                                 ctx.strokeStyle = this.selectionBackgroundColor;
                                 ctx.lineWidth = 0.75;
-                                ctx.strokeRect(letterStartX, letterStartY, letterSizeX, letterSizeY);
+                                ctx.strokeRect(
+                                    letterStartX,
+                                    letterStartY,
+                                    letterSizeX,
+                                    letterSizeY,
+                                );
                                 ctx.lineWidth = stroke_size;
                             }
                             ctx.fillStyle = fillStyle;
@@ -1841,11 +2207,18 @@ class Text_editor_class {
                             ctx.fillText(letter, letterDrawX, letterDrawY);
                             if (stroke_size) {
                                 ctx.lineWidth = stroke_size;
-                                ctx.strokeText(letter, letterDrawX, letterDrawY);
+                                ctx.strokeText(
+                                    letter,
+                                    letterDrawX,
+                                    letterDrawY,
+                                );
                             }
                             if (strikethrough) {
                                 ctx.fillStyle = fillStyle;
-                                ctx.lineWidth = Math.max(1, fontMetrics.height / 20);
+                                ctx.lineWidth = Math.max(
+                                    1,
+                                    fontMetrics.height / 20,
+                                );
                                 ctx.fillRect(
                                     letterDrawX - 0.25 - kerning,
                                     letterDrawY - fontMetrics.height * 0.28,
@@ -1855,7 +2228,10 @@ class Text_editor_class {
                             }
                             if (underline) {
                                 ctx.fillStyle = fillStyle;
-                                ctx.lineWidth = Math.max(1, fontMetrics.height / 20);
+                                ctx.lineWidth = Math.max(
+                                    1,
+                                    fontMetrics.height / 20,
+                                );
                                 ctx.fillRect(
                                     letterDrawX - 0.25 - kerning,
                                     letterDrawY + ctx.lineWidth,
@@ -1868,24 +2244,44 @@ class Text_editor_class {
                         }
 
                         if (span.text.length === 0) {
-                            if (cursorLine === lineIndex && cursorCharacter === lineLetterCount) {
-                                const lineStart = Math.round(drawOffsetTop + wrapSizes[wrapIndex].offset);
+                            if (
+                                cursorLine === lineIndex &&
+                                cursorCharacter === lineLetterCount
+                            ) {
+                                const lineStart = Math.round(
+                                    drawOffsetTop + wrapSizes[wrapIndex].offset,
+                                );
                                 const textDirectionOffset =
                                     drawOffsetLeft +
                                     characterOffsets[0] +
-                                    (lineIndex === 0 ? (boundary === 'dynamic' ? 5 : 2) : 0);
+                                    (lineIndex === 0
+                                        ? boundary === 'dynamic'
+                                            ? 5
+                                            : 2
+                                        : 0);
                                 const letterWidth = 3;
-                                const letterHeight = Math.round(wrapSizes[wrapIndex].size);
-                                cursorStartX = (isHorizontalTextDirection ? textDirectionOffset : lineStart) - 0.5;
-                                cursorStartY = (isHorizontalTextDirection ? lineStart : textDirectionOffset) - 0.5;
-                                cursorSize = isHorizontalTextDirection ? letterHeight : letterWidth;
+                                const letterHeight = Math.round(
+                                    wrapSizes[wrapIndex].size,
+                                );
+                                cursorStartX =
+                                    (isHorizontalTextDirection
+                                        ? textDirectionOffset
+                                        : lineStart) - 0.5;
+                                cursorStartY =
+                                    (isHorizontalTextDirection
+                                        ? lineStart
+                                        : textDirectionOffset) - 0.5;
+                                cursorSize = isHorizontalTextDirection
+                                    ? letterHeight
+                                    : letterWidth;
                             }
                         }
                     }
 
                     // Draw cursor
                     if (
-                        this.selection.isCursorVisible /*&& this.selection.isBlinkVisible*/ &&
+                        this.selection
+                            .isCursorVisible /*&& this.selection.isBlinkVisible*/ &&
                         cursorStartX &&
                         this.editingCtx == ctx
                     ) {
@@ -1898,8 +2294,14 @@ class Text_editor_class {
                         if (cursorSize > 14) {
                             ctx.moveTo(cursorStartX - 3, cursorStartY + 2);
                             ctx.lineTo(cursorStartX + 3, cursorStartY + 2);
-                            ctx.moveTo(cursorStartX - 3, cursorStartY + cursorSize - 2);
-                            ctx.lineTo(cursorStartX + 3, cursorStartY + cursorSize - 2);
+                            ctx.moveTo(
+                                cursorStartX - 3,
+                                cursorStartY + cursorSize - 2,
+                            );
+                            ctx.lineTo(
+                                cursorStartX + 3,
+                                cursorStartY + cursorSize - 2,
+                            );
                         }
                         ctx.stroke();
                         ctx.strokeStyle = '#ffffffff';
@@ -1910,8 +2312,14 @@ class Text_editor_class {
                         if (cursorSize > 14) {
                             ctx.moveTo(cursorStartX - 2, cursorStartY + 2);
                             ctx.lineTo(cursorStartX + 2, cursorStartY + 2);
-                            ctx.moveTo(cursorStartX - 2, cursorStartY + cursorSize - 2);
-                            ctx.lineTo(cursorStartX + 2, cursorStartY + cursorSize - 2);
+                            ctx.moveTo(
+                                cursorStartX - 2,
+                                cursorStartY + cursorSize - 2,
+                            );
+                            ctx.lineTo(
+                                cursorStartX + 2,
+                                cursorStartY + cursorSize - 2,
+                            );
                         }
                         ctx.stroke();
                     }
@@ -1956,9 +2364,9 @@ class Google_fonts_search_class {
             load_font_family({ family: font.family, variants: font.variants });
             html += `
 				<div class="selection_card">
-					<input type="checkbox" id="google_font_selection_${font.family}" value="${font.family}" ${
-                        isSelected ? 'checked="checked"' : ''
-                    }>
+					<input type="checkbox" id="google_font_selection_${font.family}" value="${
+                        font.family
+                    }" ${isSelected ? 'checked="checked"' : ''}>
 					<label for="google_font_selection_${font.family}"">
 						<div class="font_preview" style="font-family: '${font.family}'">
 							The quick brown fox jumps over the lazy dog.
@@ -1973,7 +2381,13 @@ class Google_fonts_search_class {
         html += `
 				</div>
 				<div class="pagination">
-					${page > 1 ? '<button title="Previous Page" data-page="' + (page - 1) + '">&laquo;</button>' : ''}
+					${
+                        page > 1
+                            ? '<button title="Previous Page" data-page="' +
+                              (page - 1) +
+                              '">&laquo;</button>'
+                            : ''
+                    }
 					${
                         page - 2 > 0
                             ? '<button title="Page ' +
@@ -2019,39 +2433,57 @@ class Google_fonts_search_class {
                               '</button>'
                             : ''
                     }
-					${page < pageCount ? '<button title="Next Page" data-page="' + (page + 1) + '">&raquo;</button>' : ''}
+					${
+                        page < pageCount
+                            ? '<button title="Next Page" data-page="' +
+                              (page + 1) +
+                              '">&raquo;</button>'
+                            : ''
+                    }
 				</div>
 			</div>
 		`;
         this.fontListNode.innerHTML = html;
 
         // Attempt to remove vertical scroll by decreasing page size.
-        if (this.fontsPerPage > 3 && this.dialogContentNode.scrollHeight > this.dialogContentNode.clientHeight) {
+        if (
+            this.fontsPerPage > 3 &&
+            this.dialogContentNode.scrollHeight >
+                this.dialogContentNode.clientHeight
+        ) {
             this.fontsPerPage--;
             this.render_font_list(page);
             return;
         }
 
         // Handle checkbox
-        this.fontListNode.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
-            checkbox.addEventListener('change', (e) => {
-                if (checkbox.checked) {
-                    this.selectedFonts[checkbox.value] = this.fontListFiltered
-                        .slice(startIndex, startIndex + this.fontsPerPage)
-                        .filter((font) => {
-                            return font.family === checkbox.value;
-                        })[0];
-                } else {
-                    delete this.selectedFonts[checkbox.value];
-                }
+        this.fontListNode
+            .querySelectorAll('input[type="checkbox"]')
+            .forEach((checkbox) => {
+                checkbox.addEventListener('change', (e) => {
+                    if (checkbox.checked) {
+                        this.selectedFonts[checkbox.value] =
+                            this.fontListFiltered
+                                .slice(
+                                    startIndex,
+                                    startIndex + this.fontsPerPage,
+                                )
+                                .filter((font) => {
+                                    return font.family === checkbox.value;
+                                })[0];
+                    } else {
+                        delete this.selectedFonts[checkbox.value];
+                    }
+                });
             });
-        });
 
         // Handle pagination
-        this.fontListNode.querySelector('.pagination').addEventListener('click', (e) => {
-            const page = parseInt(e.target.getAttribute('data-page'), 10);
-            this.render_font_list(page);
-        });
+        this.fontListNode
+            .querySelector('.pagination')
+            .addEventListener('click', (e) => {
+                const page = parseInt(e.target.getAttribute('data-page'), 10);
+                this.render_font_list(page);
+            });
     }
 
     show() {
@@ -2068,7 +2500,8 @@ class Google_fonts_search_class {
             on_load: (params, popup) => {
                 this.popup = popup;
                 var node = document.createElement('div');
-                this.dialogContentNode = popup.el.querySelector('.dialog_content');
+                this.dialogContentNode =
+                    popup.el.querySelector('.dialog_content');
                 this.dialogContentNode.appendChild(node);
                 this.fontListNode = node;
 
@@ -2083,9 +2516,12 @@ class Google_fonts_search_class {
                         this.searchTimeoutHandle = setTimeout(() => {
                             this.fontListFiltered = [];
                             for (let i = 0; i < this.fontList.length; i++) {
-                                const fontFamily = this.fontList[i].family.toLowerCase();
+                                const fontFamily =
+                                    this.fontList[i].family.toLowerCase();
                                 if (fontFamily.includes(query)) {
-                                    this.fontListFiltered.push(this.fontList[i]);
+                                    this.fontListFiltered.push(
+                                        this.fontList[i],
+                                    );
                                 }
                             }
                             this.render_font_list();
@@ -2094,12 +2530,17 @@ class Google_fonts_search_class {
                 });
 
                 const apiKey = config.google_webfonts_key;
-                $.getJSON(`https://www.googleapis.com/webfonts/v1/webfonts?key=${apiKey}&sort=popularity`, (data) => {
-                    this.fontList = data.items;
-                    this.fontListFiltered = data.items;
-                    this.render_font_list();
-                }).fail(function () {
-                    alertify.error('Error loading the list of fonts from Google.');
+                $.getJSON(
+                    `https://www.googleapis.com/webfonts/v1/webfonts?key=${apiKey}&sort=popularity`,
+                    (data) => {
+                        this.fontList = data.items;
+                        this.fontListFiltered = data.items;
+                        this.render_font_list();
+                    },
+                ).fail(function () {
+                    alertify.error(
+                        'Error loading the list of fonts from Google.',
+                    );
                 });
             },
             on_finish: () => {
@@ -2113,13 +2554,19 @@ class Google_fonts_search_class {
                         }
                         config.user_fonts[font] = this.selectedFonts[font];
                     }
-                    app.GUI.GUI_tools.action_data().attributes.font.value = firstFont;
+                    app.GUI.GUI_tools.action_data().attributes.font.value =
+                        firstFont;
                     app.GUI.GUI_tools.show_action_attributes();
                     try {
                         const changeEvent = new Event('change');
-                        document.querySelector('#action_attributes select#font').dispatchEvent(changeEvent);
+                        document
+                            .querySelector('#action_attributes select#font')
+                            .dispatchEvent(changeEvent);
                     } catch (error) {
-                        console.warn('Application markup may have changed, ', error);
+                        console.warn(
+                            'Application markup may have changed, ',
+                            error,
+                        );
                     }
                 }
             },
@@ -2162,7 +2609,11 @@ class Text_class extends Base_tools_class {
                     return this.selection;
                 },
             };
-            this.Base_selection = new Base_selection_class(ctx, sel_config, this.name);
+            this.Base_selection = new Base_selection_class(
+                ctx,
+                sel_config,
+                this.name,
+            );
 
             // Need a textarea in order to listen for keyboard inputs in an accessible, multi-platform independent way
             this.textarea = document.createElement('textarea');
@@ -2180,7 +2631,9 @@ class Text_class extends Base_tools_class {
                     this.focused = true;
                     let editor = this.get_editor(this.layer);
                     if (editor) {
-                        this.focusedValue = JSON.stringify(editor.document.lines);
+                        this.focusedValue = JSON.stringify(
+                            editor.document.lines,
+                        );
                     }
                 },
                 true,
@@ -2196,7 +2649,10 @@ class Text_class extends Base_tools_class {
                         if (this.focusedValue !== value) {
                             this.layer.data = JSON.parse(this.focusedValue);
                             app.State.do_action(
-                                new app.Actions.Update_layer_action(this.layer.id, { data: JSON.parse(value) }),
+                                new app.Actions.Update_layer_action(
+                                    this.layer.id,
+                                    { data: JSON.parse(value) },
+                                ),
                             );
                         }
                     }
@@ -2228,10 +2684,14 @@ class Text_class extends Base_tools_class {
                         const editor = this.get_editor(config.layer);
                         switch (e.key) {
                             case 'Backspace':
-                                editor.delete_character_at_current_position(false);
+                                editor.delete_character_at_current_position(
+                                    false,
+                                );
                                 break;
                             case 'Delete':
-                                editor.delete_character_at_current_position(true);
+                                editor.delete_character_at_current_position(
+                                    true,
+                                );
                                 break;
                             case 'Home':
                                 editor.selection.move_line_start(e.shiftKey);
@@ -2241,29 +2701,52 @@ class Text_class extends Base_tools_class {
                                 break;
                             case 'Left':
                             case 'ArrowLeft':
-                                if (!e.shiftKey && !editor.selection.is_empty()) {
+                                if (
+                                    !e.shiftKey &&
+                                    !editor.selection.is_empty()
+                                ) {
                                     editor.selection.isActiveSideEnd = false;
-                                    editor.selection.move_character_previous(0, false);
+                                    editor.selection.move_character_previous(
+                                        0,
+                                        false,
+                                    );
                                 } else if (e.ctrlKey) {
-                                    editor.selection.move_word_previous(e.shiftKey);
+                                    editor.selection.move_word_previous(
+                                        e.shiftKey,
+                                    );
                                 } else {
-                                    editor.selection.move_character_previous(1, e.shiftKey);
+                                    editor.selection.move_character_previous(
+                                        1,
+                                        e.shiftKey,
+                                    );
                                 }
                                 break;
                             case 'Right':
                             case 'ArrowRight':
-                                if (!e.shiftKey && !editor.selection.is_empty()) {
+                                if (
+                                    !e.shiftKey &&
+                                    !editor.selection.is_empty()
+                                ) {
                                     editor.selection.isActiveSideEnd = true;
-                                    editor.selection.move_character_next(0, false);
+                                    editor.selection.move_character_next(
+                                        0,
+                                        false,
+                                    );
                                 } else if (e.ctrlKey) {
                                     editor.selection.move_word_next(e.shiftKey);
                                 } else {
-                                    editor.selection.move_character_next(1, e.shiftKey);
+                                    editor.selection.move_character_next(
+                                        1,
+                                        e.shiftKey,
+                                    );
                                 }
                                 break;
                             case 'Up':
                             case 'ArrowUp':
-                                editor.selection.move_line_previous(1, e.shiftKey);
+                                editor.selection.move_line_previous(
+                                    1,
+                                    e.shiftKey,
+                                );
                                 break;
                             case 'Down':
                             case 'ArrowDown':
@@ -2272,10 +2755,13 @@ class Text_class extends Base_tools_class {
                             case 'a':
                                 if (e.ctrlKey) {
                                     editor.selection.set_position(0, 0);
-                                    const lastLine = editor.document.lines.length - 1;
+                                    const lastLine =
+                                        editor.document.lines.length - 1;
                                     editor.selection.set_position(
                                         lastLine,
-                                        editor.document.get_line_character_count(lastLine),
+                                        editor.document.get_line_character_count(
+                                            lastLine,
+                                        ),
                                         true,
                                     );
                                     break;
@@ -2283,13 +2769,18 @@ class Text_class extends Base_tools_class {
                             case 'b':
                                 if (e.ctrlKey) {
                                     e.preventDefault();
-                                    document.querySelector('#action_attributes #bold').click();
+                                    document
+                                        .querySelector(
+                                            '#action_attributes #bold',
+                                        )
+                                        .click();
                                     break;
                                 }
                             case 'c':
                                 if (e.ctrlKey) {
                                     e.preventDefault();
-                                    this.textarea.value = editor.selection.get_text();
+                                    this.textarea.value =
+                                        editor.selection.get_text();
                                     this.textarea.select();
                                     this.textarea.setSelectionRange(0, 99999);
                                     document.execCommand('copy');
@@ -2299,19 +2790,28 @@ class Text_class extends Base_tools_class {
                             case 'i':
                                 if (e.ctrlKey) {
                                     e.preventDefault();
-                                    document.querySelector('#action_attributes #italic').click();
+                                    document
+                                        .querySelector(
+                                            '#action_attributes #italic',
+                                        )
+                                        .click();
                                     break;
                                 }
                             case 'u':
                                 if (e.ctrlKey) {
                                     e.preventDefault();
-                                    document.querySelector('#action_attributes #underline').click();
+                                    document
+                                        .querySelector(
+                                            '#action_attributes #underline',
+                                        )
+                                        .click();
                                     break;
                                 }
                             case 'x':
                                 if (e.ctrlKey) {
                                     e.preventDefault();
-                                    this.textarea.value = editor.selection.get_text();
+                                    this.textarea.value =
+                                        editor.selection.get_text();
                                     this.textarea.select();
                                     this.textarea.setSelectionRange(0, 99999);
                                     document.execCommand('copy');
@@ -2405,17 +2905,25 @@ class Text_class extends Base_tools_class {
             this.selecting = true;
             this.layer = existingLayer;
             const editor = this.get_editor(this.layer);
-            editor.trigger_cursor_start(this.layer, -1 + mouse.x - this.layer.x, mouse.y - this.layer.y);
+            editor.trigger_cursor_start(
+                this.layer,
+                -1 + mouse.x - this.layer.x,
+                mouse.y - this.layer.y,
+            );
             app.State.do_action(
-                new app.Actions.Bundle_action('select_text_layer', 'Select Text Layer', [
-                    new app.Actions.Select_layer_action(existingLayer.id),
-                    new app.Actions.Set_selection_action(
-                        this.layer.x,
-                        this.layer.y,
-                        this.layer.width,
-                        this.layer.height,
-                    ),
-                ]),
+                new app.Actions.Bundle_action(
+                    'select_text_layer',
+                    'Select Text Layer',
+                    [
+                        new app.Actions.Select_layer_action(existingLayer.id),
+                        new app.Actions.Set_selection_action(
+                            this.layer.x,
+                            this.layer.y,
+                            this.layer.width,
+                            this.layer.height,
+                        ),
+                    ],
+                ),
             );
         } else {
             // Create a new text layer
@@ -2438,10 +2946,19 @@ class Text_class extends Base_tools_class {
                 is_vector: true,
             };
             app.State.do_action(
-                new app.Actions.Bundle_action('new_text_layer', 'New Text Layer', [
-                    new app.Actions.Insert_layer_action(layer),
-                    new app.Actions.Set_selection_action(mouse.x, mouse.y, 0, 0),
-                ]),
+                new app.Actions.Bundle_action(
+                    'new_text_layer',
+                    'New Text Layer',
+                    [
+                        new app.Actions.Insert_layer_action(layer),
+                        new app.Actions.Set_selection_action(
+                            mouse.x,
+                            mouse.y,
+                            0,
+                            0,
+                        ),
+                    ],
+                ),
             );
             this.layer = config.layer;
         }
@@ -2500,21 +3017,25 @@ class Text_class extends Base_tools_class {
             new_params.boundary = config.layer.params.boundary;
             config.layer.params.boundary = this.mousedownBounds.boundary;
             app.State.do_action(
-                new app.Actions.Bundle_action('resize_text_layer', 'Resize Text Layer', [
-                    new app.Actions.Update_layer_action(config.layer.id, {
-                        x: this.selection.x,
-                        y: this.selection.y,
-                        width: this.selection.width,
-                        height: this.selection.height,
-                        params: new_params,
-                    }),
-                    new app.Actions.Set_selection_action(
-                        this.selection.x,
-                        this.selection.y,
-                        this.selection.width,
-                        this.selection.height,
-                    ),
-                ]),
+                new app.Actions.Bundle_action(
+                    'resize_text_layer',
+                    'Resize Text Layer',
+                    [
+                        new app.Actions.Update_layer_action(config.layer.id, {
+                            x: this.selection.x,
+                            y: this.selection.y,
+                            width: this.selection.width,
+                            height: this.selection.height,
+                            params: new_params,
+                        }),
+                        new app.Actions.Set_selection_action(
+                            this.selection.x,
+                            this.selection.y,
+                            this.selection.width,
+                            this.selection.height,
+                        ),
+                    ],
+                ),
             );
         } else if (this.creating) {
             let width = Math.abs(mouse.x - this.mousedownX);
@@ -2526,14 +3047,18 @@ class Text_class extends Base_tools_class {
                 height = 1;
             }
             app.State.do_action(
-                new app.Actions.Bundle_action('resize_text_layer', 'Resize Text Layer', [
-                    new app.Actions.Update_layer_action(config.layer.id, {
-                        x: Math.min(mouse.x, this.mousedownX),
-                        y: Math.min(mouse.y, this.mousedownY),
-                        width,
-                        height,
-                    }),
-                ]),
+                new app.Actions.Bundle_action(
+                    'resize_text_layer',
+                    'Resize Text Layer',
+                    [
+                        new app.Actions.Update_layer_action(config.layer.id, {
+                            x: Math.min(mouse.x, this.mousedownX),
+                            y: Math.min(mouse.y, this.mousedownY),
+                            width,
+                            height,
+                        }),
+                    ],
+                ),
                 { merge_with_history: 'new_text_layer' },
             );
             this.textarea.focus();
@@ -2541,7 +3066,10 @@ class Text_class extends Base_tools_class {
             editor.trigger_cursor_end();
             this.textarea.focus();
 
-            if (editor.selection.is_empty() && editor.document.queuedMetaChanges) {
+            if (
+                editor.selection.is_empty() &&
+                editor.document.queuedMetaChanges
+            ) {
                 let meta = {};
                 const existingMeta = editor.document.get_meta_range(
                     editor.selection.start.line,
@@ -2588,10 +3116,25 @@ class Text_class extends Base_tools_class {
             const editor = this.get_editor(this.layer);
             if (editor.selection.is_empty()) {
                 const position = editor.selection.get_position();
-                const wordStart = editor.document.get_word_start_position(position.line, position.character, true);
-                const wordEnd = editor.document.get_word_end_position(position.line, position.character, true);
-                editor.selection.set_position(wordStart.line, wordStart.character);
-                editor.selection.set_position(wordEnd.line, wordEnd.character, true);
+                const wordStart = editor.document.get_word_start_position(
+                    position.line,
+                    position.character,
+                    true,
+                );
+                const wordEnd = editor.document.get_word_end_position(
+                    position.line,
+                    position.character,
+                    true,
+                );
+                editor.selection.set_position(
+                    wordStart.line,
+                    wordStart.character,
+                );
+                editor.selection.set_position(
+                    wordEnd.line,
+                    wordEnd.character,
+                    true,
+                );
                 this.update_tool_attributes(this.layer, editor);
             }
         }
@@ -2682,17 +3225,38 @@ class Text_class extends Base_tools_class {
                 editor.selection.end.character,
             );
             const toolAttributes = this.GUI_tools.action_data().attributes;
-            toolAttributes.font.value = meta.family.length === 1 ? meta.family[0] : '';
-            toolAttributes.size = meta.size.length === 1 ? meta.size[0] : parseFloat(null);
-            toolAttributes.bold.value = meta.bold.includes(false) ? false : true;
-            toolAttributes.italic.value = meta.italic.includes(false) ? false : true;
-            toolAttributes.underline.value = meta.underline.includes(false) ? false : true;
-            toolAttributes.strikethrough.value = meta.strikethrough.includes(false) ? false : true;
-            toolAttributes.fill = meta.fill_color.length === 1 ? meta.fill_color[0] : '#000000';
-            toolAttributes.stroke = meta.stroke_color.length === 1 ? meta.stroke_color[0] : '#000000';
-            toolAttributes.stroke_size.value = meta.stroke_size.length === 1 ? meta.stroke_size[0] : parseFloat(null);
-            toolAttributes.kerning.value = meta.kerning.length === 1 ? meta.kerning[0] : parseFloat(null);
-            toolAttributes.leading.value = meta.leading.length === 1 ? meta.leading[0] : parseFloat(null);
+            toolAttributes.font.value =
+                meta.family.length === 1 ? meta.family[0] : '';
+            toolAttributes.size =
+                meta.size.length === 1 ? meta.size[0] : parseFloat(null);
+            toolAttributes.bold.value = meta.bold.includes(false)
+                ? false
+                : true;
+            toolAttributes.italic.value = meta.italic.includes(false)
+                ? false
+                : true;
+            toolAttributes.underline.value = meta.underline.includes(false)
+                ? false
+                : true;
+            toolAttributes.strikethrough.value = meta.strikethrough.includes(
+                false,
+            )
+                ? false
+                : true;
+            toolAttributes.fill =
+                meta.fill_color.length === 1 ? meta.fill_color[0] : '#000000';
+            toolAttributes.stroke =
+                meta.stroke_color.length === 1
+                    ? meta.stroke_color[0]
+                    : '#000000';
+            toolAttributes.stroke_size.value =
+                meta.stroke_size.length === 1
+                    ? meta.stroke_size[0]
+                    : parseFloat(null);
+            toolAttributes.kerning.value =
+                meta.kerning.length === 1 ? meta.kerning[0] : parseFloat(null);
+            toolAttributes.leading.value =
+                meta.leading.length === 1 ? meta.leading[0] : parseFloat(null);
             this.GUI_tools.show_action_attributes();
         }
     }
@@ -2708,13 +3272,18 @@ class Text_class extends Base_tools_class {
 
     extend_fixed_bounds(layer, editor) {
         if (layer && layer.params && layer.params.boundary !== 'dynamic') {
-            const isHorizontalTextDirection = ['ltr', 'rtl'].includes(layer.params.textDirection);
+            const isHorizontalTextDirection = ['ltr', 'rtl'].includes(
+                layer.params.textDirection,
+            );
             let new_width = layer.width;
             let new_height = layer.height;
             if (isHorizontalTextDirection) {
                 new_width = Math.max(editor.textBoundaryWidth + 1, new_width);
             } else {
-                new_height = Math.max(editor.textBoundaryHeight + 1, new_height);
+                new_height = Math.max(
+                    editor.textBoundaryHeight + 1,
+                    new_height,
+                );
             }
             config.layer.width = new_width;
             config.layer.height = new_height;
@@ -2725,10 +3294,13 @@ class Text_class extends Base_tools_class {
         if (layer.width == 0 && layer.height == 0) return;
         var params = layer.params;
 
-        const isActiveLayerAndTextTool = layer === config.layer && config.TOOL.name === 'text';
+        const isActiveLayerAndTextTool =
+            layer === config.layer && config.TOOL.name === 'text';
         const editor = this.get_editor(layer);
         editor.selection.set_visible(isActiveLayerAndTextTool);
-        editor.selection.set_cursor_visible(isActiveLayerAndTextTool && (this.selecting || this.focused));
+        editor.selection.set_cursor_visible(
+            isActiveLayerAndTextTool && (this.selecting || this.focused),
+        );
         editor.render(ctx, layer);
         if (layer === config.layer) {
             this.resize_to_dynamic_bounds(layer, editor);
@@ -2757,7 +3329,10 @@ class Text_class extends Base_tools_class {
                 const params = layer.params;
                 let lines = [];
                 const textLines = layer.params.text.split('\n');
-                const family = params.family && params.family.value ? params.family.value : params.family;
+                const family =
+                    params.family && params.family.value
+                        ? params.family.value
+                        : params.family;
                 for (const textLine of textLines) {
                     lines.push([
                         {
@@ -2767,9 +3342,15 @@ class Text_class extends Base_tools_class {
                                 size: params.size,
                                 bold: params.bold,
                                 italic: params.italic,
-                                fill_color: params.stroke ? '#ffffff00' : layer.color,
-                                stroke_color: params.stroke ? layer.color : '#ffffff00',
-                                stroke_size: params.stroke ? params.stroke_size : 0,
+                                fill_color: params.stroke
+                                    ? '#ffffff00'
+                                    : layer.color,
+                                stroke_color: params.stroke
+                                    ? layer.color
+                                    : '#ffffff00',
+                                stroke_size: params.stroke
+                                    ? params.stroke_size
+                                    : 0,
                                 leading: 0,
                             },
                         },
@@ -2778,7 +3359,10 @@ class Text_class extends Base_tools_class {
                 params.boundary = 'box';
                 params.kerning = 'metrics';
                 params.halign = params.align
-                    ? (params.align.value ? params.align.value : params.align).toLowerCase()
+                    ? (params.align.value
+                          ? params.align.value
+                          : params.align
+                      ).toLowerCase()
                     : 'left';
                 params.valign = 'top';
                 params.text_direction = 'ltr';
@@ -2804,11 +3388,20 @@ class Text_class extends Base_tools_class {
                     if (!span) return;
                     const fontMetrics = editor.get_span_font_metrics(
                         span,
-                        !fontLoadMap.get(span.meta.family || metaDefaults.family),
+                        !fontLoadMap.get(
+                            span.meta.family || metaDefaults.family,
+                        ),
                     );
-                    const topBounds = fontMetrics.calculate_letter_bounds('M', 'top');
-                    span.meta.leading = (span.meta.size || metaDefaults.size) - fontMetrics.height;
-                    layer.y += Math.abs(span.meta.leading) - (fontMetrics.baseline - topBounds.bottom);
+                    const topBounds = fontMetrics.calculate_letter_bounds(
+                        'M',
+                        'top',
+                    );
+                    span.meta.leading =
+                        (span.meta.size || metaDefaults.size) -
+                        fontMetrics.height;
+                    layer.y +=
+                        Math.abs(span.meta.leading) -
+                        (fontMetrics.baseline - topBounds.bottom);
                     editor.hasValueChanged = true;
                     editor.Base_layers.render();
                 });
@@ -2823,33 +3416,55 @@ class Text_class extends Base_tools_class {
                             text: '',
                             meta: {
                                 family:
-                                    params.font.value !== metaDefaults.family && params.font.value
+                                    params.font.value !== metaDefaults.family &&
+                                    params.font.value
                                         ? params.font.value
                                         : undefined,
                                 size:
-                                    params.size !== metaDefaults.size && !isNaN(params.size) ? params.size : undefined,
-                                bold: params.bold.value !== metaDefaults.bold ? params.bold.value : undefined,
-                                italic: params.italic.value !== metaDefaults.italic ? params.italic.value : undefined,
+                                    params.size !== metaDefaults.size &&
+                                    !isNaN(params.size)
+                                        ? params.size
+                                        : undefined,
+                                bold:
+                                    params.bold.value !== metaDefaults.bold
+                                        ? params.bold.value
+                                        : undefined,
+                                italic:
+                                    params.italic.value !== metaDefaults.italic
+                                        ? params.italic.value
+                                        : undefined,
                                 underline:
-                                    params.underline.value !== metaDefaults.underline
+                                    params.underline.value !==
+                                    metaDefaults.underline
                                         ? params.underline.value
                                         : undefined,
                                 strikethrough:
-                                    params.strikethrough.value !== metaDefaults.strikethrough
+                                    params.strikethrough.value !==
+                                    metaDefaults.strikethrough
                                         ? params.strikethrough.value
                                         : undefined,
-                                fill_color: params.fill !== metaDefaults.fill_color ? params.fill : undefined,
-                                stroke_color: params.stroke !== metaDefaults.stroke_color ? params.stroke : undefined,
+                                fill_color:
+                                    params.fill !== metaDefaults.fill_color
+                                        ? params.fill
+                                        : undefined,
+                                stroke_color:
+                                    params.stroke !== metaDefaults.stroke_color
+                                        ? params.stroke
+                                        : undefined,
                                 stroke_size:
-                                    params.stroke_size !== metaDefaults.stroke_size && !isNaN(params.stroke_size)
+                                    params.stroke_size !==
+                                        metaDefaults.stroke_size &&
+                                    !isNaN(params.stroke_size)
                                         ? params.stroke_size
                                         : undefined,
                                 kerning:
-                                    params.kerning !== metaDefaults.kerning && !isNaN(params.kerning)
+                                    params.kerning !== metaDefaults.kerning &&
+                                    !isNaN(params.kerning)
                                         ? params.kerning
                                         : undefined,
                                 leading:
-                                    params.leading !== metaDefaults.leading && !isNaN(params.leading)
+                                    params.leading !== metaDefaults.leading &&
+                                    !isNaN(params.leading)
                                         ? params.leading
                                         : undefined,
                             },

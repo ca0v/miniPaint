@@ -41,7 +41,9 @@ class Fill_class extends Base_tools_class {
             return;
         }
         if (config.layer.rotate || 0 > 0) {
-            alertify.error('Erase on rotate object is disabled. Please rasterize first.');
+            alertify.error(
+                'Erase on rotate object is disabled. Please rasterize first.',
+            );
             return;
         }
 
@@ -56,11 +58,15 @@ class Fill_class extends Base_tools_class {
         }
 
         if (config.layer.type != 'image' && config.layer.type !== null) {
-            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            alertify.error(
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
+            );
             return;
         }
         if (config.layer.is_vector == true) {
-            alertify.error('Layer is vector, convert it to raster to apply this tool.');
+            alertify.error(
+                'Layer is vector, convert it to raster to apply this tool.',
+            );
             return;
         }
         if (config.ALPHA == 0) {
@@ -126,7 +132,9 @@ class Fill_class extends Base_tools_class {
             params.width = canvas.width;
             params.height = canvas.height;
             app.State.do_action(
-                new app.Actions.Bundle_action('fill_tool', 'Fill Tool', [new app.Actions.Insert_layer_action(params)]),
+                new app.Actions.Bundle_action('fill_tool', 'Fill Tool', [
+                    new app.Actions.Insert_layer_action(params),
+                ]),
             );
         }
 
@@ -135,7 +143,17 @@ class Fill_class extends Base_tools_class {
         this.working = false;
     }
 
-    fill_general(context, W, H, x, y, color_to, sensitivity, anti_aliasing, contiguous = false) {
+    fill_general(
+        context,
+        W,
+        H,
+        x,
+        y,
+        color_to,
+        sensitivity,
+        anti_aliasing,
+        contiguous = false,
+    ) {
         sensitivity = (sensitivity * 255) / 100; //convert to 0-255 interval
         x = parseInt(x);
         y = parseInt(y);
@@ -180,15 +198,24 @@ class Fill_class extends Base_tools_class {
                 for (var i = 0; i < 4; i++) {
                     var nextPointX = curPoint[0] + dx[i];
                     var nextPointY = curPoint[1] + dy[i];
-                    if (nextPointX < 0 || nextPointY < 0 || nextPointX >= W || nextPointY >= H) continue;
+                    if (
+                        nextPointX < 0 ||
+                        nextPointY < 0 ||
+                        nextPointX >= W ||
+                        nextPointY >= H
+                    )
+                        continue;
                     var k = (nextPointY * W + nextPointX) * 4;
                     if (imgData_tmp[k + 3] != 0) continue; //already parsed
 
                     //check
                     if (
-                        Math.abs(imgData[k + 0] - color_from.r) <= sensitivity &&
-                        Math.abs(imgData[k + 1] - color_from.g) <= sensitivity &&
-                        Math.abs(imgData[k + 2] - color_from.b) <= sensitivity &&
+                        Math.abs(imgData[k + 0] - color_from.r) <=
+                            sensitivity &&
+                        Math.abs(imgData[k + 1] - color_from.g) <=
+                            sensitivity &&
+                        Math.abs(imgData[k + 2] - color_from.b) <=
+                            sensitivity &&
                         Math.abs(imgData[k + 3] - color_from.a) <= sensitivity
                     ) {
                         //fill pixel
@@ -213,8 +240,10 @@ class Fill_class extends Base_tools_class {
 
                     if (
                         Math.abs(imgData[k] - color_from.r) <= sensitivity &&
-                        Math.abs(imgData[k + 1] - color_from.g) <= sensitivity &&
-                        Math.abs(imgData[k + 2] - color_from.b) <= sensitivity &&
+                        Math.abs(imgData[k + 1] - color_from.g) <=
+                            sensitivity &&
+                        Math.abs(imgData[k + 2] - color_from.b) <=
+                            sensitivity &&
                         Math.abs(imgData[k + 3] - color_from.a) <= sensitivity
                     ) {
                         imgData_tmp[k] = color_to.r; //r

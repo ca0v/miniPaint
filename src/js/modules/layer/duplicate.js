@@ -48,10 +48,16 @@ class Layer_duplicate_class {
             params.name = params.name + ' #2';
         } else {
             //nth duplicate - name like "query #17"
-            params.name = name_number[1] + ' #' + (parseInt(name_number[2]) + 1);
+            params.name =
+                name_number[1] + ' #' + (parseInt(name_number[2]) + 1);
         }
 
-        if (params.x != 0 || params.y != 0 || params.width != config.WIDTH || params.height != config.HEIGHT) {
+        if (
+            params.x != 0 ||
+            params.y != 0 ||
+            params.width != config.WIDTH ||
+            params.height != config.HEIGHT
+        ) {
             params.x += 10;
             params.y += 10;
         }
@@ -67,9 +73,11 @@ class Layer_duplicate_class {
         }
 
         app.State.do_action(
-            new app.Actions.Bundle_action('duplicate_layer', 'Duplicate Layer', [
-                new app.Actions.Insert_layer_action(params),
-            ]),
+            new app.Actions.Bundle_action(
+                'duplicate_layer',
+                'Duplicate Layer',
+                [new app.Actions.Insert_layer_action(params)],
+            ),
         );
     }
 }

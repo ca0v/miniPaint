@@ -70,11 +70,18 @@ class Layer_composition_class {
                     params.composition = 'source-over';
                 }
                 app.State.do_action(
-                    new app.Actions.Bundle_action('change_composition', 'Change Composition', [
-                        new app.Actions.Update_layer_action(config.layer.id, {
-                            composition: params.composition,
-                        }),
-                    ]),
+                    new app.Actions.Bundle_action(
+                        'change_composition',
+                        'Change Composition',
+                        [
+                            new app.Actions.Update_layer_action(
+                                config.layer.id,
+                                {
+                                    composition: params.composition,
+                                },
+                            ),
+                        ],
+                    ),
                 );
             },
             on_cancel: function (params) {

@@ -126,7 +126,8 @@ class GUI_tools_class {
 
     action_data() {
         for (var i in config.TOOLS) {
-            if (config.TOOLS[i].name == this.active_tool) return config.TOOLS[i];
+            if (config.TOOLS[i].name == this.active_tool)
+                return config.TOOLS[i];
         }
 
         //something wrong - select first tool
@@ -156,7 +157,11 @@ class GUI_tools_class {
             var title = k[0].toUpperCase() + k.slice(1);
             title = title.replace('_', ' ');
 
-            if (typeof item == 'object' && typeof item.value == 'boolean' && item.icon) {
+            if (
+                typeof item == 'object' &&
+                typeof item.value == 'boolean' &&
+                item.icon
+            ) {
                 if (currentButtonGroup == null) {
                     currentButtonGroup = document.createElement('div');
                     currentButtonGroup.className = 'ui_button_group no_wrap';
@@ -174,7 +179,10 @@ class GUI_tools_class {
                 currentButtonGroup = null;
             }
 
-            if (typeof item == 'boolean' || (typeof item == 'object' && typeof item.value == 'boolean')) {
+            if (
+                typeof item == 'boolean' ||
+                (typeof item == 'object' && typeof item.value == 'boolean')
+            ) {
                 //boolean - true, false
 
                 let value = item;
@@ -198,14 +206,19 @@ class GUI_tools_class {
                     element.innerHTML = icon;
                     element.title = k;
                     element.innerHTML =
-                        '<img style="width:16px;height:16px;" alt="' + title + '" src="images/icons/' + icon + '" />';
+                        '<img style="width:16px;height:16px;" alt="' +
+                        title +
+                        '" src="images/icons/' +
+                        icon +
+                        '" />';
                 } else {
                     element.classList.add('ui_toggle_button');
                 }
                 //event
                 element.addEventListener('click', (event) => {
                     //toggle boolean
-                    var new_value = element.getAttribute('aria-pressed') !== 'true';
+                    var new_value =
+                        element.getAttribute('aria-pressed') !== 'true';
                     const actionData = this.action_data();
                     const attributes = actionData.attributes;
                     const id = event.target.closest('button').id;
@@ -231,7 +244,10 @@ class GUI_tools_class {
                 } else {
                     itemDom.appendChild(element);
                 }
-            } else if (typeof item == 'number' || (typeof item == 'object' && typeof item.value == 'number')) {
+            } else if (
+                typeof item == 'number' ||
+                (typeof item == 'object' && typeof item.value == 'number')
+            ) {
                 //numbers
                 let min = 1;
                 let max = k === 'power' ? 100 : 999;
@@ -256,7 +272,10 @@ class GUI_tools_class {
 
                 const elementInput = document.createElement('input');
                 elementInput.type = 'number';
-                elementInput.setAttribute('aria-labelledby', 'attribute_label_' + k);
+                elementInput.setAttribute(
+                    'aria-labelledby',
+                    'attribute_label_' + k,
+                );
                 const $numberInput = $(elementInput)
                     .uiNumberInput({
                         id: k,
@@ -299,7 +318,10 @@ class GUI_tools_class {
 
                 var selectList = document.createElement('select');
                 selectList.id = k;
-                const values = typeof item.values === 'function' ? item.values() : item.values;
+                const values =
+                    typeof item.values === 'function'
+                        ? item.values()
+                        : item.values;
                 for (var j in values) {
                     var option = document.createElement('option');
                     if (item.value == values[j]) {
@@ -314,13 +336,16 @@ class GUI_tools_class {
                 //event
                 selectList.addEventListener('change', (event) => {
                     const actionData = this.action_data();
-                    actionData.attributes[event.target.id].value = event.target.value;
+                    actionData.attributes[event.target.id].value =
+                        event.target.value;
 
                     if (actionData.on_update != undefined) {
                         //send event
                         var moduleKey = actionData.name;
                         var functionName = actionData.on_update;
-                        const result = this.tools_modules[moduleKey].object[functionName]({
+                        const result = this.tools_modules[moduleKey].object[
+                            functionName
+                        ]({
                             key: event.target.id,
                             value: event.target.value,
                         });
@@ -328,7 +353,8 @@ class GUI_tools_class {
                             // Allow the on_update function to modify the attribute value if necessary.
                             if (result.new_values) {
                                 for (let key in result.new_values) {
-                                    actionData.attributes[key].value = result.new_values[key];
+                                    actionData.attributes[key].value =
+                                        result.new_values[key];
                                 }
                             }
                         }
@@ -372,7 +398,12 @@ class GUI_tools_class {
                 itemDom.appendChild(elementTitle);
                 itemDom.appendChild($colorInput[0]);
             } else {
-                alertify.error('Error: unsupported attribute type:' + typeof item + ', ' + k);
+                alertify.error(
+                    'Error: unsupported attribute type:' +
+                        typeof item +
+                        ', ' +
+                        k,
+                );
             }
         }
 

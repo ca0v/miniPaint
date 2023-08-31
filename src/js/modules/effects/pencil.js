@@ -12,7 +12,9 @@ class Effects_pencil_class {
 
     pencil() {
         if (config.layer.type != 'image') {
-            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            alertify.error(
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
+            );
             return;
         }
 
@@ -26,7 +28,9 @@ class Effects_pencil_class {
         ctx.drawImage(data, 0, 0);
 
         //save
-        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
+        return app.State.do_action(
+            new app.Actions.Update_layer_image_action(canvas),
+        );
     }
 
     change(canvas, width, height) {
@@ -59,7 +63,11 @@ class Effects_pencil_class {
 
         //modify
         var params = {};
-        var data = this.change(canvas_thumb, canvas_thumb.width, canvas_thumb.height);
+        var data = this.change(
+            canvas_thumb,
+            canvas_thumb.width,
+            canvas_thumb.height,
+        );
 
         //draw
         ctx.drawImage(data, 0, 0);

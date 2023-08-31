@@ -62,7 +62,13 @@ class Heart_class extends Base_tools_class {
         //draw with rotation support
         ctx.translate(layer.x + layer.width / 2, layer.y + layer.height / 2);
         ctx.rotate((layer.rotate * Math.PI) / 180);
-        this.draw_shape(ctx, -layer.width / 2, -layer.height / 2, layer.width, layer.height);
+        this.draw_shape(
+            ctx,
+            -layer.width / 2,
+            -layer.height / 2,
+            layer.width,
+            layer.height,
+        );
 
         ctx.restore();
     }
@@ -76,9 +82,23 @@ class Heart_class extends Base_tools_class {
         ctx.translate(-width / 2, -height / 1.85);
 
         ctx.moveTo(width / 2, height / 5);
-        ctx.bezierCurveTo((5 * width) / 14, 0, 0, height / 15, width / 28, (2 * height) / 5);
+        ctx.bezierCurveTo(
+            (5 * width) / 14,
+            0,
+            0,
+            height / 15,
+            width / 28,
+            (2 * height) / 5,
+        );
 
-        ctx.bezierCurveTo(width / 14, (2 * height) / 3, (3 * width) / 7, (5 * height) / 6, width / 2, height);
+        ctx.bezierCurveTo(
+            width / 14,
+            (2 * height) / 3,
+            (3 * width) / 7,
+            (5 * height) / 6,
+            width / 2,
+            height,
+        );
 
         ctx.bezierCurveTo(
             (4 * width) / 7,
@@ -89,7 +109,14 @@ class Heart_class extends Base_tools_class {
             (2 * height) / 5,
         );
 
-        ctx.bezierCurveTo(width, height / 15, (9 * width) / 14, 0, width / 2, height / 5);
+        ctx.bezierCurveTo(
+            width,
+            height / 15,
+            (9 * width) / 14,
+            0,
+            width / 2,
+            height / 5,
+        );
 
         ctx.closePath();
 

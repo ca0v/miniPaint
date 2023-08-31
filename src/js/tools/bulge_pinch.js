@@ -40,7 +40,9 @@ class BulgePinch_class extends Base_tools_class {
             return;
         }
         if (config.layer.type != 'image') {
-            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            alertify.error(
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
+            );
             return;
         }
         this.started = true;
@@ -53,7 +55,12 @@ class BulgePinch_class extends Base_tools_class {
         this.tmpCanvasCtx.drawImage(config.layer.link, 0, 0);
 
         //apply
-        this.bulgePinch_general(mouse, params.power, params.radius, params.bulge);
+        this.bulgePinch_general(
+            mouse,
+            params.power,
+            params.radius,
+            params.bulge,
+        );
 
         //register tmp canvas for faster redraw
         config.layer.link_canvas = this.tmpCanvas;
@@ -67,9 +74,11 @@ class BulgePinch_class extends Base_tools_class {
         delete config.layer.link_canvas;
 
         app.State.do_action(
-            new app.Actions.Bundle_action('bulge_pinch_tool', 'Bulge/Pinch Tool', [
-                new app.Actions.Update_layer_image_action(this.tmpCanvas),
-            ]),
+            new app.Actions.Bundle_action(
+                'bulge_pinch_tool',
+                'Bulge/Pinch Tool',
+                [new app.Actions.Update_layer_image_action(this.tmpCanvas)],
+            ),
         );
 
         //decrease memory
@@ -106,8 +115,16 @@ class BulgePinch_class extends Base_tools_class {
         if (bulge == false) power = -1 * power;
 
         var texture = this.fx_filter.texture(this.tmpCanvas);
-        this.fx_filter.draw(texture).bulgePinch(mouse_x, mouse_y, radius, power).update(); //effect
-        this.tmpCanvasCtx.clearRect(0, 0, this.tmpCanvas.width, this.tmpCanvas.height);
+        this.fx_filter
+            .draw(texture)
+            .bulgePinch(mouse_x, mouse_y, radius, power)
+            .update(); //effect
+        this.tmpCanvasCtx.clearRect(
+            0,
+            0,
+            this.tmpCanvas.width,
+            this.tmpCanvas.height,
+        );
         this.tmpCanvasCtx.drawImage(this.fx_filter, 0, 0);
     }
 }

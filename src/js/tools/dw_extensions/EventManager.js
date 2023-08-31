@@ -23,7 +23,9 @@ export class EventManager {
 
     off(event, callback) {
         if (!event) {
-            Object.keys(this.ops).forEach((eventName) => document.removeEventListener(eventName, this.ops[eventName]));
+            Object.keys(this.ops).forEach((eventName) =>
+                document.removeEventListener(eventName, this.ops[eventName]),
+            );
             this.ops = [];
             this.events = {};
             return;

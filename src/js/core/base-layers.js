@@ -57,7 +57,9 @@ class Base_layers_class {
 
         this.canvas = document.getElementById('canvas_minipaint');
         this.ctx = document.getElementById('canvas_minipaint').getContext('2d');
-        this.ctx_preview = document.getElementById('canvas_preview').getContext('2d');
+        this.ctx_preview = document
+            .getElementById('canvas_preview')
+            .getContext('2d');
         this.last_zoom = 1;
         this.auto_increment = 1;
         this.stable_dimensions = [];
@@ -84,7 +86,11 @@ class Base_layers_class {
                 return config.layer;
             },
         };
-        this.Base_selection = new Base_selection_class(this.ctx, sel_config, 'main');
+        this.Base_selection = new Base_selection_class(
+            this.ctx,
+            sel_config,
+            'main',
+        );
 
         this.render(true);
     }
@@ -98,7 +104,12 @@ class Base_layers_class {
     pre_render() {
         this.ctx.save();
         zoomView.canvasDefault();
-        this.ctx.clearRect(0, 0, config.WIDTH * config.ZOOM, config.HEIGHT * config.ZOOM);
+        this.ctx.clearRect(
+            0,
+            0,
+            config.WIDTH * config.ZOOM,
+            config.HEIGHT * config.ZOOM,
+        );
     }
 
     after_render() {
@@ -121,7 +132,10 @@ class Base_layers_class {
             return;
         }
 
-        if (this.stable_dimensions[0] != config.WIDTH || this.stable_dimensions[1] != config.HEIGHT) {
+        if (
+            this.stable_dimensions[0] != config.WIDTH ||
+            this.stable_dimensions[1] != config.HEIGHT
+        ) {
             //dimensions changed - re-init zoom lib
             this.init_zoom_lib();
         }
@@ -156,7 +170,11 @@ class Base_layers_class {
 
             zoomView.apply();
 
-            const newCanvas = this.create_new_canvas(null, config.WIDTH, config.HEIGHT);
+            const newCanvas = this.create_new_canvas(
+                null,
+                config.WIDTH,
+                config.HEIGHT,
+            );
 
             this.render_objects(this.ctx, newCanvas, layers_sorted, () => {
                 this.ctx.save();
@@ -199,8 +217,14 @@ class Base_layers_class {
         var render_class = config.TOOL.name;
         var render_function = 'render_overlay';
 
-        if (typeof this.Base_gui.GUI_tools.tools_modules[render_class].object[render_function] != 'undefined') {
-            this.Base_gui.GUI_tools.tools_modules[render_class].object[render_function](this.ctx);
+        if (
+            typeof this.Base_gui.GUI_tools.tools_modules[render_class].object[
+                render_function
+            ] != 'undefined'
+        ) {
+            this.Base_gui.GUI_tools.tools_modules[render_class].object[
+                render_function
+            ](this.ctx);
         }
     }
 
@@ -269,7 +293,10 @@ class Base_layers_class {
             // If the layer or next layer has clip masking effect (source-atop).
             // If there are such layers, this will make sure that layers will be rendered
             // in an isolated temporary canvas
-            if (layer.composition === 'source-atop' || (nextLayer && nextLayer.composition === 'source-atop')) {
+            if (
+                layer.composition === 'source-atop' ||
+                (nextLayer && nextLayer.composition === 'source-atop')
+            ) {
                 // Apply the effect in a isolated temporary canvas
                 tempCtx.globalAlpha = layer.opacity / 100;
                 tempCtx.globalCompositeOperation = layer.composition;
@@ -300,7 +327,12 @@ class Base_layers_class {
                     prepare && prepare();
                     // Clear temporary canvas
                     tempCtx.globalCompositeOperation = null;
-                    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+                    tempCtx.clearRect(
+                        0,
+                        0,
+                        tempCanvas.width,
+                        tempCanvas.height,
+                    );
                 }
             } else {
                 ctx.globalAlpha = layer.opacity / 100;
@@ -346,7 +378,10 @@ class Base_layers_class {
             //image - default behavior
             ctx.save();
 
-            ctx.translate(object.x + object.width / 2, object.y + object.height / 2);
+            ctx.translate(
+                object.x + object.width / 2,
+                object.y + object.height / 2,
+            );
             ctx.rotate((object.rotate * Math.PI) / 180);
             // TODO - Not sure why the check should be with null,
             // if nothing will break, then better to check if it's just truthy
@@ -363,8 +398,13 @@ class Base_layers_class {
             //call render function from other module
             var render_class = object.render_function[0];
             var render_function = object.render_function[1];
-            if (typeof this.Base_gui.GUI_tools.tools_modules[render_class] != 'undefined') {
-                this.Base_gui.GUI_tools.tools_modules[render_class].object[render_function](ctx, object, is_preview);
+            if (
+                typeof this.Base_gui.GUI_tools.tools_modules[render_class] !=
+                'undefined'
+            ) {
+                this.Base_gui.GUI_tools.tools_modules[render_class].object[
+                    render_function
+                ](ctx, object, is_preview);
             } else {
                 this.render_success = false;
                 console.log('Error: unknown layer type: ' + object.type);
@@ -392,7 +432,8 @@ class Base_layers_class {
             //find filter
             var found = false;
             for (var i in this.Base_gui.modules) {
-                if (i.indexOf('effects') == -1 || i.indexOf('abstract') > -1) continue;
+                if (i.indexOf('effects') == -1 || i.indexOf('abstract') > -1)
+                    continue;
 
                 var filter_class = this.Base_gui.modules[i];
                 var module_name = i.split('/').pop();
@@ -426,7 +467,8 @@ class Base_layers_class {
             //find filter
             var found = false;
             for (var i in this.Base_gui.modules) {
-                if (i.indexOf('effects') == -1 || i.indexOf('abstract') > -1) continue;
+                if (i.indexOf('effects') == -1 || i.indexOf('abstract') > -1)
+                    continue;
 
                 var filter_class = this.Base_gui.modules[i];
                 var module_name = i.split('/').pop();
@@ -450,7 +492,9 @@ class Base_layers_class {
      * @param {boolean} can_automate
      */
     async insert(settings, can_automate = true) {
-        return app.State.do_action(new app.Actions.Insert_layer_action(settings, can_automate));
+        return app.State.do_action(
+            new app.Actions.Insert_layer_action(settings, can_automate),
+        );
     }
 
     /**
@@ -462,7 +506,14 @@ class Base_layers_class {
      * @param {boolean} can_automate
      */
     async autoresize(width, height, layer_id, can_automate = true) {
-        return app.State.do_action(new app.Actions.Autoresize_canvas_action(width, height, layer_id, can_automate));
+        return app.State.do_action(
+            new app.Actions.Autoresize_canvas_action(
+                width,
+                height,
+                layer_id,
+                can_automate,
+            ),
+        );
     }
 
     /**
@@ -491,14 +542,18 @@ class Base_layers_class {
      * @param {boolean} force - Force to delete first layer?
      */
     async delete(id, force) {
-        return app.State.do_action(new app.Actions.Delete_layer_action(id, force));
+        return app.State.do_action(
+            new app.Actions.Delete_layer_action(id, force),
+        );
     }
 
     /*
      * removes all layers
      */
     async reset_layers(auto_insert) {
-        return app.State.do_action(new app.Actions.Reset_layers_action(auto_insert));
+        return app.State.do_action(
+            new app.Actions.Reset_layers_action(auto_insert),
+        );
     }
 
     /**
@@ -507,7 +562,9 @@ class Base_layers_class {
      * @param {int} id
      */
     async toggle_visibility(id) {
-        return app.State.do_action(new app.Actions.Toggle_layer_visibility_action(id));
+        return app.State.do_action(
+            new app.Actions.Toggle_layer_visibility_action(id),
+        );
     }
 
     /*
@@ -561,7 +618,9 @@ class Base_layers_class {
      * @param {int} direction
      */
     async move(id, direction) {
-        return app.State.do_action(new app.Actions.Reorder_layer_action(id, direction));
+        return app.State.do_action(
+            new app.Actions.Reorder_layer_action(id, direction),
+        );
     }
 
     /**
@@ -662,7 +721,9 @@ class Base_layers_class {
      * @param {object} params
      */
     add_filter(layer_id, name, params) {
-        return app.State.do_action(new app.Actions.Add_layer_filter_action(layer_id, name, params));
+        return app.State.do_action(
+            new app.Actions.Add_layer_filter_action(layer_id, name, params),
+        );
     }
 
     /**
@@ -672,7 +733,9 @@ class Base_layers_class {
      * @param {string} filter_id
      */
     delete_filter(layer_id, filter_id) {
-        return app.State.do_action(new app.Actions.Delete_layer_filter_action(layer_id, filter_id));
+        return app.State.do_action(
+            new app.Actions.Delete_layer_filter_action(layer_id, filter_id),
+        );
     }
 
     /**
@@ -738,14 +801,25 @@ class Base_layers_class {
         //trim
         if ((can_trim == true || can_trim == undefined) && link.type != null) {
             var trim_info = this.Image_trim.get_trim_info(layer_id);
-            if (trim_info.left > 0 || trim_info.top > 0 || trim_info.right > 0 || trim_info.bottom > 0) {
+            if (
+                trim_info.left > 0 ||
+                trim_info.top > 0 ||
+                trim_info.right > 0 ||
+                trim_info.bottom > 0
+            ) {
                 offset_x = trim_info.left;
                 offset_y = trim_info.top;
 
                 var w = canvas.width - trim_info.left - trim_info.right;
                 var h = canvas.height - trim_info.top - trim_info.bottom;
                 if (w > 1 && h > 1) {
-                    this.Helper.change_canvas_size(canvas, w, h, offset_x, offset_y);
+                    this.Helper.change_canvas_size(
+                        canvas,
+                        w,
+                        h,
+                        offset_x,
+                        offset_y,
+                    );
                 }
             }
         }
@@ -763,7 +837,9 @@ class Base_layers_class {
      * @param {int} layer_id (optional)
      */
     update_layer_image(canvas, layer_id) {
-        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas, layer_id));
+        return app.State.do_action(
+            new app.Actions.Update_layer_image_action(canvas, layer_id),
+        );
     }
 
     /**
@@ -813,7 +889,10 @@ class Base_layers_class {
 
         var filter = {};
         for (var i in layer.filters) {
-            if (layer.filters[i].name == filter_name && layer.filters[i].id == filter_id) {
+            if (
+                layer.filters[i].name == filter_name &&
+                layer.filters[i].id == filter_id
+            ) {
                 return layer.filters[i].params;
             }
         }

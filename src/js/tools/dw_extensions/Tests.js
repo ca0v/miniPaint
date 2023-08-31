@@ -23,10 +23,22 @@ export class Tests {
 
         {
             // isShortcutMatch
-            eq(true, isShortcutMatch('Shift+Left+mousedown', 'Shift+Left+mousedown'));
-            eq(true, isShortcutMatch('Shift+Left+mousedown', 'Left+Shift+mousedown'));
-            eq(false, isShortcutMatch('Shift+Left+mousedown', 'Left+mousedown'));
-            eq(false, isShortcutMatch('Left+mousedown', 'Shift+Left+mousedown'));
+            eq(
+                true,
+                isShortcutMatch('Shift+Left+mousedown', 'Shift+Left+mousedown'),
+            );
+            eq(
+                true,
+                isShortcutMatch('Shift+Left+mousedown', 'Left+Shift+mousedown'),
+            );
+            eq(
+                false,
+                isShortcutMatch('Shift+Left+mousedown', 'Left+mousedown'),
+            );
+            eq(
+                false,
+                isShortcutMatch('Left+mousedown', 'Shift+Left+mousedown'),
+            );
         }
     }
 
@@ -37,9 +49,17 @@ export class Tests {
             vision.arcPoint; // tests
 
             const circle = { x: 0, y: 0, r: 1 };
-            eq(1, vision.arcPoint(circle, 0).x, 'A circle at origin with radius 1 at 0 degrees should be at (1,0)');
+            eq(
+                1,
+                vision.arcPoint(circle, 0).x,
+                'A circle at origin with radius 1 at 0 degrees should be at (1,0)',
+            );
 
-            eq(0, vision.arcPoint(circle, 0).y, 'A circle at origin with radius 1 at 0 degrees should be at (1,0)');
+            eq(
+                0,
+                vision.arcPoint(circle, 0).y,
+                'A circle at origin with radius 1 at 0 degrees should be at (1,0)',
+            );
 
             {
                 eq(
@@ -88,10 +108,26 @@ export class Tests {
         {
             vision.centerOfCircle; // tests
 
-            let circle = vision.centerOfCircle({ x: -1, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 });
-            eq(0, circle.x, 'The center of a circle with points (0,0), (1,0), (0,1) should be at (0,_)');
-            eq(0, circle.y, 'The center of a circle with points (0,0), (1,0), (0,1) should be at (_,0)');
-            eq(1, circle.r, 'The radius of a circle with points (0,0), (1,0), (0,1) should be 1');
+            let circle = vision.centerOfCircle(
+                { x: -1, y: 0 },
+                { x: 1, y: 0 },
+                { x: 0, y: 1 },
+            );
+            eq(
+                0,
+                circle.x,
+                'The center of a circle with points (0,0), (1,0), (0,1) should be at (0,_)',
+            );
+            eq(
+                0,
+                circle.y,
+                'The center of a circle with points (0,0), (1,0), (0,1) should be at (_,0)',
+            );
+            eq(
+                1,
+                circle.r,
+                'The radius of a circle with points (0,0), (1,0), (0,1) should be 1',
+            );
         }
 
         {
@@ -104,8 +140,16 @@ export class Tests {
             const p4 = { x: -2, y: 1 };
 
             eq(0, vision.smooth([]).length, 'The result should be empty');
-            eq(1, vision.smooth([p0]).length, 'The result should be a single point');
-            eq(2, vision.smooth([p0, p0]).length, 'The result should be the same two points');
+            eq(
+                1,
+                vision.smooth([p0]).length,
+                'The result should be a single point',
+            );
+            eq(
+                2,
+                vision.smooth([p0, p0]).length,
+                'The result should be the same two points',
+            );
             eq(
                 6,
                 vision.smooth([p0, p1, p2]).length,
@@ -125,7 +169,11 @@ export class Tests {
             );
 
             const smooth = vision.smooth([p0, p1, p2]);
-            eq(p0.x, smooth[1].x, 'There is now an interpolated point before the original 1st point');
+            eq(
+                p0.x,
+                smooth[1].x,
+                'There is now an interpolated point before the original 1st point',
+            );
         }
     }
 
@@ -154,8 +202,16 @@ export class Tests {
             // simulate a shift+left+mousedown
             //document.dispatchEvent(new MouseEvent('mousedown', { shiftKey: true, button: 0 }));
             s.trigger('Shift+Left+mousedown');
-            eq(true, hit, 'The shiftClickCallbackTest handler should have been called');
-            eq(s.states.drawing, s.currentState, 'The state should have changed to drawing');
+            eq(
+                true,
+                hit,
+                'The shiftClickCallbackTest handler should have been called',
+            );
+            eq(
+                s.states.drawing,
+                s.currentState,
+                'The state should have changed to drawing',
+            );
 
             s.off();
         }
@@ -187,7 +243,11 @@ export class Tests {
             });
             // document.dispatchEvent(event);
             s.trigger('Ctrl+Shift+X');
-            eq(true, hit, 'The keypressCallbackTest handler should have been called');
+            eq(
+                true,
+                hit,
+                'The keypressCallbackTest handler should have been called',
+            );
 
             s.off();
         }

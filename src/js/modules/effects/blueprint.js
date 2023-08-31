@@ -16,7 +16,9 @@ class Effects_blueprint_class {
 
     blueprint() {
         if (config.layer.type != 'image') {
-            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            alertify.error(
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
+            );
             return;
         }
 
@@ -30,7 +32,9 @@ class Effects_blueprint_class {
         ctx.drawImage(data, 0, 0);
 
         //save
-        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
+        return app.State.do_action(
+            new app.Actions.Update_layer_image_action(canvas),
+        );
     }
 
     change(canvas, width, height) {
@@ -91,7 +95,8 @@ class Effects_blueprint_class {
         var color_small = 'rgba(255, 255, 255, 0.1)';
 
         //size
-        if (size != undefined && size != undefined) this.grid_size = [size, size];
+        if (size != undefined && size != undefined)
+            this.grid_size = [size, size];
         else {
             size = this.grid_size[0];
             size = this.grid_size[1];

@@ -20,7 +20,8 @@ export class Bundle_action extends Base_action {
             try {
                 await this.actions_to_do[i].do();
                 this.memory_estimate += this.actions_to_do[i].memory_estimate;
-                this.database_estimate += this.actions_to_do[i].database_estimate;
+                this.database_estimate +=
+                    this.actions_to_do[i].database_estimate;
             } catch (e) {
                 error = e;
                 break;

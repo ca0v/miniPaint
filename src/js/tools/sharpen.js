@@ -40,11 +40,15 @@ class Sharpen_class extends Base_tools_class {
             return;
         }
         if (config.layer.type != 'image') {
-            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            alertify.error(
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
+            );
             return;
         }
         if (config.layer.rotate || 0 > 0) {
-            alertify.error('Erase on rotate object is disabled. Please rasterize first.');
+            alertify.error(
+                'Erase on rotate object is disabled. Please rasterize first.',
+            );
             return;
         }
         this.started = true;
@@ -129,7 +133,14 @@ class Sharpen_class extends Base_tools_class {
 
         var imageData = ctx.getImageData(center_x, center_y, size_w, size_h);
         var filtered = ImageFilters.Sharpen(imageData, power); //add effect
-        this.Helper.image_round(this.tmpCanvasCtx, mouse_x, mouse_y, size_w, size_h, filtered);
+        this.Helper.image_round(
+            this.tmpCanvasCtx,
+            mouse_x,
+            mouse_y,
+            size_w,
+            size_h,
+            filtered,
+        );
     }
 }
 export default Sharpen_class;

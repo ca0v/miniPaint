@@ -104,7 +104,8 @@ export class Smooth {
         const dx = ax - bx;
         const dy = ay - by;
         const vu = vx * uy - vy * ux;
-        if (vu == 0) throw `Points are collinear: ${JSON.stringify({ p1, p2, p3 })}`;
+        if (vu == 0)
+            throw `Points are collinear: ${JSON.stringify({ p1, p2, p3 })}`;
         const g = (dx * uy - dy * ux) / vu;
         center.x = bx + g * vx;
         center.y = by + g * vy;

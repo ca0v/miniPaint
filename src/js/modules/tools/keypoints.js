@@ -28,7 +28,9 @@ class Tools_keypoints_class {
     //generate key points for image
     keypoints(return_data) {
         if (config.layer.type != 'image') {
-            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            alertify.error(
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
+            );
             return;
         }
 
@@ -66,9 +68,15 @@ class Tools_keypoints_class {
         var points = [];
         var n0 = this.avg_step * 2 + 1;
         for (var c = 1; c < copies.length - 1; c++) {
-            var imageData = copies[c].getContext('2d').getImageData(0, 0, W, H).data;
-            var imageData0 = copies[c - 1].getContext('2d').getImageData(0, 0, W, H).data;
-            var imageData2 = copies[c + 1].getContext('2d').getImageData(0, 0, W, H).data;
+            var imageData = copies[c]
+                .getContext('2d')
+                .getImageData(0, 0, W, H).data;
+            var imageData0 = copies[c - 1]
+                .getContext('2d')
+                .getImageData(0, 0, W, H).data;
+            var imageData2 = copies[c + 1]
+                .getContext('2d')
+                .getImageData(0, 0, W, H).data;
             for (var j = this.avg_step; j < H - this.avg_step; j++) {
                 for (var i = this.avg_step; i < W - this.avg_step; i++) {
                     var x = (i + j * W) * 4;
@@ -85,7 +93,11 @@ class Tools_keypoints_class {
                         var area_average = 0;
                         for (var l = -this.avg_step; l <= this.avg_step; l++) {
                             var avgi = (i + (j - l) * W) * 4;
-                            for (var a = -this.avg_step; a <= this.avg_step; a++) {
+                            for (
+                                var a = -this.avg_step;
+                                a <= this.avg_step;
+                                a++
+                            ) {
                                 area_average += imageData[avgi + 4 * a];
                             }
                         }
@@ -128,7 +140,11 @@ class Tools_keypoints_class {
                                         points.push({
                                             x: i,
                                             y: j,
-                                            w: Math.round(area_average - imageData[x] - this.avg_offset),
+                                            w: Math.round(
+                                                area_average -
+                                                    imageData[x] -
+                                                    this.avg_offset,
+                                            ),
                                         });
                                 }
                             }
@@ -172,7 +188,11 @@ class Tools_keypoints_class {
                                         points.push({
                                             x: i,
                                             y: j,
-                                            w: Math.round(imageData[x] - area_average - this.avg_offset),
+                                            w: Math.round(
+                                                imageData[x] -
+                                                    area_average -
+                                                    this.avg_offset,
+                                            ),
                                         });
                                     }
                                 }
@@ -185,7 +205,11 @@ class Tools_keypoints_class {
         //make unique
         for (var i = 0; i < points.length; i++) {
             for (var j = 0; j < points.length; j++) {
-                if (i != j && points[i].x == points[j].x && points[i].y == points[j].y) {
+                if (
+                    i != j &&
+                    points[i].x == points[j].x &&
+                    points[i].y == points[j].y
+                ) {
                     points.splice(i, 1);
                     i--;
                     break;
@@ -203,7 +227,12 @@ class Tools_keypoints_class {
             for (var i in points) {
                 var point = points[i];
                 ctx.beginPath();
-                ctx.rect(point.x - Math.floor(size / 2) + 1, point.y - Math.floor(size / 2) + 1, size, size);
+                ctx.rect(
+                    point.x - Math.floor(size / 2) + 1,
+                    point.y - Math.floor(size / 2) + 1,
+                    size,
+                    size,
+                );
                 ctx.fill();
             }
 
@@ -217,7 +246,9 @@ class Tools_keypoints_class {
             params.width = clone.width;
             params.height = clone.height;
             app.State.do_action(
-                new app.Actions.Bundle_action('keypoints', 'Key-Points', [new app.Actions.Insert_layer_action(params)]),
+                new app.Actions.Bundle_action('keypoints', 'Key-Points', [
+                    new app.Actions.Insert_layer_action(params),
+                ]),
             );
 
             clone.width = 1;
@@ -265,7 +296,11 @@ class Tools_keypoints_class {
 
         for (var i = 0; i < imgData.length; i += 4) {
             if (imgData[i + 3] == 0) continue; //transparent
-            grey = Math.round(0.2126 * imgData[i] + 0.7152 * imgData[i + 1] + 0.0722 * imgData[i + 2]);
+            grey = Math.round(
+                0.2126 * imgData[i] +
+                    0.7152 * imgData[i + 1] +
+                    0.0722 * imgData[i + 2],
+            );
             imgData[i] = grey;
             imgData[i + 1] = grey;
             imgData[i + 2] = grey;

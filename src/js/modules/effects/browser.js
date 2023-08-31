@@ -16,7 +16,9 @@ class Effects_browser_class extends Base_tools_class {
         var html = '';
 
         if (config.layer.type != 'image') {
-            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            alertify.error(
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
+            );
             return;
         }
 
@@ -59,7 +61,8 @@ class Effects_browser_class extends Base_tools_class {
                         var key = this.dataset.key;
                         for (var i in data) {
                             if (data[i].key == key) {
-                                var function_name = _this.get_function_from_path(key);
+                                var function_name =
+                                    _this.get_function_from_path(key);
                                 _this.POP.hide();
                                 data[i].object[function_name]();
                             }
@@ -81,7 +84,10 @@ class Effects_browser_class extends Base_tools_class {
         canvas.width = this.preview_width;
         canvas.height = this.preview_height;
 
-        ctx.scale(this.preview_width / active_image.width, this.preview_height / active_image.height);
+        ctx.scale(
+            this.preview_width / active_image.width,
+            this.preview_height / active_image.height,
+        );
         ctx.drawImage(active_image, 0, 0);
         ctx.scale(1, 1);
 
@@ -98,7 +104,12 @@ class Effects_browser_class extends Base_tools_class {
         var list = [];
 
         for (var i in this.Base_gui.modules) {
-            if (i.indexOf('effects') == -1 || i.indexOf('abstract') > -1 || i.indexOf('browser') > -1) continue;
+            if (
+                i.indexOf('effects') == -1 ||
+                i.indexOf('abstract') > -1 ||
+                i.indexOf('browser') > -1
+            )
+                continue;
 
             list.push({
                 title: this.get_filter_title(i),

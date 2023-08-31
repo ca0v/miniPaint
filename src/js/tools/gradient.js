@@ -33,7 +33,10 @@ class Gradient_class extends Base_tools_class {
         //register new object - current layer is not ours or params changed
         this.layer = {
             type: this.name,
-            name: this.Helper.ucfirst(name) + ' #' + this.Base_layers.auto_increment,
+            name:
+                this.Helper.ucfirst(name) +
+                ' #' +
+                this.Base_layers.auto_increment,
             params: this.clone(this.getParams()),
             status: 'draft',
             render_function: [this.name, 'render'],
@@ -48,9 +51,11 @@ class Gradient_class extends Base_tools_class {
             },
         };
         app.State.do_action(
-            new app.Actions.Bundle_action('new_gradient_layer', 'New Gradient Layer', [
-                new app.Actions.Insert_layer_action(this.layer),
-            ]),
+            new app.Actions.Bundle_action(
+                'new_gradient_layer',
+                'New Gradient Layer',
+                [new app.Actions.Insert_layer_action(this.layer)],
+            ),
         );
     }
 
@@ -111,9 +116,12 @@ class Gradient_class extends Base_tools_class {
         }
         new_settings.status = null;
 
-        app.State.do_action(new app.Actions.Update_layer_action(config.layer.id, new_settings), {
-            merge_with_history: 'new_gradient_layer',
-        });
+        app.State.do_action(
+            new app.Actions.Update_layer_action(config.layer.id, new_settings),
+            {
+                merge_with_history: 'new_gradient_layer',
+            },
+        );
 
         this.Base_layers.render();
     }
@@ -149,7 +157,15 @@ class Gradient_class extends Base_tools_class {
             grd.addColorStop(0, color1);
             grd.addColorStop(
                 1,
-                'rgba(' + color2_rgb.r + ', ' + color2_rgb.g + ', ' + color2_rgb.b + ', ' + alpha / 255 + ')',
+                'rgba(' +
+                    color2_rgb.r +
+                    ', ' +
+                    color2_rgb.g +
+                    ', ' +
+                    color2_rgb.b +
+                    ', ' +
+                    alpha / 255 +
+                    ')',
             );
             ctx.fillStyle = grd;
             ctx.fill();
@@ -172,7 +188,15 @@ class Gradient_class extends Base_tools_class {
             radgrad.addColorStop(0, color1);
             radgrad.addColorStop(
                 1,
-                'rgba(' + color2_rgb.r + ', ' + color2_rgb.g + ', ' + color2_rgb.b + ', ' + alpha / 255 + ')',
+                'rgba(' +
+                    color2_rgb.r +
+                    ', ' +
+                    color2_rgb.g +
+                    ', ' +
+                    color2_rgb.b +
+                    ', ' +
+                    alpha / 255 +
+                    ')',
             );
             ctx.fillStyle = radgrad;
             ctx.fillRect(0, 0, config.WIDTH, config.HEIGHT);

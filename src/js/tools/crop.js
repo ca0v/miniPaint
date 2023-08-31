@@ -34,7 +34,11 @@ class Crop_class extends Base_tools_class {
             },
         };
         this.mousedown_selection = null;
-        this.Base_selection = new Base_selection_class(ctx, sel_config, this.name);
+        this.Base_selection = new Base_selection_class(
+            ctx,
+            sel_config,
+            this.name,
+        );
     }
 
     load() {
@@ -52,7 +56,8 @@ class Crop_class extends Base_tools_class {
 
     mousedown(e) {
         var mouse = this.get_mouse_info(e);
-        if (this.Base_selection.is_drag == false || mouse.click_valid == false) return;
+        if (this.Base_selection.is_drag == false || mouse.click_valid == false)
+            return;
 
         this.mousedown_selection = JSON.parse(JSON.stringify(this.selection));
 
@@ -85,7 +90,10 @@ class Crop_class extends Base_tools_class {
             var width_new = Math.round(height * ratio);
             var height_new = Math.round(width / ratio);
 
-            if (Math.abs((width * 100) / width_new) > Math.abs((height * 100) / height_new)) {
+            if (
+                Math.abs((width * 100) / width_new) >
+                Math.abs((height * 100) / height_new)
+            ) {
                 if ((width * 100) / width_new > 0) height = height_new;
                 else height = -height_new;
             } else {
@@ -176,7 +184,11 @@ class Crop_class extends Base_tools_class {
         params.crop = true;
         this.GUI_tools.show_action_attributes();
 
-        if (selection.width == null || selection.width == 0 || selection.height == 0) {
+        if (
+            selection.width == null ||
+            selection.width == 0 ||
+            selection.height == 0
+        ) {
             alertify.error('Empty selection');
             return;
         }
@@ -194,7 +206,10 @@ class Crop_class extends Base_tools_class {
         }
         if (rotated_name !== false) {
             alertify.error(
-                'Crop on rotated layer is not supported. Convert it to raster to continue.' + '(' + rotated_name + ')',
+                'Crop on rotated layer is not supported. Convert it to raster to continue.' +
+                    '(' +
+                    rotated_name +
+                    ')',
             );
             return;
         }
@@ -229,9 +244,11 @@ class Crop_class extends Base_tools_class {
                 let top = 0;
                 if (y < 0) top = -y;
                 let right = 0;
-                if (x + width > selection.width) right = x + width - selection.width;
+                if (x + width > selection.width)
+                    right = x + width - selection.width;
                 let bottom = 0;
-                if (y + height > selection.height) bottom = y + height - selection.height;
+                if (y + height > selection.height)
+                    bottom = y + height - selection.height;
                 let crop_width = width - left - right;
                 let crop_height = height - top - bottom;
 
@@ -249,7 +266,9 @@ class Crop_class extends Base_tools_class {
                 ctx.translate(-left / width_ratio, -top / height_ratio);
                 canvas.getContext('2d').drawImage(link.link, 0, 0);
                 ctx.translate(0, 0);
-                actions.push(new app.Actions.Update_layer_image_action(canvas, link.id));
+                actions.push(
+                    new app.Actions.Update_layer_image_action(canvas, link.id),
+                );
 
                 //update attributes
                 width = Math.ceil(canvas.width * width_ratio);
@@ -281,7 +300,9 @@ class Crop_class extends Base_tools_class {
             new app.Actions.Prepare_canvas_action('do'),
             new app.Actions.Reset_selection_action(this.selection),
         );
-        await app.State.do_action(new app.Actions.Bundle_action('crop_tool', 'Crop Tool', actions));
+        await app.State.do_action(
+            new app.Actions.Bundle_action('crop_tool', 'Crop Tool', actions),
+        );
     }
 
     on_leave() {

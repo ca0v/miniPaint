@@ -196,19 +196,34 @@ class GUI_colors_class {
     init_components() {
         // Store button references
         this.buttons = {
-            toggleColorSwatches: $('#toggle_color_swatches_section_button', this.el),
-            toggleColorPicker: $('#toggle_color_picker_section_button', this.el),
-            toggleColorChannels: $('#toggle_color_channels_section_button', this.el),
+            toggleColorSwatches: $(
+                '#toggle_color_swatches_section_button',
+                this.el,
+            ),
+            toggleColorPicker: $(
+                '#toggle_color_picker_section_button',
+                this.el,
+            ),
+            toggleColorChannels: $(
+                '#toggle_color_channels_section_button',
+                this.el,
+            ),
         };
 
         // Store UI section references
         this.sections = {
             swatches: $('#color_section_swatches', this.el),
-            swatchesPlaceholder: document.createComment('Placeholder comment for color swatches'),
+            swatchesPlaceholder: document.createComment(
+                'Placeholder comment for color swatches',
+            ),
             picker: $('#color_section_picker', this.el),
-            pickerPlaceholder: document.createComment('Placeholder comment for color picker'),
+            pickerPlaceholder: document.createComment(
+                'Placeholder comment for color picker',
+            ),
             channels: $('#color_section_channels', this.el),
-            channelsPlaceholder: document.createComment('Placeholder comment for color channels'),
+            channelsPlaceholder: document.createComment(
+                'Placeholder comment for color channels',
+            ),
         };
 
         // Store references to all inputs in DOM
@@ -256,27 +271,40 @@ class GUI_colors_class {
         this.buttons.toggleColorSwatches.on('click', () => {
             this.buttons.toggleColorSwatches.attr(
                 'aria-pressed',
-                'true' === this.buttons.toggleColorSwatches.attr('aria-pressed') ? 'false' : 'true',
+                'true' === this.buttons.toggleColorSwatches.attr('aria-pressed')
+                    ? 'false'
+                    : 'true',
             );
-            const isPressed = this.buttons.toggleColorSwatches.attr('aria-pressed') === 'true';
+            const isPressed =
+                this.buttons.toggleColorSwatches.attr('aria-pressed') ===
+                'true';
             if (isPressed) {
                 this.sections.swatchesPlaceholder.parentNode.insertBefore(
                     this.sections.swatches[0],
                     this.sections.swatchesPlaceholder.nextSibling,
                 );
-                this.sections.swatchesPlaceholder.parentNode.removeChild(this.sections.swatchesPlaceholder);
+                this.sections.swatchesPlaceholder.parentNode.removeChild(
+                    this.sections.swatchesPlaceholder,
+                );
             } else {
                 this.sections.swatches[0].parentNode.insertBefore(
                     this.sections.swatchesPlaceholder,
                     this.sections.swatches[0].nextSibling,
                 );
-                this.sections.swatches[0].parentNode.removeChild(this.sections.swatches[0]);
+                this.sections.swatches[0].parentNode.removeChild(
+                    this.sections.swatches[0],
+                );
             }
             Helper.setCookie('toggle_color_swatches', isPressed ? 1 : 0);
         });
         // Restore toggle preference, default to hidden for swatches
-        const saved_toggle_color_swatches = Helper.getCookie('toggle_color_swatches');
-        if (saved_toggle_color_swatches === 0 || saved_toggle_color_swatches == null) {
+        const saved_toggle_color_swatches = Helper.getCookie(
+            'toggle_color_swatches',
+        );
+        if (
+            saved_toggle_color_swatches === 0 ||
+            saved_toggle_color_swatches == null
+        ) {
             this.buttons.toggleColorSwatches.trigger('click');
         }
 
@@ -284,21 +312,28 @@ class GUI_colors_class {
         this.buttons.toggleColorPicker.on('click', () => {
             this.buttons.toggleColorPicker.attr(
                 'aria-pressed',
-                'true' === this.buttons.toggleColorPicker.attr('aria-pressed') ? 'false' : 'true',
+                'true' === this.buttons.toggleColorPicker.attr('aria-pressed')
+                    ? 'false'
+                    : 'true',
             );
-            const isPressed = this.buttons.toggleColorPicker.attr('aria-pressed') === 'true';
+            const isPressed =
+                this.buttons.toggleColorPicker.attr('aria-pressed') === 'true';
             if (isPressed) {
                 this.sections.pickerPlaceholder.parentNode.insertBefore(
                     this.sections.picker[0],
                     this.sections.pickerPlaceholder.nextSibling,
                 );
-                this.sections.pickerPlaceholder.parentNode.removeChild(this.sections.pickerPlaceholder);
+                this.sections.pickerPlaceholder.parentNode.removeChild(
+                    this.sections.pickerPlaceholder,
+                );
             } else {
                 this.sections.picker[0].parentNode.insertBefore(
                     this.sections.pickerPlaceholder,
                     this.sections.picker[0].nextSibling,
                 );
-                this.sections.picker[0].parentNode.removeChild(this.sections.picker[0]);
+                this.sections.picker[0].parentNode.removeChild(
+                    this.sections.picker[0],
+                );
             }
             Helper.setCookie('toggle_color_picker', isPressed ? 1 : 0);
         });
@@ -307,7 +342,9 @@ class GUI_colors_class {
         });
 
         // Restore toggle preference, default to visible for picker
-        const saved_toggle_color_picker = Helper.getCookie('toggle_color_picker');
+        const saved_toggle_color_picker = Helper.getCookie(
+            'toggle_color_picker',
+        );
         if (saved_toggle_color_picker === 0) {
             this.buttons.toggleColorPicker.trigger('click');
         }
@@ -316,27 +353,40 @@ class GUI_colors_class {
         this.buttons.toggleColorChannels.on('click', () => {
             this.buttons.toggleColorChannels.attr(
                 'aria-pressed',
-                'true' === this.buttons.toggleColorChannels.attr('aria-pressed') ? 'false' : 'true',
+                'true' === this.buttons.toggleColorChannels.attr('aria-pressed')
+                    ? 'false'
+                    : 'true',
             );
-            const isPressed = this.buttons.toggleColorChannels.attr('aria-pressed') === 'true';
+            const isPressed =
+                this.buttons.toggleColorChannels.attr('aria-pressed') ===
+                'true';
             if (isPressed) {
                 this.sections.channelsPlaceholder.parentNode.insertBefore(
                     this.sections.channels[0],
                     this.sections.channelsPlaceholder.nextSibling,
                 );
-                this.sections.channelsPlaceholder.parentNode.removeChild(this.sections.channelsPlaceholder);
+                this.sections.channelsPlaceholder.parentNode.removeChild(
+                    this.sections.channelsPlaceholder,
+                );
             } else {
                 this.sections.channels[0].parentNode.insertBefore(
                     this.sections.channelsPlaceholder,
                     this.sections.channels[0].nextSibling,
                 );
-                this.sections.channels[0].parentNode.removeChild(this.sections.channels[0]);
+                this.sections.channels[0].parentNode.removeChild(
+                    this.sections.channels[0],
+                );
             }
             Helper.setCookie('toggle_color_channels', isPressed ? 1 : 0);
         });
         // Restore toggle preference, default to hidden for swatches
-        const saved_toggle_color_channels = Helper.getCookie('toggle_color_channels');
-        if (saved_toggle_color_channels === 0 || saved_toggle_color_channels == null) {
+        const saved_toggle_color_channels = Helper.getCookie(
+            'toggle_color_channels',
+        );
+        if (
+            saved_toggle_color_channels === 0 ||
+            saved_toggle_color_channels == null
+        ) {
             this.buttons.toggleColorChannels.trigger('click');
         }
 
@@ -354,12 +404,16 @@ class GUI_colors_class {
                 });
             });
         if (this.uiType === 'dialog') {
-            this.inputs.swatches.uiSwatches('set_all_hex', config.swatches.default);
+            this.inputs.swatches.uiSwatches(
+                'set_all_hex',
+                config.swatches.default,
+            );
         }
 
         // Initialize color picker gradient
         this.inputs.pickerGradient.uiColorPickerGradient().on('input', () => {
-            const hsv = this.inputs.pickerGradient.uiColorPickerGradient('get_hsv');
+            const hsv =
+                this.inputs.pickerGradient.uiColorPickerGradient('get_hsv');
             this.set_color({
                 h: hsv.h * 360,
                 s: hsv.s * 100,
@@ -375,19 +429,28 @@ class GUI_colors_class {
                 if (value !== trimmedValue) {
                     this.inputs.hex.val(trimmedValue);
                 }
-                this.inputs.hex[0].setCustomValidity(/^\#[0-9A-F]{6}$/gi.test(trimmedValue) ? '' : 'Invalid Hex Code');
+                this.inputs.hex[0].setCustomValidity(
+                    /^\#[0-9A-F]{6}$/gi.test(trimmedValue)
+                        ? ''
+                        : 'Invalid Hex Code',
+                );
                 this.set_color({ hex: this.inputs.hex.val() });
             })
             .on('blur', () => {
                 const value = this.inputs.hex.val();
                 if (!/^\#[0-9A-F]{6}$/gi.test(value)) {
-                    this.inputs.hex.val(this.uiType === 'dialog' ? this.COLOR : config.COLOR);
+                    this.inputs.hex.val(
+                        this.uiType === 'dialog' ? this.COLOR : config.COLOR,
+                    );
                     this.inputs.hex[0].setCustomValidity('');
                 }
             });
 
         // Initialize the color sliders
-        const sliderInputs = [...Object.entries(this.inputs.rgb), ...Object.entries(this.inputs.hsl)];
+        const sliderInputs = [
+            ...Object.entries(this.inputs.rgb),
+            ...Object.entries(this.inputs.hsl),
+        ];
         for (const [key, input] of sliderInputs) {
             input.range &&
                 input.range.uiRange().on('input', () => {
@@ -428,29 +491,61 @@ class GUI_colors_class {
         }
         // Set new color by rgb
         else if ('r' in definition || 'b' in definition || 'g' in definition) {
-            const previousRgb = Helper.hexToRgb(this.uiType === 'dialog' ? this.COLOR : config.COLOR);
+            const previousRgb = Helper.hexToRgb(
+                this.uiType === 'dialog' ? this.COLOR : config.COLOR,
+            );
             newColor = Helper.rgbToHex(
-                'r' in definition ? Math.min(255, Math.max(0, parseInt(definition.r, 10) || 0)) : previousRgb.r,
-                'g' in definition ? Math.min(255, Math.max(0, parseInt(definition.g, 10) || 0)) : previousRgb.g,
-                'b' in definition ? Math.min(255, Math.max(0, parseInt(definition.b, 10) || 0)) : previousRgb.b,
+                'r' in definition
+                    ? Math.min(
+                          255,
+                          Math.max(0, parseInt(definition.r, 10) || 0),
+                      )
+                    : previousRgb.r,
+                'g' in definition
+                    ? Math.min(
+                          255,
+                          Math.max(0, parseInt(definition.g, 10) || 0),
+                      )
+                    : previousRgb.g,
+                'b' in definition
+                    ? Math.min(
+                          255,
+                          Math.max(0, parseInt(definition.b, 10) || 0),
+                      )
+                    : previousRgb.b,
             );
         }
         // Set new color by hsv
         else if ('v' in definition) {
-            const previousRgb = Helper.hexToRgb(this.uiType === 'dialog' ? this.COLOR : config.COLOR);
-            const previousHsv = Helper.rgbToHsv(previousRgb.r, previousRgb.g, previousRgb.b);
+            const previousRgb = Helper.hexToRgb(
+                this.uiType === 'dialog' ? this.COLOR : config.COLOR,
+            );
+            const previousHsv = Helper.rgbToHsv(
+                previousRgb.r,
+                previousRgb.g,
+                previousRgb.b,
+            );
             hsv = {
                 h:
                     'h' in definition
-                        ? Math.min(360, Math.max(0, parseInt(definition.h, 10) || 0)) / 360
+                        ? Math.min(
+                              360,
+                              Math.max(0, parseInt(definition.h, 10) || 0),
+                          ) / 360
                         : previousHsv.h,
                 s:
                     's' in definition
-                        ? Math.min(100, Math.max(0, parseInt(definition.s, 10) || 0)) / 100
+                        ? Math.min(
+                              100,
+                              Math.max(0, parseInt(definition.s, 10) || 0),
+                          ) / 100
                         : previousHsv.s,
                 v:
                     'v' in definition
-                        ? Math.min(100, Math.max(0, parseInt(definition.v, 10) || 0)) / 100
+                        ? Math.min(
+                              100,
+                              Math.max(0, parseInt(definition.v, 10) || 0),
+                          ) / 100
                         : previousHsv.v,
             };
             newColor = Helper.hsvToHex(hsv.h, hsv.s, hsv.v);
@@ -460,22 +555,49 @@ class GUI_colors_class {
             hsl = {
                 h:
                     ('h' in definition
-                        ? Math.min(360, Math.max(0, parseInt(definition.h, 10) || 0))
-                        : parseInt(this.inputs.hsl.h.number.uiNumberInput('get_value'), 10)) / 360,
+                        ? Math.min(
+                              360,
+                              Math.max(0, parseInt(definition.h, 10) || 0),
+                          )
+                        : parseInt(
+                              this.inputs.hsl.h.number.uiNumberInput(
+                                  'get_value',
+                              ),
+                              10,
+                          )) / 360,
                 s:
                     ('s' in definition
-                        ? Math.min(100, Math.max(0, parseInt(definition.s, 10) || 0))
-                        : parseInt(this.inputs.hsl.s.number.uiNumberInput('get_value'), 10)) / 100,
+                        ? Math.min(
+                              100,
+                              Math.max(0, parseInt(definition.s, 10) || 0),
+                          )
+                        : parseInt(
+                              this.inputs.hsl.s.number.uiNumberInput(
+                                  'get_value',
+                              ),
+                              10,
+                          )) / 100,
                 l:
                     ('l' in definition
-                        ? Math.min(100, Math.max(0, parseInt(definition.l, 10) || 0))
-                        : parseInt(this.inputs.hsl.l.number.uiNumberInput('get_value'), 10)) / 100,
+                        ? Math.min(
+                              100,
+                              Math.max(0, parseInt(definition.l, 10) || 0),
+                          )
+                        : parseInt(
+                              this.inputs.hsl.l.number.uiNumberInput(
+                                  'get_value',
+                              ),
+                              10,
+                          )) / 100,
             };
             newColor = Helper.hslToHex(hsl.h, hsl.s, hsl.l);
         }
         // Set new alpha
         if ('a' in definition) {
-            newAlpha = Math.min(255, Math.max(0, parseInt(Math.ceil(definition.a), 10)));
+            newAlpha = Math.min(
+                255,
+                Math.max(0, parseInt(Math.ceil(definition.a), 10)),
+            );
         }
         // Re-render UI if changes made
         if (newColor != null || newAlpha != null) {
@@ -484,7 +606,10 @@ class GUI_colors_class {
                 this.ALPHA = newAlpha != null ? newAlpha : this.ALPHA;
                 if (this.colorNotSet) {
                     this.colorNotSet = false;
-                    $('#dialog_previous_color_sample', this.el)[0].style.background = this.COLOR;
+                    $(
+                        '#dialog_previous_color_sample',
+                        this.el,
+                    )[0].style.background = this.COLOR;
                 }
             } else {
                 config.COLOR = newColor != null ? newColor : config.COLOR;
@@ -529,7 +654,10 @@ class GUI_colors_class {
         delete rgb.a;
         for (let rgbKey in rgb) {
             this.inputs.rgb[rgbKey].range.uiRange('set_value', rgb[rgbKey]);
-            this.inputs.rgb[rgbKey].number.uiNumberInput('set_value', rgb[rgbKey]);
+            this.inputs.rgb[rgbKey].number.uiNumberInput(
+                'set_value',
+                rgb[rgbKey],
+            );
         }
         this.inputs.rgb.a.range.uiRange('set_value', ALPHA);
         this.inputs.rgb.a.number.uiNumberInput('set_value', ALPHA);
@@ -538,7 +666,9 @@ class GUI_colors_class {
 
         const hsl = options.hsl || Helper.rgbToHsl(rgb.r, rgb.g, rgb.b);
         for (let hslKey in hsl) {
-            const hslValue = Math.round(hsl[hslKey] * (hslKey === 'h' ? 360 : 100));
+            const hslValue = Math.round(
+                hsl[hslKey] * (hslKey === 'h' ? 360 : 100),
+            );
             this.inputs.hsl[hslKey].range.uiRange('set_value', hslValue);
             this.inputs.hsl[hslKey].number.uiNumberInput('set_value', hslValue);
         }
@@ -567,15 +697,18 @@ class GUI_colors_class {
             rangeMax[rgbKey] = 255;
             this.inputs.rgb[rgbKey].range.uiRange(
                 'set_background',
-                `linear-gradient(to right, ${Helper.rgbToHex(rangeMin.r, rangeMin.g, rangeMin.b)}, ${Helper.rgbToHex(
-                    rangeMax.r,
-                    rangeMax.g,
-                    rangeMax.b,
-                )})`,
+                `linear-gradient(to right, ${Helper.rgbToHex(
+                    rangeMin.r,
+                    rangeMin.g,
+                    rangeMin.b,
+                )}, ${Helper.rgbToHex(rangeMax.r, rangeMax.g, rangeMax.b)})`,
             );
         }
         // A
-        this.inputs.rgb.a.range.uiRange('set_background', `linear-gradient(to right, transparent, ${COLOR})`);
+        this.inputs.rgb.a.range.uiRange(
+            'set_background',
+            `linear-gradient(to right, transparent, ${COLOR})`,
+        );
         // HSV
         const hsv = options.hsv || Helper.rgbToHsv(rgb.r, rgb.g, rgb.b);
         this.inputs.pickerGradient.uiColorPickerGradient('set_hsv', hsv);
@@ -614,11 +747,11 @@ class GUI_colors_class {
         rangeMax.s = 1;
         this.inputs.hsl.s.range.uiRange(
             'set_background',
-            `linear-gradient(to right, ${Helper.hslToHex(rangeMin.h, rangeMin.s, rangeMin.l)}, ${Helper.hslToHex(
-                rangeMax.h,
-                rangeMax.s,
-                rangeMax.l,
-            )})`,
+            `linear-gradient(to right, ${Helper.hslToHex(
+                rangeMin.h,
+                rangeMin.s,
+                rangeMin.l,
+            )}, ${Helper.hslToHex(rangeMax.h, rangeMax.s, rangeMax.l)})`,
         );
         // HSL - L
         let rangeMid = JSON.parse(JSON.stringify(hsl));
@@ -634,7 +767,8 @@ class GUI_colors_class {
 
         // Store swatch values
         if (this.uiType === 'sidebar') {
-            config.swatches.default = this.inputs.swatches.uiSwatches('get_all_hex');
+            config.swatches.default =
+                this.inputs.swatches.uiSwatches('get_all_hex');
         }
     }
 }

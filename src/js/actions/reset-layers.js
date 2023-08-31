@@ -20,7 +20,10 @@ export class Reset_layers_action extends Base_action {
 
         this.delete_actions = [];
         for (let i = config.layers.length - 1; i >= 0; i--) {
-            const delete_action = new app.Actions.Delete_layer_action(config.layers[i].id, true);
+            const delete_action = new app.Actions.Delete_layer_action(
+                config.layers[i].id,
+                true,
+            );
             await delete_action.do();
             this.delete_actions.push(delete_action);
         }

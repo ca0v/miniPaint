@@ -15,7 +15,10 @@ class Effects_hueRotate_class extends Effects_common_class {
             return;
         }
 
-        var filter = this.Base_layers.find_filter_by_id(filter_id, 'hue-rotate');
+        var filter = this.Base_layers.find_filter_by_id(
+            filter_id,
+            'hue-rotate',
+        );
 
         var params = [
             {

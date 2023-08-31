@@ -55,7 +55,9 @@ class Tools_sprites_class {
             var layer = config.layers[i];
             if (layer.visible == false) continue;
 
-            trim_details_array[layer.id] = this.Image_trim.get_trim_info(layer.id);
+            trim_details_array[layer.id] = this.Image_trim.get_trim_info(
+                layer.id,
+            );
         }
 
         //move layers
@@ -114,7 +116,9 @@ class Tools_sprites_class {
             new app.Actions.Prepare_canvas_action('do'),
         );
 
-        app.State.do_action(new app.Actions.Bundle_action('sprites', 'Sprites', actions));
+        app.State.do_action(
+            new app.Actions.Bundle_action('sprites', 'Sprites', actions),
+        );
     }
 }
 

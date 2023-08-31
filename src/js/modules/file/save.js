@@ -128,7 +128,12 @@ class File_save_class {
             save_types.push(i + ' - ' + file_types[i]);
         }
 
-        var save_layers_types = ['All', 'Selected', 'Separated', 'Separated (original types)'];
+        var save_layers_types = [
+            'All',
+            'Selected',
+            'Separated',
+            'Separated (original types)',
+        ];
         var resolution = this.Tools_settings.get_setting('resolution');
 
         var settings = {
@@ -165,7 +170,10 @@ class File_save_class {
                 _this.save_dialog_onchange(true);
             },
             on_finish: function (params) {
-                if (params.layers == 'Separated' || params.layers == 'Separated (original types)') {
+                if (
+                    params.layers == 'Separated' ||
+                    params.layers == 'Separated (original types)'
+                ) {
                     var active_layer = config.layer.id;
                     var original_layer_type = params.layers;
 
@@ -176,13 +184,18 @@ class File_save_class {
                         if (config.layers[i].visible == false) continue;
 
                         //detect type
-                        if (original_layer_type == 'Separated (original types)') {
+                        if (
+                            original_layer_type == 'Separated (original types)'
+                        ) {
                             //detect type from file name
-                            params.type = _this.SAVE_TYPES[_this.default_extension];
+                            params.type =
+                                _this.SAVE_TYPES[_this.default_extension];
                             for (var j in _this.SAVE_TYPES) {
                                 if (
-                                    _this.Helper.strpos(config.layers[i].name.toLowerCase(), '.' + j.toLowerCase()) !==
-                                    false
+                                    _this.Helper.strpos(
+                                        config.layers[i].name.toLowerCase(),
+                                        '.' + j.toLowerCase(),
+                                    ) !== false
                                 ) {
                                     params.type = j;
                                     break;
@@ -190,10 +203,16 @@ class File_save_class {
                             }
                         }
 
-                        new app.Actions.Select_layer_action(config.layers[i].id, true).do();
+                        new app.Actions.Select_layer_action(
+                            config.layers[i].id,
+                            true,
+                        ).do();
                         _this.save_action(params, true);
                     }
-                    new app.Actions.Select_layer_action(active_layer, true).do();
+                    new app.Actions.Select_layer_action(
+                        active_layer,
+                        true,
+                    ).do();
                 } else {
                     _this.save_action(params);
                 }
@@ -214,7 +233,11 @@ class File_save_class {
     save_data_url() {
         var max = 10 * 1000 * 1000;
         if (config.WIDTH * config.WIDTH > 10 * 1000 * 1000) {
-            alertify.error('Size is too big, max ' + this.Helper.number_format(max, 0) + ' pixels.');
+            alertify.error(
+                'Size is too big, max ' +
+                    this.Helper.number_format(max, 0) +
+                    ' pixels.',
+            );
             return;
         }
 
@@ -231,7 +254,11 @@ class File_save_class {
 
         max = 1000 * 1000;
         if (data_url.length > max) {
-            alertify.error('Size is too big, max ' + this.Helper.number_format(max, 0) + ' bytes.');
+            alertify.error(
+                'Size is too big, max ' +
+                    this.Helper.number_format(max, 0) +
+                    ' bytes.',
+            );
             return;
         }
 
@@ -255,8 +282,11 @@ class File_save_class {
             return;
         }
 
-        if (file_size > 1024 * 1024) file_size = this.Helper.number_format(file_size / 1024 / 1024, 2) + ' MB';
-        else if (file_size > 1024) file_size = this.Helper.number_format(file_size / 1024, 2) + ' KB';
+        if (file_size > 1024 * 1024)
+            file_size =
+                this.Helper.number_format(file_size / 1024 / 1024, 2) + ' MB';
+        else if (file_size > 1024)
+            file_size = this.Helper.number_format(file_size / 1024, 2) + ' KB';
         else file_size = file_size + ' B';
         document.getElementById('file_size').innerHTML = file_size;
     }
@@ -271,7 +301,8 @@ class File_save_class {
         var user_response = this.POP.get_params();
 
         var quality = parseInt(user_response.quality);
-        if (quality > 100 || quality < 1 || isNaN(quality) == true) quality = 90;
+        if (quality > 100 || quality < 1 || isNaN(quality) == true)
+            quality = 90;
         quality = quality / 100;
 
         //detect type
@@ -279,21 +310,26 @@ class File_save_class {
         var parts = type.split(' ');
         type = parts[0];
 
-        if (type == 'JPG' || type == 'WEBP') document.getElementById('popup-tr-quality').style.display = '';
+        if (type == 'JPG' || type == 'WEBP')
+            document.getElementById('popup-tr-quality').style.display = '';
         else document.getElementById('popup-tr-quality').style.display = 'none';
 
-        if (type == 'GIF') document.getElementById('popup-tr-delay').style.display = '';
+        if (type == 'GIF')
+            document.getElementById('popup-tr-delay').style.display = '';
         else document.getElementById('popup-tr-delay').style.display = 'none';
 
-        if (type == 'JSON' || type == 'GIF') document.getElementById('popup-tr-layers').style.display = 'none';
+        if (type == 'JSON' || type == 'GIF')
+            document.getElementById('popup-tr-layers').style.display = 'none';
         else document.getElementById('popup-tr-layers').style.display = '';
 
-        if (user_response.layers == 'Separated') document.getElementById('pop_data_name').disabled = true;
+        if (user_response.layers == 'Separated')
+            document.getElementById('pop_data_name').disabled = true;
         else document.getElementById('pop_data_name').disabled = false;
 
         if (user_response.layers == 'Separated (original types)') {
             if (document.getElementById('popup-group-type')) {
-                document.getElementById('popup-group-type').style.opacity = '0.5';
+                document.getElementById('popup-group-type').style.opacity =
+                    '0.5';
             }
             document.getElementById('popup-tr-quality').style.display = '';
         } else {
@@ -326,13 +362,22 @@ class File_save_class {
             this.disable_canvas_smooth(ctx);
 
             //ask data
-            if (user_response.layers == 'Selected' && type != 'GIF' && config.layer.type != null) {
+            if (
+                user_response.layers == 'Selected' &&
+                type != 'GIF' &&
+                config.layer.type != null
+            ) {
                 //only current layer !!!
                 var layer = config.layer;
 
                 var initial_x = null;
                 var initial_y = null;
-                if (layer.x != null && layer.y != null && layer.width != null && layer.height != null) {
+                if (
+                    layer.x != null &&
+                    layer.y != null &&
+                    layer.width != null &&
+                    layer.height != null
+                ) {
                     //change position to top left corner
                     initial_x = layer.x;
                     initial_y = layer.y;
@@ -382,7 +427,9 @@ class File_save_class {
             var data_header = 'image/webp';
 
             //check support
-            if (this.check_format_support(canvas, data_header, false) == false) {
+            if (
+                this.check_format_support(canvas, data_header, false) == false
+            ) {
                 this.update_file_size('-');
                 return;
             }
@@ -399,7 +446,9 @@ class File_save_class {
             var data_header = 'image/avif';
 
             //check support
-            if (this.check_format_support(canvas, data_header, false) == false) {
+            if (
+                this.check_format_support(canvas, data_header, false) == false
+            ) {
                 this.update_file_size('-');
                 return;
             }
@@ -416,7 +465,9 @@ class File_save_class {
             var data_header = 'image/bmp';
 
             //check support
-            if (this.check_format_support(canvas, data_header, false) == false) {
+            if (
+                this.check_format_support(canvas, data_header, false) == false
+            ) {
                 this.update_file_size('-');
                 return;
             }
@@ -460,7 +511,8 @@ class File_save_class {
         }
 
         var quality = parseInt(user_response.quality);
-        if (quality > 100 || quality < 1 || isNaN(quality) == true) quality = 90;
+        if (quality > 100 || quality < 1 || isNaN(quality) == true)
+            quality = 90;
         quality = quality / 100;
 
         var delay = parseInt(user_response.delay);
@@ -479,7 +531,10 @@ class File_save_class {
         }
 
         //save default type as cookie
-        if (this.Helper.getCookie('save_default') == '' || this.Helper.getCookie('save_default') != type) {
+        if (
+            this.Helper.getCookie('save_default') == '' ||
+            this.Helper.getCookie('save_default') != type
+        ) {
             this.Helper.setCookie('save_default', type);
         }
 
@@ -512,7 +567,8 @@ class File_save_class {
 
         if (type == 'PNG') {
             //png - default format
-            if (this.Helper.strpos(fname, '.png') == false) fname = fname + '.png';
+            if (this.Helper.strpos(fname, '.png') == false)
+                fname = fname + '.png';
 
             //simple save example
             //var link = document.createElement('a');
@@ -526,7 +582,8 @@ class File_save_class {
             });
         } else if (type == 'JPG') {
             //jpg
-            if (this.Helper.strpos(fname, '.jpg') == false) fname = fname + '.jpg';
+            if (this.Helper.strpos(fname, '.jpg') == false)
+                fname = fname + '.jpg';
 
             canvas.toBlob(
                 function (blob) {
@@ -537,11 +594,13 @@ class File_save_class {
             );
         } else if (type == 'WEBP') {
             //WEBP
-            if (this.Helper.strpos(fname, '.webp') == false) fname = fname + '.webp';
+            if (this.Helper.strpos(fname, '.webp') == false)
+                fname = fname + '.webp';
             var data_header = 'image/webp';
 
             //check support
-            if (this.check_format_support(canvas, data_header) == false) return false;
+            if (this.check_format_support(canvas, data_header) == false)
+                return false;
 
             canvas.toBlob(
                 function (blob) {
@@ -552,11 +611,13 @@ class File_save_class {
             );
         } else if (type == 'AVIF') {
             //AVIF
-            if (this.Helper.strpos(fname, '.avif') == false) fname = fname + '.avif';
+            if (this.Helper.strpos(fname, '.avif') == false)
+                fname = fname + '.avif';
             var data_header = 'image/avif';
 
             //check support
-            if (this.check_format_support(canvas, data_header) == false) return false;
+            if (this.check_format_support(canvas, data_header) == false)
+                return false;
 
             canvas.toBlob(
                 function (blob) {
@@ -567,18 +628,21 @@ class File_save_class {
             );
         } else if (type == 'BMP') {
             //bmp
-            if (this.Helper.strpos(fname, '.bmp') == false) fname = fname + '.bmp';
+            if (this.Helper.strpos(fname, '.bmp') == false)
+                fname = fname + '.bmp';
             var data_header = 'image/bmp';
 
             //check support
-            if (this.check_format_support(canvas, data_header) == false) return false;
+            if (this.check_format_support(canvas, data_header) == false)
+                return false;
 
             canvas.toBlob(function (blob) {
                 filesaver.saveAs(blob, fname);
             }, data_header);
         } else if (type == 'TIFF') {
             //tiff
-            if (this.Helper.strpos(fname, '.tiff') == false) fname = fname + '.tiff';
+            if (this.Helper.strpos(fname, '.tiff') == false)
+                fname = fname + '.tiff';
             var data_header = 'image/tiff';
 
             CanvasToTIFF.toBlob(
@@ -590,7 +654,8 @@ class File_save_class {
             );
         } else if (type == 'JSON') {
             //json - full data with layers
-            if (this.Helper.strpos(fname, '.json') == false) fname = fname + '.json';
+            if (this.Helper.strpos(fname, '.json') == false)
+                fname = fname + '.json';
 
             var data_json = this.export_as_json();
 
@@ -622,7 +687,11 @@ class File_save_class {
                 if (config.TRANSPARENCY == false) {
                     this.fillCanvasBackground(ctx, '#ffffff');
                 }
-                this.Base_layers.convert_layers_to_canvas(ctx, config.layers[i].id, false);
+                this.Base_layers.convert_layers_to_canvas(
+                    ctx,
+                    config.layers[i].id,
+                    false,
+                );
 
                 gif.addFrame(ctx, { copy: true, delay: delay });
             }
@@ -633,7 +702,12 @@ class File_save_class {
         }
     }
 
-    fillCanvasBackground(ctx, color, width = config.WIDTH, height = config.HEIGHT) {
+    fillCanvasBackground(
+        ctx,
+        color,
+        width = config.WIDTH,
+        height = config.HEIGHT,
+    ) {
         ctx.beginPath();
         ctx.rect(0, 0, width, height);
         ctx.fillStyle = color;

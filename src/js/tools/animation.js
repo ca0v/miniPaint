@@ -16,7 +16,8 @@ class Animation_class extends Base_tools_class {
         this.name = 'animation';
         this.intervalID = null;
         this.index = 0;
-        this.toggle_layer_visibility_action = new app.Actions.Toggle_layer_visibility_action();
+        this.toggle_layer_visibility_action =
+            new app.Actions.Toggle_layer_visibility_action();
 
         this.disable_selection(ctx);
     }
@@ -43,7 +44,11 @@ class Animation_class extends Base_tools_class {
                 return null;
             },
         };
-        this.Base_selection = new Base_selection_class(ctx, sel_config, this.name);
+        this.Base_selection = new Base_selection_class(
+            ctx,
+            sel_config,
+            this.name,
+        );
     }
 
     on_params_update(data) {
@@ -90,7 +95,8 @@ class Animation_class extends Base_tools_class {
 
         //show 1
         if (config.layers[this.index] != undefined) {
-            this.toggle_layer_visibility_action.layer_id = config.layers[this.index].id;
+            this.toggle_layer_visibility_action.layer_id =
+                config.layers[this.index].id;
             this.toggle_layer_visibility_action.do();
         }
 

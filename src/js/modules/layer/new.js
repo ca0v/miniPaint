@@ -25,7 +25,11 @@ class Layer_new_class {
                 var code = event.keyCode;
                 if (this.Helper.is_input(event.target)) return;
 
-                if (code == 78 && event.ctrlKey != true && event.metaKey != true) {
+                if (
+                    code == 78 &&
+                    event.ctrlKey != true &&
+                    event.metaKey != true
+                ) {
                     //N
                     this.new();
                 }

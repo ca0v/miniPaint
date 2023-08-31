@@ -12,7 +12,9 @@ class Effects_aden_class {
 
     aden() {
         if (config.layer.type != 'image') {
-            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            alertify.error(
+                'This layer must contain an image. Please convert it to raster to apply this tool.',
+            );
             return;
         }
 
@@ -26,7 +28,9 @@ class Effects_aden_class {
         ctx.drawImage(data, 0, 0);
 
         //save
-        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
+        return app.State.do_action(
+            new app.Actions.Update_layer_image_action(canvas),
+        );
     }
 
     change(canvas, width, height) {
@@ -47,7 +51,8 @@ class Effects_aden_class {
         ctx2.globalCompositeOperation = 'source-over';
 
         //apply more effects
-        ctx2.filter = 'hue-rotate(-20deg) contrast(0.9) saturate(0.85) brightness(1.2)';
+        ctx2.filter =
+            'hue-rotate(-20deg) contrast(0.9) saturate(0.85) brightness(1.2)';
         ctx2.drawImage(canvas2, 0, 0);
         ctx2.filter = 'none';
 
@@ -59,7 +64,11 @@ class Effects_aden_class {
         var ctx = canvas.getContext('2d');
 
         //modify
-        var data = this.change(canvas_thumb, canvas_thumb.width, canvas_thumb.height);
+        var data = this.change(
+            canvas_thumb,
+            canvas_thumb.width,
+            canvas_thumb.height,
+        );
 
         //draw
         ctx.drawImage(data, 0, 0);

@@ -44,7 +44,15 @@ class Tear_class extends Base_tools_class {
 
         ctx.save();
         ctx.translate(x + width / 2, y + height / 2);
-        this.draw_shape(ctx, -width / 2, -height / 2, width, height, true, true);
+        this.draw_shape(
+            ctx,
+            -width / 2,
+            -height / 2,
+            width,
+            height,
+            true,
+            true,
+        );
         ctx.restore();
     }
 
@@ -110,7 +118,12 @@ class Tear_class extends Base_tools_class {
             left + width * curve_start_x,
             top + height * curve_height,
         );
-        ctx.quadraticCurveTo(left + width * 0.5, top + (height * 13) / 100, left + width * 0.5, top);
+        ctx.quadraticCurveTo(
+            left + width * 0.5,
+            top + (height * 13) / 100,
+            left + width * 0.5,
+            top,
+        );
         ctx.closePath();
         if (fill) {
             ctx.fill();

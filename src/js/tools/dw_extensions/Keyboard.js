@@ -8,7 +8,10 @@ export const Keyboard = Object.freeze({
     MovePointUpLeft: ['Control+ArrowLeft+ArrowUp', 'ArrowLeft+ArrowUp'],
     MovePointUpRight: ['Control+ArrowRight+ArrowUp', 'ArrowRight+ArrowUp'],
     MovePointDownLeft: ['Control+ArrowLeft+ArrowDown', 'ArrowLeft+ArrowDown'],
-    MovePointDownRight: ['Control+ArrowRight+ArrowDown', 'ArrowRight+ArrowDown'],
+    MovePointDownRight: [
+        'Control+ArrowRight+ArrowDown',
+        'ArrowRight+ArrowDown',
+    ],
     ClonePoint: [' '],
     CenterAt: 'c',
     Delete: 'Delete',

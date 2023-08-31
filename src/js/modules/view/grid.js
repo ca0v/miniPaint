@@ -25,7 +25,11 @@ class View_grid_class {
                 var code = event.keyCode;
                 if (this.Helper.is_input(event.target)) return;
 
-                if (code == 71 && event.ctrlKey != true && event.metaKey != true) {
+                if (
+                    code == 71 &&
+                    event.ctrlKey != true &&
+                    event.metaKey != true
+                ) {
                     //G - grid
                     this.grid({ visible: !this.GUI.grid });
                     event.preventDefault();
