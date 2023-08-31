@@ -632,8 +632,12 @@ export default class DwLasso_class extends Base_tools_class {
         const currentPoint = this.mousePoint(this.state.mouseEvent);
         if (!currentPoint) return false;
         const priorHover = JSON.stringify(this.hover || null);
-        const hover = (this.hover = this.computeHover(this.data, currentPoint));
-        if (priorHover != JSON.stringify(this.hover)) {
+        const hover = this.computeHover(this.data, currentPoint);
+        if (hover) {
+          // track the last point we were hovering over
+          this.hover = hover;
+        }
+        if (priorHover != JSON.stringify(hover)) {
           this.Base_layers.render();
         }
         return !!hover;
@@ -937,7 +941,7 @@ export default class DwLasso_class extends Base_tools_class {
       .do(this.state.actions.noDataPoints);
 
     this.state
-      .about('delete the hover point while editing (impossible?)')
+      .about('delete the hover point after dragging')
       .from(Status.editing)
       .when(Keyboard.Delete)
       .do(this.state.actions.deleteHoverPoint);
