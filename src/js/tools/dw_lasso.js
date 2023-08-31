@@ -1,7 +1,11 @@
 /**
  * ---------------------------------------------------------------------
  * Magic Crop Tool
- * ---------------------------------------------------------------------
+ * -----------------      const { x, y, width, height, width_original, height_original } = link;
+      const width_ratio = (width / width_original);
+      const height_ratio = (height / height_original);
+
+----------------------------------------------------
  * status values: ready, drawing, placing, editing, hover, dragging, done
  * ready - tool has been initialized and is listening for 1st click
  * drawing - tool has placed a point
@@ -330,18 +334,31 @@ export default class DwLasso_class extends Base_tools_class {
     const actions = [];
 
     // for each image layer, fill the selection with the background color
-    imageLayers.forEach((link) => {
-      const { x, y, width, height, width_original, height_original } = link;
+    imageLayers.forEach((imageLayer) => {
+      const { x, y, width, height, width_original, height_original, link } = imageLayer;
+      console.log(
+        JSON.stringify({
+          x,
+          y,
+          width,
+          height,
+          width_original,
+          height_original,
+          link_width: link.width,
+          link_height: link.height,
+        }),
+      );
+
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = link.width;
+      canvas.height = link.height;
 
-      // copy the original image to the canvas
-      ctx.translate(x, y);
-      ctx.drawImage(link.link, 0, 0);
+      // make a copy of the link canvas
+      ctx.drawImage(link, 0, 0);
 
       // draw the clipping path
+      ctx.translate(-x, -y);
       ctx.beginPath();
       renderAsPath(ctx, this.data);
       ctx.closePath();
@@ -356,8 +373,8 @@ export default class DwLasso_class extends Base_tools_class {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
 
-      // update the link with the new image
-      actions.push(new app.Actions.Update_layer_image_action(canvas, link.id));
+      // replace the layer image with the new canvas
+      actions.push(new app.Actions.Update_layer_image_action(canvas, imageLayer.id));
     });
 
     // clear the data and reset the state
