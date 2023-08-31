@@ -336,24 +336,8 @@ export default class DwLasso_class extends Base_tools_class {
     // for each image layer, fill the selection with the background color
     imageLayers.forEach((imageLayer) => {
       const { x, y, width, height, width_original, height_original, link } = imageLayer;
-
       const sx = width / width_original;
       const sy = height / height_original;
-
-      console.log(
-        JSON.stringify({
-          x,
-          y,
-          width,
-          height,
-          sx,
-          sy,
-          width_original,
-          height_original,
-          link_width: link.width,
-          link_height: link.height,
-        }),
-      );
 
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -363,9 +347,11 @@ export default class DwLasso_class extends Base_tools_class {
       // make a copy of the link canvas
       ctx.drawImage(link, 0, 0);
 
-      // draw the clipping path
+      // the clipping path needs to be transformed onto the target canvas
       ctx.scale(1 / sx, 1 / sy);
       ctx.translate(-x, -y);
+
+      // draw the clipping path
       ctx.beginPath();
       renderAsPath(ctx, this.data);
       ctx.closePath();
@@ -409,18 +395,45 @@ export default class DwLasso_class extends Base_tools_class {
       return;
     }
 
-    imageLayers.forEach((link) => {
+    imageLayers.forEach((imageLayer) => {
+      const { x, y, width, height, width_original, height_original, link } = imageLayer;
+
+      // the source image may have been scaled
+      const sx = width / width_original;
+      const sy = height / height_original;
+
+      // the crop area cannot be any bigger then the image being cropped
+      const cropSx = cropWidth / width;
+      const cropSy = cropHeight / height;
+
+      console.log(
+        JSON.stringify({
+          x,
+          y,
+          width,
+          height,
+          width_original,
+          height_original,
+          sx,
+          sy,
+          cropSx,
+          cropSy,
+          linkWidth: link.width,
+          linkHeight: link.height,
+        }),
+      );
+
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      canvas.width = cropWidth;
-      canvas.height = cropHeight;
+      canvas.width = link.width;
+      canvas.height = link.height;
 
-      const { x, y } = link;
+      // make a copy of the link canvas
+      ctx.drawImage(link, 0, 0);
 
-      //cut required part
-      ctx.translate(-cropLeft - x, -cropTop);
-      ctx.drawImage(link.link, 0, 0);
-      ctx.translate(0, 0);
+      // the clipping path needs to be transformed onto the target canvas
+      ctx.scale(1 / sx, 1 / sy);
+      ctx.translate(-x, -y);
 
       // crop everything outside the polygon
       ctx.globalCompositeOperation = 'destination-in';
@@ -439,21 +452,10 @@ export default class DwLasso_class extends Base_tools_class {
         background.fillRect(0, 0, canvas.width, canvas.height);
         // now copy the cropped image onto the background
         background.drawImage(canvas, 0, 0);
-        actions.push(new app.Actions.Update_layer_image_action(background.canvas, link.id));
+        actions.push(new app.Actions.Update_layer_image_action(background.canvas, imageLayer.id));
       } else {
-        actions.push(new app.Actions.Update_layer_image_action(canvas, link.id));
+        actions.push(new app.Actions.Update_layer_image_action(canvas, imageLayer.id));
       }
-
-      actions.push(
-        new app.Actions.Update_layer_action(link.id, {
-          x: 0,
-          y: 0,
-          width: cropWidth,
-          height: cropHeight,
-          width_original: cropWidth,
-          height_original: cropWidth,
-        }),
-      );
     });
 
     this.snapshot('before cropping', () => (this.data = []));
