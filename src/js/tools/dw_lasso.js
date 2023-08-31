@@ -16,23 +16,8 @@
  * - Load an image then move it and the crop is the wrong part of the image...need to compensate for translations, etc.
  * -- Similarly, cut only working for images that have been cropped to the top-left corner, not sure where the problem is
  * -- but the crop.js works correctly, so the solution is in there somewhere
- * - FIXED: Draw with touch, then use mouse to hover over a point...it is not highlighted and cannot click-and-drag it
  *
  * ** TODO **
- * - Is there a definitive list of touch gestures?  I came up with these:
- * -- Tap (one finger)
- * -- Tap+Tap (one finger)
- * -- Drag (one finger)
- * -- Flick (one finger)
- * -- Pinch (two fingers coming together)
- * -- Spread (two fingers moving apart)
- * -- Press (one finger held for some time)
- * -- Press+Tap (one finger held then tapped second finger)
- * -- Press+Drag (one finger held then dragged second finger)
- * -- Rotate (two fingers moving in a circle, or second finger moving around a first)
- * -- Shake (one finger moving rapidly back and forth)
- * - StateMachine should not be raising pan and zoom events but instead Press+Drag (for pan) and Pinch/Spread (for zoom)
- * - Pan is a Press+Drag but should be a Drag+Drag
  */
 import app from '../app.js';
 import config from '../config.js';
