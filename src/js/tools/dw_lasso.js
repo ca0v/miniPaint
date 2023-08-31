@@ -35,6 +35,7 @@
  * - Use acceleration when moving points
  * - The 'wheel' event works great, copy that code to zoom about the pinch/spread center
  * - "1" should place a point in the center of the screen
+ * - [Space] should act like a mouse click
  * - Shift+ArrowKeys should move the selected point when "placing"
  * - ArrowKeys should pan when placing
  */
@@ -468,6 +469,15 @@ export default class DwLasso_class extends Base_tools_class {
     return { x: Math.max(0, Math.min(config.WIDTH, mouse.x)), y: Math.max(0, Math.min(config.HEIGHT, mouse.y)) };
   }
 
+  clonePoint() {
+    const lastPoint = this.data.at(-1);
+    if (!lastPoint) return;
+    const newPoint = { x: lastPoint.x, y: lastPoint.y };
+    this.data.push(newPoint);
+    this.hover = { pointIndex: this.data.length - 1 };
+    this.renderData();
+  }
+
   placePointAtClickLocation(mouseEvent) {
     const currentPoint = this.mousePoint(mouseEvent);
     if (!currentPoint) return false;
@@ -601,6 +611,7 @@ export default class DwLasso_class extends Base_tools_class {
         });
       },
 
+      clonePoint: () => this.clonePoint(),
       placePointAtClickLocation: (e) => this.placePointAtClickLocation(e),
       movingLastPointToMouseLocation: () => this.movingLastPointToMouseLocation(),
 
@@ -819,6 +830,12 @@ export default class DwLasso_class extends Base_tools_class {
       .from(Status.drawing)
       .when(['Left+mousedown', 'touchmove', 'touchstart'])
       .do(this.state.actions.placePointAtClickLocation);
+
+    this.state
+      .about('add a point to the polygon')
+      .from(Status.placing)
+      .when(Keyboard.ClonePoint)
+      .do(this.state.actions.clonePoint);
 
     this.state
       .about('zoom in')

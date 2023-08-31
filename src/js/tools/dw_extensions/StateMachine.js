@@ -297,7 +297,7 @@ class ContextOperands {
   do(action) {
     // if action is not a value of events, throw
     if (!Object.values(this.state.actions).includes(action))
-      throw `Action not found in actions: ${Object.keys(this.state.actions).join(', ')}, action: ${action?.toString()}`;
+      throw `Action not found in actions: ${Object.keys(this.state.actions).join(', ')}, about: ${this.context.about}`;
     this.context.do = action;
     return this;
   }
