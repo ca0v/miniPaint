@@ -4,49 +4,49 @@ import config from '../../../config';
 import alertify from './../../../../../node_modules/alertifyjs/build/alertify.min.js';
 
 class Effects_hueRotate_class extends Effects_common_class {
-  constructor() {
-    super();
-    this.Base_layers = new Base_layers_class();
-  }
-
-  hue_rotate(filter_id) {
-    if (config.layer.type == null) {
-      alertify.error('Layer is empty.');
-      return;
+    constructor() {
+        super();
+        this.Base_layers = new Base_layers_class();
     }
 
-    var filter = this.Base_layers.find_filter_by_id(filter_id, 'hue-rotate');
+    hue_rotate(filter_id) {
+        if (config.layer.type == null) {
+            alertify.error('Layer is empty.');
+            return;
+        }
 
-    var params = [{ name: 'value', title: 'Degree:', value: (filter.value ??= 90), range: [0, 360] }];
-    this.show_dialog('hue-rotate', params, filter_id);
-  }
+        var filter = this.Base_layers.find_filter_by_id(filter_id, 'hue-rotate');
 
-  convert_value(value) {
-    return value + 'deg';
-  }
+        var params = [{ name: 'value', title: 'Degree:', value: (filter.value ??= 90), range: [0, 360] }];
+        this.show_dialog('hue-rotate', params, filter_id);
+    }
 
-  demo(canvas_id, canvas_thumb) {
-    var canvas = document.getElementById(canvas_id);
-    var ctx = canvas.getContext('2d');
+    convert_value(value) {
+        return value + 'deg';
+    }
 
-    //draw
-    var size = this.convert_value(90, null, 'preview');
-    ctx.filter = 'hue-rotate(' + size + ')';
-    ctx.drawImage(canvas_thumb, 0, 0);
-    ctx.filter = 'none';
-  }
+    demo(canvas_id, canvas_thumb) {
+        var canvas = document.getElementById(canvas_id);
+        var ctx = canvas.getContext('2d');
 
-  render_pre(ctx, data) {
-    var value = this.convert_value(data.params.value, data.params, 'save');
-    var filter = 'hue-rotate(' + value + ')';
+        //draw
+        var size = this.convert_value(90, null, 'preview');
+        ctx.filter = 'hue-rotate(' + size + ')';
+        ctx.drawImage(canvas_thumb, 0, 0);
+        ctx.filter = 'none';
+    }
 
-    if (ctx.filter == 'none') ctx.filter = filter;
-    else ctx.filter += ' ' + filter;
-  }
+    render_pre(ctx, data) {
+        var value = this.convert_value(data.params.value, data.params, 'save');
+        var filter = 'hue-rotate(' + value + ')';
 
-  render_post(ctx, data) {
-    ctx.filter = 'none';
-  }
+        if (ctx.filter == 'none') ctx.filter = filter;
+        else ctx.filter += ' ' + filter;
+    }
+
+    render_post(ctx, data) {
+        ctx.filter = 'none';
+    }
 }
 
 export default Effects_hueRotate_class;

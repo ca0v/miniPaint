@@ -6,67 +6,67 @@ import ImageFilters from './../../libs/imagefilters.js';
 import alertify from './../../../../node_modules/alertifyjs/build/alertify.min.js';
 
 class Effects_enrich_class {
-  constructor() {
-    this.POP = new Dialog_class();
-    this.Base_layers = new Base_layers_class();
-  }
-
-  enrich() {
-    var _this = this;
-
-    if (config.layer.type != 'image') {
-      alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
-      return;
+    constructor() {
+        this.POP = new Dialog_class();
+        this.Base_layers = new Base_layers_class();
     }
 
-    var settings = {
-      title: 'Enrich',
-      preview: true,
-      effects: true,
-      params: [],
-      on_change: function (params, canvas_preview, w, h) {
-        var img = canvas_preview.getImageData(0, 0, w, h);
-        var data = _this.change(img, params);
-        canvas_preview.putImageData(data, 0, 0);
-      },
-      on_finish: function (params) {
-        _this.save(params);
-      },
-    };
-    this.POP.show(settings);
-  }
+    enrich() {
+        var _this = this;
 
-  save(params) {
-    //get canvas from layer
-    var canvas = this.Base_layers.convert_layer_to_canvas(null, true);
-    var ctx = canvas.getContext('2d');
+        if (config.layer.type != 'image') {
+            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            return;
+        }
 
-    //change data
-    var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    var data = this.change(img, params);
-    ctx.putImageData(data, 0, 0);
+        var settings = {
+            title: 'Enrich',
+            preview: true,
+            effects: true,
+            params: [],
+            on_change: function (params, canvas_preview, w, h) {
+                var img = canvas_preview.getImageData(0, 0, w, h);
+                var data = _this.change(img, params);
+                canvas_preview.putImageData(data, 0, 0);
+            },
+            on_finish: function (params) {
+                _this.save(params);
+            },
+        };
+        this.POP.show(settings);
+    }
 
-    //save
-    return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
-  }
+    save(params) {
+        //get canvas from layer
+        var canvas = this.Base_layers.convert_layer_to_canvas(null, true);
+        var ctx = canvas.getContext('2d');
 
-  change(data, params) {
-    var filtered = ImageFilters.Enrich(data);
+        //change data
+        var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        var data = this.change(img, params);
+        ctx.putImageData(data, 0, 0);
 
-    return filtered;
-  }
+        //save
+        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
+    }
 
-  demo(canvas_id, canvas_thumb) {
-    var canvas = document.getElementById(canvas_id);
-    var ctx = canvas.getContext('2d');
-    ctx.drawImage(canvas_thumb, 0, 0);
+    change(data, params) {
+        var filtered = ImageFilters.Enrich(data);
 
-    //now update
-    var img = ctx.getImageData(0, 0, canvas_thumb.width, canvas_thumb.height);
-    var params = {};
-    var data = this.change(img, params);
-    ctx.putImageData(data, 0, 0);
-  }
+        return filtered;
+    }
+
+    demo(canvas_id, canvas_thumb) {
+        var canvas = document.getElementById(canvas_id);
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(canvas_thumb, 0, 0);
+
+        //now update
+        var img = ctx.getImageData(0, 0, canvas_thumb.width, canvas_thumb.height);
+        var params = {};
+        var data = this.change(img, params);
+        ctx.putImageData(data, 0, 0);
+    }
 }
 
 export default Effects_enrich_class;

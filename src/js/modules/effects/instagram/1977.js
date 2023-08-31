@@ -5,63 +5,63 @@ import Base_layers_class from '../../../core/base-layers.js';
 import alertify from 'alertifyjs/build/alertify.min.js';
 
 class Effects_1977_class {
-  constructor() {
-    this.POP = new Dialog_class();
-    //this.Color_matrix = new Color_matrix_class();
-    this.Base_layers = new Base_layers_class();
-  }
-
-  1977() {
-    if (config.layer.type != 'image') {
-      alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
-      return;
+    constructor() {
+        this.POP = new Dialog_class();
+        //this.Color_matrix = new Color_matrix_class();
+        this.Base_layers = new Base_layers_class();
     }
 
-    //get canvas from layer
-    var canvas = this.Base_layers.convert_layer_to_canvas(null, true);
-    var ctx = canvas.getContext('2d');
+    1977() {
+        if (config.layer.type != 'image') {
+            alertify.error('This layer must contain an image. Please convert it to raster to apply this tool.');
+            return;
+        }
 
-    //change data
-    var data = this.change(canvas, canvas.width, canvas.height);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(data, 0, 0);
+        //get canvas from layer
+        var canvas = this.Base_layers.convert_layer_to_canvas(null, true);
+        var ctx = canvas.getContext('2d');
 
-    //save
-    return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
-  }
+        //change data
+        var data = this.change(canvas, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(data, 0, 0);
 
-  change(canvas, width, height) {
-    //create temp canvas
-    var canvas2 = document.createElement('canvas');
-    var ctx2 = canvas2.getContext('2d');
-    canvas2.width = width;
-    canvas2.height = height;
-    ctx2.drawImage(canvas, 0, 0);
+        //save
+        return app.State.do_action(new app.Actions.Update_layer_image_action(canvas));
+    }
 
-    //merge
-    ctx2.globalCompositeOperation = 'screen';
-    ctx2.fillStyle = 'rgba(243, 106, 188, 0.3)';
-    ctx2.fillRect(0, 0, width, height);
-    ctx2.globalCompositeOperation = 'source-over';
+    change(canvas, width, height) {
+        //create temp canvas
+        var canvas2 = document.createElement('canvas');
+        var ctx2 = canvas2.getContext('2d');
+        canvas2.width = width;
+        canvas2.height = height;
+        ctx2.drawImage(canvas, 0, 0);
 
-    //apply more effects
-    ctx2.filter = 'contrast(1.1) brightness(1.1) saturate(1.3)';
-    ctx2.drawImage(canvas2, 0, 0);
-    ctx2.filter = 'none';
+        //merge
+        ctx2.globalCompositeOperation = 'screen';
+        ctx2.fillStyle = 'rgba(243, 106, 188, 0.3)';
+        ctx2.fillRect(0, 0, width, height);
+        ctx2.globalCompositeOperation = 'source-over';
 
-    return canvas2;
-  }
+        //apply more effects
+        ctx2.filter = 'contrast(1.1) brightness(1.1) saturate(1.3)';
+        ctx2.drawImage(canvas2, 0, 0);
+        ctx2.filter = 'none';
 
-  demo(canvas_id, canvas_thumb) {
-    var canvas = document.getElementById(canvas_id);
-    var ctx = canvas.getContext('2d');
+        return canvas2;
+    }
 
-    //modify
-    var data = this.change(canvas_thumb, canvas_thumb.width, canvas_thumb.height);
+    demo(canvas_id, canvas_thumb) {
+        var canvas = document.getElementById(canvas_id);
+        var ctx = canvas.getContext('2d');
 
-    //draw
-    ctx.drawImage(data, 0, 0);
-  }
+        //modify
+        var data = this.change(canvas_thumb, canvas_thumb.width, canvas_thumb.height);
+
+        //draw
+        ctx.drawImage(data, 0, 0);
+    }
 }
 
 export default Effects_1977_class;

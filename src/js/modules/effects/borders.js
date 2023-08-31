@@ -6,100 +6,102 @@ import alertify from './../../../../node_modules/alertifyjs/build/alertify.min.j
 import Effects_browser_class from './browser';
 
 class Effects_borders_class {
-  constructor() {
-    this.POP = new Dialog_class();
-    this.Base_layers = new Base_layers_class();
-    this.Effects_browser = new Effects_browser_class();
-  }
-
-  borders(filter_id) {
-    if (config.layer.type == null) {
-      alertify.error('Layer is empty.');
-      return;
+    constructor() {
+        this.POP = new Dialog_class();
+        this.Base_layers = new Base_layers_class();
+        this.Effects_browser = new Effects_browser_class();
     }
 
-    var _this = this;
-    var filter = this.Base_layers.find_filter_by_id(filter_id, 'borders');
+    borders(filter_id) {
+        if (config.layer.type == null) {
+            alertify.error('Layer is empty.');
+            return;
+        }
 
-    var settings = {
-      title: 'Borders',
-      params: [
-        { name: 'color', title: 'Color:', value: (filter.color ??= config.COLOR), type: 'color' },
-        { name: 'size', title: 'Size:', value: (filter.size ??= 10) },
-      ],
-      on_finish: function (params) {
-        var target = Math.min(config.WIDTH, config.HEIGHT);
-        _this.add_borders(params, filter_id);
-      },
-    };
-    var rotate = config.layer.rotate;
-    config.layer.rotate = 0;
-    this.Base_layers.disable_filter(filter_id);
-    this.POP.show(settings);
-    config.layer.rotate = rotate;
-    this.Base_layers.disable_filter(null);
-  }
+        var _this = this;
+        var filter = this.Base_layers.find_filter_by_id(filter_id, 'borders');
 
-  demo(canvas_id, canvas_thumb) {
-    var canvas = document.getElementById(canvas_id);
-    var ctx = canvas.getContext('2d');
+        var settings = {
+            title: 'Borders',
+            params: [
+                { name: 'color', title: 'Color:', value: (filter.color ??= config.COLOR), type: 'color' },
+                { name: 'size', title: 'Size:', value: (filter.size ??= 10) },
+            ],
+            on_finish: function (params) {
+                var target = Math.min(config.WIDTH, config.HEIGHT);
+                _this.add_borders(params, filter_id);
+            },
+        };
+        var rotate = config.layer.rotate;
+        config.layer.rotate = 0;
+        this.Base_layers.disable_filter(filter_id);
+        this.POP.show(settings);
+        config.layer.rotate = rotate;
+        this.Base_layers.disable_filter(null);
+    }
 
-    //draw
-    ctx.drawImage(
-      canvas_thumb,
-      5,
-      5,
-      this.Effects_browser.preview_width - 10,
-      this.Effects_browser.preview_height - 10,
-    );
+    demo(canvas_id, canvas_thumb) {
+        var canvas = document.getElementById(canvas_id);
+        var ctx = canvas.getContext('2d');
 
-    //add borders
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 10;
-    ctx.beginPath();
-    ctx.rect(0, 0, canvas.width, canvas.height);
-    ctx.stroke();
-  }
+        //draw
+        ctx.drawImage(
+            canvas_thumb,
+            5,
+            5,
+            this.Effects_browser.preview_width - 10,
+            this.Effects_browser.preview_height - 10,
+        );
 
-  render_pre(ctx, data) {}
+        //add borders
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.rect(0, 0, canvas.width, canvas.height);
+        ctx.stroke();
+    }
 
-  render_post(ctx, data, layer) {
-    var size = Math.max(0, data.params.size);
+    render_pre(ctx, data) {}
 
-    var x = layer.x;
-    var y = layer.y;
-    var width = parseInt(layer.width);
-    var height = parseInt(layer.height);
+    render_post(ctx, data, layer) {
+        var size = Math.max(0, data.params.size);
 
-    //legacy check
-    if (x == null) x = 0;
-    if (y == null) y = 0;
-    if (!width) width = config.WIDTH;
-    if (!height) height = config.HEIGHT;
+        var x = layer.x;
+        var y = layer.y;
+        var width = parseInt(layer.width);
+        var height = parseInt(layer.height);
 
-    ctx.save();
+        //legacy check
+        if (x == null) x = 0;
+        if (y == null) y = 0;
+        if (!width) width = config.WIDTH;
+        if (!height) height = config.HEIGHT;
 
-    //set styles
-    ctx.strokeStyle = data.params.color;
-    ctx.lineWidth = size;
+        ctx.save();
 
-    //draw with rotation support
-    ctx.translate(layer.x + width / 2, layer.y + height / 2);
-    ctx.rotate((layer.rotate * Math.PI) / 180);
-    var x_new = -width / 2;
-    var y_new = -height / 2;
+        //set styles
+        ctx.strokeStyle = data.params.color;
+        ctx.lineWidth = size;
 
-    ctx.beginPath();
-    ctx.rect(x_new - size * 0.5, y_new - size * 0.5, width + size, height + size);
-    ctx.stroke();
+        //draw with rotation support
+        ctx.translate(layer.x + width / 2, layer.y + height / 2);
+        ctx.rotate((layer.rotate * Math.PI) / 180);
+        var x_new = -width / 2;
+        var y_new = -height / 2;
 
-    ctx.restore();
-  }
+        ctx.beginPath();
+        ctx.rect(x_new - size * 0.5, y_new - size * 0.5, width + size, height + size);
+        ctx.stroke();
 
-  add_borders(params, filter_id) {
-    //apply effect
-    return app.State.do_action(new app.Actions.Add_layer_filter_action(config.layer.id, 'borders', params, filter_id));
-  }
+        ctx.restore();
+    }
+
+    add_borders(params, filter_id) {
+        //apply effect
+        return app.State.do_action(
+            new app.Actions.Add_layer_filter_action(config.layer.id, 'borders', params, filter_id),
+        );
+    }
 }
 
 export default Effects_borders_class;

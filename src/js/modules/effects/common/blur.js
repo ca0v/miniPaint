@@ -5,57 +5,57 @@ import Base_layers_class from './../../../core/base-layers.js';
 import alertify from './../../../../../node_modules/alertifyjs/build/alertify.min.js';
 
 class Effects_blur_class extends Effects_common_class {
-  constructor() {
-    super();
-    this.POP = new Dialog_class();
-    this.Base_layers = new Base_layers_class();
-  }
-
-  blur(filter_id) {
-    if (config.layer.type == null) {
-      alertify.error('Layer is empty.');
-      return;
+    constructor() {
+        super();
+        this.POP = new Dialog_class();
+        this.Base_layers = new Base_layers_class();
     }
 
-    var filter = this.Base_layers.find_filter_by_id(filter_id, 'blur');
+    blur(filter_id) {
+        if (config.layer.type == null) {
+            alertify.error('Layer is empty.');
+            return;
+        }
 
-    var params = [{ name: 'value', title: 'Percentage:', value: (filter.value ??= 5), range: [0, 50] }];
-    this.show_dialog('blur', params, filter_id);
-  }
+        var filter = this.Base_layers.find_filter_by_id(filter_id, 'blur');
 
-  convert_value(value, params, type) {
-    //adapt size to real canvas dimensions
-    if (type == 'preview') {
-      var diff = this.POP.width_mini / this.POP.height_mini / (config.WIDTH / config.HEIGHT);
-
-      value = value * diff;
+        var params = [{ name: 'value', title: 'Percentage:', value: (filter.value ??= 5), range: [0, 50] }];
+        this.show_dialog('blur', params, filter_id);
     }
 
-    return value + 'px';
-  }
+    convert_value(value, params, type) {
+        //adapt size to real canvas dimensions
+        if (type == 'preview') {
+            var diff = this.POP.width_mini / this.POP.height_mini / (config.WIDTH / config.HEIGHT);
 
-  demo(canvas_id, canvas_thumb) {
-    var canvas = document.getElementById(canvas_id);
-    var ctx = canvas.getContext('2d');
+            value = value * diff;
+        }
 
-    //draw
-    var size = this.convert_value(5, null, 'preview');
-    ctx.filter = 'blur(' + size + ')';
-    ctx.drawImage(canvas_thumb, 0, 0);
-    ctx.filter = 'none';
-  }
+        return value + 'px';
+    }
 
-  render_pre(ctx, data) {
-    var value = this.convert_value(data.params.value, data.params, 'save');
-    var filter = 'blur(' + value + ')';
+    demo(canvas_id, canvas_thumb) {
+        var canvas = document.getElementById(canvas_id);
+        var ctx = canvas.getContext('2d');
 
-    if (ctx.filter == 'none') ctx.filter = filter;
-    else ctx.filter += ' ' + filter;
-  }
+        //draw
+        var size = this.convert_value(5, null, 'preview');
+        ctx.filter = 'blur(' + size + ')';
+        ctx.drawImage(canvas_thumb, 0, 0);
+        ctx.filter = 'none';
+    }
 
-  render_post(ctx, data) {
-    ctx.filter = 'none';
-  }
+    render_pre(ctx, data) {
+        var value = this.convert_value(data.params.value, data.params, 'save');
+        var filter = 'blur(' + value + ')';
+
+        if (ctx.filter == 'none') ctx.filter = filter;
+        else ctx.filter += ' ' + filter;
+    }
+
+    render_post(ctx, data) {
+        ctx.filter = 'none';
+    }
 }
 
 export default Effects_blur_class;

@@ -1,6 +1,6 @@
 export const Settings = Object.freeze({
-  distanceBetweenPoints: 64,
-  minimalDistanceBetweenPoints: 8,
-  radiusThreshold: Math.PI / 16,
-  delayedSnapshotTimeout: 100,
+    distanceBetweenPoints: 64,
+    minimalDistanceBetweenPoints: 8,
+    radiusThreshold: Math.PI / 16,
+    delayedSnapshotTimeout: 100,
 });
