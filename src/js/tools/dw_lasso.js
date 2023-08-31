@@ -79,7 +79,7 @@ async function doActions(actions) {
 
 export default class DwLasso_class extends Base_tools_class {
   constructor(ctx) {
-    super();
+    super(true);
 
     this.name = 'dw_lasso';
     this.ctx = ctx;
@@ -566,6 +566,9 @@ export default class DwLasso_class extends Base_tools_class {
 
         if (this.hover?.point) {
           const point = this.hover.point;
+          console.log(
+            `dragging point ${this.hover.pointIndex} from ${point.x}, ${point.y} to ${currentPoint.x}, ${currentPoint.y}`,
+          );
           point.x = currentPoint.x;
           point.y = currentPoint.y;
           this.metrics.timeOfMove = Date.now();
@@ -1068,6 +1071,15 @@ export default class DwLasso_class extends Base_tools_class {
       lasso.GUI_preview.zoom_data.y = centerPoint.y;
       lasso.GUI_preview.zoom(zoom);
       return;
+    }
+
+    {
+      // is there an active vertex?
+      if (typeof lasso.hover?.pointIndex === 'number') {
+        lasso.GUI_preview.zoom(zoom);
+        lasso.state.actions.centerAt();
+        return;
+      }
     }
 
     lasso.undoredo(
