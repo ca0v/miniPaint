@@ -16,9 +16,7 @@
  * - Load an image then move it and the crop is the wrong part of the image...need to compensate for translations, etc.
  * -- Similarly, cut only working for images that have been cropped to the top-left corner, not sure where the problem is
  * -- but the crop.js works correctly, so the solution is in there somewhere
- * - The initial pan ops are not honoring the current viewport
- * - Center about a point works okay (not great) but zoom about a point is worse...look at 'wheel' and mimic that
- * - Pan and then zoom and state is out-of-whack
+ * - FIXED: Draw with touch, then use mouse to hover over a point...it is not highlighted and cannot click-and-drag it
  *
  * ** TODO **
  * - Is there a definitive list of touch gestures?  I came up with these:
@@ -659,7 +657,7 @@ export default class DwLasso_class extends Base_tools_class {
         return !!hover;
       },
 
-      notHoveringOverPoint: () => !this.state.actions.hoveringOverPoint(),
+      notHoveringOverPoint: (e) => !this.state.actions.hoveringOverPoint(e),
 
       zoomIn: (e) => this.zoomViewport(e, 1),
       zoomOut: (e) => this.zoomViewport(e, -1),
@@ -920,28 +918,14 @@ export default class DwLasso_class extends Base_tools_class {
       .about('mouse has moved over a point')
       .from(Status.editing)
       .goto(Status.hover)
-      .when(['mousemove', 'touchmove'])
-      .do(this.state.actions.hoveringOverPoint);
-
-    this.state
-      .about('mouse has moved over a point (shift key is pressed)')
-      .from(Status.editing)
-      .goto(Status.hover)
-      .when('Shift+mousemove')
+      .when(['Shift+mousemove', 'mousemove', 'touchmove'])
       .do(this.state.actions.hoveringOverPoint);
 
     this.state
       .about('mouse is no longer over a point')
       .from(Status.hover)
       .goto(Status.editing)
-      .when(['mousemove', 'touchmove'])
-      .do(this.state.actions.notHoveringOverPoint);
-
-    this.state
-      .about('mouse is no longer over a point (shift key is pressed)')
-      .from(Status.hover)
-      .goto(Status.editing)
-      .when('Shift+mousemove')
+      .when(['Shift+mousemove', 'mousemove', 'touchmove'])
       .do(this.state.actions.notHoveringOverPoint);
 
     this.state
@@ -949,13 +933,8 @@ export default class DwLasso_class extends Base_tools_class {
       .from([Status.drawing, Status.placing])
       .goto(Status.editing)
       .when(Keyboard.ClosePolygon)
-      .do(this.state.actions.closePolygon);
-
-    this.state
-      .about('complete the polygon')
-      .from([Status.drawing, Status.placing])
-      .goto(Status.editing)
-      .when(Keyboard.DeleteAndClosePolygon)
+      .do(this.state.actions.closePolygon)
+      .butWhen(Keyboard.DeleteAndClosePolygon)
       .do(this.state.actions.deletePointAndClosePolygon);
 
     this.state
