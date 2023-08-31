@@ -51,14 +51,14 @@ export class StateMachine {
 
     this.events.on('mousemove', (mouseEvent) => {
       const mouseState = computeMouseState(mouseEvent);
-      const preventBubble = false !== this.trigger(mouseState, { e: mouseEvent });
+      const preventBubble = false !== this.trigger(mouseState, mouseEvent);
       if (preventBubble) mouseEvent.preventDefault();
     });
 
     this.events.on('mousedown', (mouseEvent) => {
       mouseDownState.buttons = mouseEvent.buttons;
       const mouseState = computeMouseState(mouseEvent);
-      const preventBubble = false !== this.trigger(mouseState, { e: mouseEvent });
+      const preventBubble = false !== this.trigger(mouseState, mouseEvent);
       if (preventBubble) mouseEvent.preventDefault();
     });
 
@@ -67,7 +67,7 @@ export class StateMachine {
       let mouseState = computeMouseState(mouseEvent);
       if (priorButtons === 1) mouseState = `Left+${mouseState}`;
       if (priorButtons === 2) mouseState = `Right+${mouseState}`;
-      const preventBubble = false !== this.trigger(mouseState, { e: mouseEvent });
+      const preventBubble = false !== this.trigger(mouseState, mouseEvent);
       if (preventBubble) mouseEvent.preventDefault();
     });
 
@@ -75,7 +75,7 @@ export class StateMachine {
     this.events.on('touchstart', (touchEvent) => {
       if (touchEvent.touches[1]) return; // ignore multi-touch
       const mouseState = computeMouseState(touchEvent);
-      const preventBubble = false !== this.trigger(mouseState, { e: touchEvent });
+      const preventBubble = false !== this.trigger(mouseState, touchEvent);
       if (preventBubble) touchEvent.preventDefault();
     });
 
@@ -83,7 +83,7 @@ export class StateMachine {
     this.events.on('touchmove', (touchEvent) => {
       if (touchEvent.touches[1]) return; // ignore multi-touch
       const mouseState = computeMouseState(touchEvent);
-      const preventBubble = false !== this.trigger(mouseState, { e: touchEvent });
+      const preventBubble = false !== this.trigger(mouseState, touchEvent);
       if (preventBubble) touchEvent.preventDefault();
     });
 
@@ -91,7 +91,7 @@ export class StateMachine {
     this.events.on('touchend', (touchEvent) => {
       if (touchEvent.touches[1]) return; // ignore multi-touch
       const mouseState = computeMouseState(touchEvent);
-      const preventBubble = false !== this.trigger(mouseState, { e: touchEvent });
+      const preventBubble = false !== this.trigger(mouseState, touchEvent);
       if (preventBubble) touchEvent.preventDefault();
     });
 
@@ -195,7 +195,7 @@ export class StateMachine {
 
       this.events.on('keydown', (keyboardEvent) => {
         const keyboardState = computeKeyboardState(keyboardEvent, keysThatAreDown);
-        const preventBubble = false !== this.trigger(keyboardState, { e: keyboardEvent });
+        const preventBubble = false !== this.trigger(keyboardState, keyboardEvent);
         if (preventBubble) keyboardEvent.preventDefault();
       });
 

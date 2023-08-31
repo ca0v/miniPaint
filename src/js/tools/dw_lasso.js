@@ -31,6 +31,7 @@
  * -- Rotate (two fingers moving in a circle, or second finger moving around a first)
  * -- Shake (one finger moving rapidly back and forth)
  * - StateMachine should not be raising pan and zoom events but instead Press+Drag (for pan) and Pinch/Spread (for zoom)
+ * - Use acceleration when moving points
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -462,8 +463,8 @@ export default class DwLasso_class extends Base_tools_class {
     return { x: Math.max(0, Math.min(config.WIDTH, mouse.x)), y: Math.max(0, Math.min(config.HEIGHT, mouse.y)) };
   }
 
-  placePointAtClickLocation() {
-    const currentPoint = this.mousePoint(this.state.mouseEvent);
+  placePointAtClickLocation(mouseEvent) {
+    const currentPoint = this.mousePoint(mouseEvent);
     if (!currentPoint) return false;
 
     this.undoredo(
@@ -476,8 +477,8 @@ export default class DwLasso_class extends Base_tools_class {
     );
   }
 
-  movingLastPointToMouseLocation() {
-    const currentPoint = this.mousePoint(this.state.mouseEvent);
+  movingLastPointToMouseLocation(mouseEvent) {
+    const currentPoint = this.mousePoint(mouseEvent);
     if (!currentPoint) return false;
     if (!this.data.length) return;
     const p = this.data.at(-1);
@@ -498,8 +499,8 @@ export default class DwLasso_class extends Base_tools_class {
 
     this.state.register({
       start: () => {},
-      beforeDraggingHoverPoint: () => {
-        const currentPoint = this.mousePoint(this.state.mouseEvent);
+      beforeDraggingHoverPoint: (mouseEvent) => {
+        const currentPoint = this.mousePoint(mouseEvent);
         if (!currentPoint) return false;
 
         if (this.hover?.pointIndex >= 0) {
@@ -538,8 +539,8 @@ export default class DwLasso_class extends Base_tools_class {
           this.Base_layers.render();
         }
       },
-      draggingHoverPoint: () => {
-        const currentPoint = this.mousePoint(this.state.mouseEvent);
+      draggingHoverPoint: (mouseEvent) => {
+        const currentPoint = this.mousePoint(mouseEvent);
         if (!currentPoint) return false;
 
         if (this.hover?.point) {
@@ -555,14 +556,14 @@ export default class DwLasso_class extends Base_tools_class {
       },
       endDraggingHoverPoint: () => {},
 
-      drawPoints: (e) => {
-        const currentPoint = this.mousePoint(this.state.mouseEvent);
+      drawPoints: (mouseEvent) => {
+        const currentPoint = this.mousePoint(mouseEvent);
         if (!currentPoint) return false;
 
         const data = this.data;
         const priorPoint = data.at(-2);
         if (!priorPoint) {
-          this.placePointAtClickLocation(e);
+          this.placePointAtClickLocation(mouseEvent);
           return false;
         }
 
@@ -587,8 +588,8 @@ export default class DwLasso_class extends Base_tools_class {
         this.delayedSnapshot(`before drawing points at location ${data.length}`);
       },
 
-      placeFirstPointAtMouseLocation: () => {
-        const currentPoint = this.mousePoint(this.state.mouseEvent);
+      placeFirstPointAtMouseLocation: (mouseEvent) => {
+        const currentPoint = this.mousePoint(mouseEvent);
         if (!currentPoint) return false;
         this.snapshot('before placing 1st point', () => {
           this.data = [currentPoint];
@@ -628,8 +629,8 @@ export default class DwLasso_class extends Base_tools_class {
         return hover;
       },
 
-      hoveringOverPoint: () => {
-        const currentPoint = this.mousePoint(this.state.mouseEvent);
+      hoveringOverPoint: (mouseEvent) => {
+        const currentPoint = this.mousePoint(mouseEvent);
         if (!currentPoint) return false;
         const priorHover = JSON.stringify(this.hover || null);
         const hover = this.computeHover(this.data, currentPoint);
@@ -645,8 +646,8 @@ export default class DwLasso_class extends Base_tools_class {
 
       notHoveringOverPoint: () => !this.state.actions.hoveringOverPoint(),
 
-      zoomIn: () => this.zoomViewport(1),
-      zoomOut: () => this.zoomViewport(-1),
+      zoomIn: (e) => this.zoomViewport(e, 1),
+      zoomOut: (e) => this.zoomViewport(e, -1),
       panLeft: (e) => this.panViewport2(e),
       panRight: (e) => this.panViewport2(e),
       panUp: (e) => this.panViewport2(e),
@@ -1072,14 +1073,14 @@ export default class DwLasso_class extends Base_tools_class {
     lasso.Base_layers.render();
   }
 
-  zoomViewport(zoom) {
+  zoomViewport(mouseEvent, zoom) {
     const lasso = this;
     if (!zoom) return;
 
     // is this a pinch gesture?
-    if (lasso.state.mouseEvent?.touches?.length > 1) {
-      const touch1 = lasso.state.mouseEvent.touches[0];
-      const touch2 = lasso.state.mouseEvent.touches[1];
+    if (mouseEvent.touches?.length > 1) {
+      const touch1 = mouseEvent.touches[0];
+      const touch2 = mouseEvent.touches[1];
       const centerPoint = center({ x: touch1.clientX, y: touch1.clientY }, { x: touch2.clientX, y: touch2.clientY });
       console.log(`pinch zoom at ${centerPoint.x}, ${centerPoint.y}`);
       this.centerAt(centerPoint);
