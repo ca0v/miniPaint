@@ -38,6 +38,7 @@
  * - [Space] should act like a mouse click
  * - Shift+ArrowKeys should move the selected point when "placing"
  * - ArrowKeys should pan when placing
+ * - Should be able to zoom when placing, should center about active vertex
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -90,6 +91,8 @@ export default class DwLasso_class extends Base_tools_class {
       speed: 1,
       ACCELERATION: 0.3,
       MAX_SPEED: 25,
+      MIN_SPEED: 1,
+      DEFAULT_SPEED: 1,
     };
 
     this.Base_layers = new Base_layers_class();
@@ -836,39 +839,23 @@ export default class DwLasso_class extends Base_tools_class {
       .do(this.state.actions.clonePoint);
 
     this.state
-      .about('zoom in')
-      .from([Status.drawing, Status.editing, Status.ready])
+      .about('zoom')
+      .from([Status.drawing, Status.editing, Status.ready, Status.placing])
       .when(Keyboard.ZoomIn)
-      .do(this.state.actions.zoomIn);
-
-    this.state
-      .about('zoom out')
-      .from([Status.drawing, Status.editing, Status.ready])
-      .when(Keyboard.ZoomOut)
+      .do(this.state.actions.zoomIn)
+      .butWhen(Keyboard.ZoomOut)
       .do(this.state.actions.zoomOut);
 
     this.state
       .about('pan')
       .from([Status.drawing, Status.editing, Status.ready, Status.placing])
       .when(Keyboard.PanLeft)
-      .do(this.state.actions.panLeft);
-
-    this.state
-      .about('pan')
-      .from([Status.drawing, Status.editing, Status.ready, Status.placing])
-      .when(Keyboard.PanRight)
-      .do(this.state.actions.panRight);
-
-    this.state
-      .about('pan')
-      .from([Status.drawing, Status.editing, Status.ready, Status.placing])
-      .when(Keyboard.PanUp)
-      .do(this.state.actions.panUp);
-
-    this.state
-      .about('pan')
-      .from([Status.drawing, Status.editing, Status.ready, Status.placing])
-      .when(Keyboard.PanDown)
+      .do(this.state.actions.panLeft)
+      .butWhen(Keyboard.PanRight)
+      .do(this.state.actions.panRight)
+      .butWhen(Keyboard.PanUp)
+      .do(this.state.actions.panUp)
+      .butWhen(Keyboard.PanDown)
       .do(this.state.actions.panDown);
 
     this.state
@@ -881,7 +868,7 @@ export default class DwLasso_class extends Base_tools_class {
       .do(this.state.actions.moveToNextPoint);
 
     this.state
-      .about('move the point x1')
+      .about('move the point')
       .from([Status.editing, Status.placing])
       .when(Keyboard.MovePointLeft)
       .do(this.state.actions.movePointLeft1Units)
@@ -890,12 +877,8 @@ export default class DwLasso_class extends Base_tools_class {
       .butWhen(Keyboard.MovePointUp)
       .do(this.state.actions.movePointUp1Units)
       .butWhen(Keyboard.MovePointDown)
-      .do(this.state.actions.movePointDown1Units);
-
-    this.state
-      .about('move the point diagonally')
-      .from([Status.editing, Status.placing])
-      .when(Keyboard.MovePointUpLeft)
+      .do(this.state.actions.movePointDown1Units)
+      .butWhen(Keyboard.MovePointUpLeft)
       .do(this.state.actions.movePointUpLeft1Units)
       .butWhen(Keyboard.MovePointUpRight)
       .do(this.state.actions.movePointUpRight1Units)
@@ -1016,12 +999,11 @@ export default class DwLasso_class extends Base_tools_class {
     // if the time between moves is short, then increase the speed, but if it's long, then reset the speed
     if (timeOfLastMove && this.metrics.timeOfMove - timeOfLastMove < 100) {
       this.metrics.speed = Math.max(
-        1,
+        this.metrics.MIN_SPEED,
         Math.min(this.metrics.MAX_SPEED, this.metrics.speed + this.metrics.ACCELERATION),
       );
-      console.log(`speed=${this.metrics.speed}`);
     } else {
-      this.metrics.speed = 1;
+      this.metrics.speed = this.metrics.DEFAULT_SPEED;
     }
 
     dx *= this.metrics.speed * this.scale;
