@@ -99,38 +99,44 @@ export class StateMachine {
           }
 
           {
+            // is this a Drag+Drag (are both fingers moving in the same direction?)
+            const delta1 = distance(touchState.pinch.touch1, touch1);
+            const delta2 = distance(touchState.pinch.touch2, touch2);
+            const angle1 = angleOf(touch1, touchState.pinch.touch1);
+            const angle2 = angleOf(touch2, touchState.pinch.touch2);
+            if (
+              delta1 > MINIMAL_SPREAD_DISTANCE &&
+              delta2 > MINIMAL_SPREAD_DISTANCE &&
+              closeTo(delta1, delta2, 50) &&
+              closeTo(angle1, angle2, 10)
+            ) {
+              const args = {
+                dragDistanceInPixels: (delta1 + delta2) / 2,
+                dragDirectionInDegrees: (angle1 + angle2) / 2,
+              };
+              touchState.pinch = { touch1, touch2 };
+              // listener needs to interpret this, that is why it is not a this.trigger
+              this.events.trigger('DragDrag', args);
+              return;
+            }
+          }
+          {
             // is this a Press+Drag
             const delta1 = distance(touchState.pinch.touch1, touch1);
             const delta2 = distance(touchState.pinch.touch2, touch2);
             if (delta1 < MINIMAL_SPREAD_DISTANCE && delta2 > MINIMAL_SPREAD_DISTANCE) {
-              {
-                // to be moved outside this control
-                // what is the direction of the drag?
-                const dx = touch2.x - touchState.pinch.touch2.x;
-                const dy = touch2.y - touchState.pinch.touch2.y;
-                const degrees = (Math.atan2(dy, dx) * 180) / Math.PI;
+              // to be moved outside this control
+              // what is the direction of the drag?
+              const degrees = angleOf(touch2, touchState.pinch.touch2);
 
-                const draggingUp = closeTo(degrees, -90);
-                const draggingDown = closeTo(degrees, 90);
-                const draggingLeft = closeTo(degrees, 180);
-                const draggingRight = closeTo(degrees, 0);
+              const args = {
+                dragDistanceInPixels: delta2,
+                dragDirectionInDegrees: degrees,
+              };
 
-                const args = {
-                  dragDistanceInPixels: delta2,
-                  dragDirectionInDegrees: degrees,
-                };
-
-                draggingUp && this.trigger('PressDragUp', args);
-                draggingDown && this.trigger('PressDragDown', args);
-                draggingLeft && this.trigger('PressDragLeft', args);
-                draggingRight && this.trigger('PressDragRight', args);
-
-                if (draggingUp || draggingDown || draggingLeft || draggingRight) {
-                  touchState.pinch.touch2 = touch2;
-                } else {
-                  this.trigger('PressDrag', args);
-                }
-              }
+              // listener needs to interpret this, that is why it is not a this.trigger
+              touchState.pinch.touch2 = touch2;
+              this.events.trigger('PressDrag', args);
               return;
             }
           }
@@ -139,7 +145,14 @@ export class StateMachine {
             // is this a pinch or spread?
             const delta1 = distance(touchState.pinch.touch1, touch1);
             const delta2 = distance(touchState.pinch.touch2, touch2);
-            if (delta1 > MINIMAL_SPREAD_DISTANCE && delta2 > MINIMAL_SPREAD_DISTANCE) {
+            const angle1 = angleOf(touch1, touchState.pinch.touch1);
+            const angle2 = angleOf(touch2, touchState.pinch.touch2);
+            console.log(`angle1: ${angle1}, angle2: ${angle2}`);
+            if (
+              delta1 > MINIMAL_SPREAD_DISTANCE &&
+              delta2 > MINIMAL_SPREAD_DISTANCE &&
+              closeTo(Math.abs(angle1 - angle2), 180, 30)
+            ) {
               const startDistance = distance(touchState.pinch.touch1, touchState.pinch.touch2);
               const currentDistance = distance(touch1, touch2);
               const delta = currentDistance - startDistance;
@@ -297,6 +310,12 @@ function touchLocation(touch) {
   return { x: touch.clientX, y: touch.clientY };
 }
 
-function closeTo(expected, actual, tolerance = 45) {
-  return Math.abs(expected - actual) < tolerance;
+function angleOf(p1, p2) {
+  const dx = p1.x - p2.x;
+  const dy = p1.y - p2.y;
+  return Math.atan2(dy, dx) * (180 / Math.PI);
+}
+
+function closeTo(expected, actual, tolerance = 0) {
+  return Math.abs(expected - actual) <= tolerance;
 }

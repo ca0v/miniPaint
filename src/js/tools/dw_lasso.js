@@ -32,6 +32,7 @@
  * -- Rotate (two fingers moving in a circle, or second finger moving around a first)
  * -- Shake (one finger moving rapidly back and forth)
  * - StateMachine should not be raising pan and zoom events but instead Press+Drag (for pan) and Pinch/Spread (for zoom)
+ * - Pan is a Press+Drag but should be a Drag+Drag
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -506,7 +507,30 @@ export default class DwLasso_class extends Base_tools_class {
       this.data = [];
     }
     this.state = new StateMachine(Object.values(Status));
+
     this.state.on('execute', (context) => context.about && log(`${context.about}`));
+
+    this.state.on('PressDrag', (dragEvent) => {
+      // nothing to do
+    });
+
+    this.state.on('DragDrag', (dragEvent) => {
+      const { dragDirectionInDegrees: degrees, dragDistanceInPixels: distance } = dragEvent;
+      console.log(`DragDrag: ${distance}px @ ${degrees} degrees`);
+
+      const draggingUp = closeTo(degrees, -90);
+      const draggingRight = closeTo(degrees, 0);
+      const draggingDown = closeTo(degrees, 90);
+      const draggingLeft = closeTo(degrees, 180);
+
+      const eventName = `DragDrag${
+        draggingUp ? 'Up' : draggingRight ? 'Right' : draggingDown ? 'Down' : draggingLeft ? 'Left' : ''
+      }`;
+
+      console.log(`DragDrag: ${eventName}`);
+
+      this.state.trigger(eventName, dragEvent);
+    });
 
     this.state.register({
       start: () => {},
@@ -1086,10 +1110,6 @@ export default class DwLasso_class extends Base_tools_class {
   }
 
   panViewport2(e, dx, dy) {
-    function closeTo(expected, actual, tolerance = 70) {
-      return Math.abs(expected - actual) < tolerance;
-    }
-
     if (e) {
       const { dragDistanceInPixels: distance, dragDirectionInDegrees: degrees } = e;
       const draggingUp = closeTo(degrees, -90);
@@ -1103,6 +1123,9 @@ export default class DwLasso_class extends Base_tools_class {
       if (draggingUp) dy = -distance; // pan down
       else if (draggingDown) dy = distance; // pan up
     }
+
+    dx *= this.scale;
+    dy *= this.scale;
 
     this.panViewport(dx, dy);
   }
@@ -1122,6 +1145,10 @@ function renderAsPath(ctx, points) {
   const lastPoint = points.at(-1);
   ctx.moveTo(lastPoint.x, lastPoint.y);
   points.forEach((point) => ctx.lineTo(point.x, point.y));
+}
+
+function closeTo(expected, actual, tolerance = 70) {
+  return Math.abs(expected - actual) < tolerance;
 }
 
 new Tests().tests();
