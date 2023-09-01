@@ -27,4 +27,5 @@ export const Keyboard = Object.freeze({
     Smooth: 'q',
     ClosePolygon: ['Right+mousedown', 'touchend'],
     DeleteAndClosePolygon: ['Escape'],
+    InsertPointAtCursorPosition: [' '],
 });
