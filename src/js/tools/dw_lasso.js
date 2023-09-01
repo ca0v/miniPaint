@@ -13,7 +13,8 @@
  * done - user has clicked the "Magic Crop" button, all points are cleared
  *
  * ** KNOWN ISSUES **
- * - arrow panning has a little when using keyboard
+ * - cannot pan when 'hover' state is active
+ * - cannot move point with keyboard when 'hover' state is active
  *
  * ** TODO **
  * - would be nice to add deceleration when user stops moving a point with the arrow keys (decoupled from keydown repeat rate and delay)
@@ -986,6 +987,7 @@ export default class DwLasso_class extends Base_tools_class {
             .about('zoom')
             .from([
                 Status.drawing,
+                Status.hover,
                 Status.editing,
                 Status.ready,
                 Status.placing,
@@ -999,6 +1001,7 @@ export default class DwLasso_class extends Base_tools_class {
             .about('pan')
             .from([
                 Status.drawing,
+                Status.hover,
                 Status.editing,
                 Status.ready,
                 Status.placing,
@@ -1214,12 +1217,16 @@ export default class DwLasso_class extends Base_tools_class {
             const screenPoint = zoomView.toScreen(point);
             const { x, y } = screenPoint;
             const { width, height } = {
-                width: config.WIDTH,
-                height: config.HEIGHT,
+                width: config.visible_width,
+                height: config.visible_height,
             };
 
             // if not within viewport, then center the viewport on the point
             if (x < 0 || x > width || y < 0 || y > height) {
+                console.log(
+                    `point: ${x}, ${y}`,
+                    `viewport: ${width}, ${height}`,
+                );
                 this.centerAt(point);
             }
         }
