@@ -32,11 +32,9 @@ import { Keyboard } from './dw_extensions/Keyboard.js';
 import { Settings } from './dw_extensions/Settings.js';
 import { Generic_action } from './dw_extensions/Generic_action.js';
 import { Update_layer_action } from './dw_extensions/Update_layer_action.js';
-import { EventManager } from './dw_extensions/EventManager.js';
 import { circle } from './dw_extensions/circle.js';
-import { dot, cross, plus } from './dw_extensions/dot.js';
+import { cross, plus } from './dw_extensions/dot.js';
 import { center } from './dw_extensions/center.js';
-import { removeColinearPoints } from './dw_extensions/removeColinearPoints.js';
 import { getBoundingBox } from './dw_extensions/getBoundingBox.js';
 import { distance } from './dw_extensions/distance.js';
 import { age } from './dw_extensions/age.js';
@@ -76,33 +74,12 @@ export default class DwLasso_class extends Base_tools_class {
             MAX_SPEED: 25,
             MIN_SPEED: 1,
             DEFAULT_SPEED: 1,
+            ACTION_HISTORY_MAX: 1000,
         };
 
         this.Base_layers = new Base_layers_class();
         this.Base_state = new Base_state_class();
         this.GUI_preview = new GUI_preview_class();
-        this.Base_gui = new Base_gui_class();
-        this.GUI_tools = new GUI_tools_class();
-        this.selection = {
-            x: null,
-            y: null,
-            width: null,
-            height: null,
-        };
-        const sel_config = {
-            enable_background: true,
-            enable_borders: true,
-            enable_controls: true,
-            crop_lines: true,
-            enable_rotation: false,
-            enable_move: false,
-            data_function: () => this.selection,
-        };
-        this.Base_selection = new Base_selection_class(
-            ctx,
-            sel_config,
-            this.name,
-        );
 
         this.delayedSnapshot = debounce((about) => {
             this.snapshot(about);
@@ -118,10 +95,7 @@ export default class DwLasso_class extends Base_tools_class {
         this.state.setCurrentState(Status.none);
         this.metrics.prior_action_history_max =
             this.Base_state.action_history_max;
-        this.Base_state.action_history_max = 1000;
-
-        const params_hash = this.get_params_hash();
-        const opacity = Math.round((config.ALPHA / 255) * 100);
+        this.Base_state.action_history_max = this.metrics.ACTION_HISTORY_MAX;
 
         const layer = config?.layers.find((l) => l.type === this.name);
 
@@ -129,7 +103,6 @@ export default class DwLasso_class extends Base_tools_class {
             const layer = {
                 name: 'DW Lasso',
                 type: this.name,
-                opacity: opacity,
                 params: this.clone(this.getParams()),
                 status: 'draft',
                 render_function: [this.name, 'render'],
@@ -149,7 +122,6 @@ export default class DwLasso_class extends Base_tools_class {
                     [new app.Actions.Insert_layer_action(layer)],
                 ),
             );
-            this.params_hash = params_hash;
         } else {
             // bring layer to the top
             while (app.Layers.find_next(layer.id))
@@ -621,7 +593,7 @@ export default class DwLasso_class extends Base_tools_class {
                         },
                     );
                     // render the line
-                    this.Base_layers.render();
+                    this.renderData();
                 } else if (this.hover?.midpointIndex >= 0) {
                     const index = this.hover.midpointIndex;
                     this.undoredo(
@@ -632,7 +604,7 @@ export default class DwLasso_class extends Base_tools_class {
                     this.hover = { pointIndex: index + 1 };
                     this.hover.point = this.data.at(index + 1);
                     // render the line
-                    this.Base_layers.render();
+                    this.renderData();
                 }
             },
             draggingHoverPoint: (mouseEvent) => {
@@ -645,7 +617,7 @@ export default class DwLasso_class extends Base_tools_class {
                     point.y = currentPoint.y;
                     this.metrics.timeOfMove = Date.now();
                     this.metrics.lastPointMoved = point;
-                    this.Base_layers.render();
+                    this.renderData();
                 } else {
                     log(`mousemove: no point to drag`);
                 }
@@ -751,7 +723,7 @@ export default class DwLasso_class extends Base_tools_class {
                     this.hover = hover;
                 }
                 if (priorHover != JSON.stringify(hover)) {
-                    this.Base_layers.render();
+                    this.renderData();
                 }
                 return !!hover;
             },
@@ -838,7 +810,7 @@ export default class DwLasso_class extends Base_tools_class {
                 } else {
                     return;
                 }
-                this.Base_layers.render();
+                this.renderData();
             },
         });
 
