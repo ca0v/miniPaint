@@ -13,8 +13,7 @@
  * done - user has clicked the "Magic Crop" button, all points are cleared
  *
  * ** KNOWN ISSUES **
- * - cannot pan when 'hover' state is active
- * - cannot move point with keyboard when 'hover' state is active
+ * - draw a shape, convert to raster then clip it...the right edge is not clipped
  *
  * ** TODO **
  * - would be nice to add deceleration when user stops moving a point with the arrow keys (decoupled from keydown repeat rate and delay)
@@ -109,7 +108,18 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     on_activate() {
-        this.defineStateMachine();
+        // prevent activation if there is not already an image layer
+        const imageLayers = config.layers.filter((l) => l.type === 'image');
+        if (!imageLayers.length) {
+            alertify.error(
+                `Cannot activate ${this.name} tool without an image`,
+            );
+            return [
+                // no actions to execute
+            ];
+        }
+
+        this.state = this.defineStateMachine();
         this.state.setCurrentState(Status.none);
         this.metrics.prior_action_history_max =
             this.Base_state.action_history_max;
@@ -140,17 +150,17 @@ export default class DwLasso_class extends Base_tools_class {
                     [new app.Actions.Insert_layer_action(layer)],
                 ),
             );
-        } else {
-            // bring layer to the top
-            while (app.Layers.find_next(layer.id))
-                app.State.do_action(
-                    new app.Actions.Reorder_layer_action(layer.id, 1),
-                );
-            this.renderData();
         }
+
+        // bring layer to the top
+        while (app.Layers.find_next(layer.id))
+            app.State.do_action(
+                new app.Actions.Reorder_layer_action(layer.id, 1),
+            );
     }
 
     on_leave() {
+        if (!this.state) return;
         this.state.setCurrentState(Status.none);
         this.state.off();
 
@@ -1128,6 +1138,8 @@ export default class DwLasso_class extends Base_tools_class {
             .goto(Status.ready)
             .when(Keyboard.DeleteAndClosePolygon)
             .do(actions.reset);
+
+        return this.state;
     }
 
     computeHover(data, currentPoint) {
