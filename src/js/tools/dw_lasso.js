@@ -18,6 +18,7 @@
  * ** TODO **
  * - would be nice to add deceleration when user stops moving a point with the arrow keys (decoupled from keydown repeat rate and delay)
  * - panViewport and panViewport2 can be combined?
+ * - tab should re-center when moved outside viewport
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -1205,7 +1206,42 @@ export default class DwLasso_class extends Base_tools_class {
                     (pointIndex + lasso.data.length) % lasso.data.length,
             };
         }
+
+        {
+            // is point outside of viewport?
+            const point = this.getHoverPoint();
+            if (!point) throw `no hover point found`;
+            const screenPoint = zoomView.toScreen(point);
+            const { x, y } = screenPoint;
+            const { width, height } = {
+                width: config.WIDTH,
+                height: config.HEIGHT,
+            };
+
+            // if not within viewport, then center the viewport on the point
+            if (x < 0 || x > width || y < 0 || y > height) {
+                this.centerAt(point);
+            }
+        }
         lasso.Base_layers.render();
+    }
+
+    getHoverPoint() {
+        const lasso = this;
+        const pointIndex = lasso.hover?.pointIndex;
+        if (typeof pointIndex === 'number') {
+            return lasso.data.at(pointIndex);
+        }
+
+        const midpointIndex = lasso.hover?.midpointIndex;
+        if (typeof midpointIndex === 'number') {
+            const point = center(
+                lasso.data.at(midpointIndex),
+                lasso.data.at((midpointIndex + 1) % lasso.data.length),
+            );
+            return point;
+        }
+        return null;
     }
 
     zoomViewport(mouseEvent, zoom) {
