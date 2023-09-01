@@ -121,38 +121,39 @@ export default class DwLasso_class extends Base_tools_class {
             this.Base_state.action_history_max;
         this.Base_state.action_history_max = this.metrics.ACTION_HISTORY_MAX;
 
-        let layer = config?.layers.find((l) => l.type === this.name);
+        const layer = config?.layers.find((l) => l.type === this.name);
 
         if (!layer) {
-            layer = {
-                name: 'DW Lasso',
-                type: this.name,
-                params: this.clone(this.getParams()),
-                status: 'draft',
-                render_function: [this.name, 'render'],
-                x: 0,
-                y: 0,
-                width: config.WIDTH,
-                height: config.HEIGHT,
-                hide_selection_if_active: true,
-                rotate: null,
-                is_vector: true,
-                color: config.COLOR,
-            };
             app.State.do_action(
                 new app.Actions.Bundle_action(
                     'new_dw_lasso_layer',
                     'Magic Crop Layer',
-                    [new app.Actions.Insert_layer_action(layer)],
+                    [
+                        new app.Actions.Insert_layer_action({
+                            name: 'DW Lasso',
+                            type: this.name,
+                            params: this.clone(this.getParams()),
+                            status: 'draft',
+                            render_function: [this.name, 'render'],
+                            x: 0,
+                            y: 0,
+                            width: config.WIDTH,
+                            height: config.HEIGHT,
+                            hide_selection_if_active: true,
+                            rotate: null,
+                            is_vector: true,
+                            color: config.COLOR,
+                        }),
+                    ],
                 ),
             );
+        } else {
+            // bring layer to the top
+            while (app.Layers.find_next(layer.id))
+                app.State.do_action(
+                    new app.Actions.Reorder_layer_action(layer.id, 1),
+                );
         }
-
-        // bring layer to the top
-        while (app.Layers.find_next(layer.id))
-            app.State.do_action(
-                new app.Actions.Reorder_layer_action(layer.id, 1),
-            );
     }
 
     on_leave() {
@@ -780,12 +781,8 @@ export default class DwLasso_class extends Base_tools_class {
             noDataPoints: () => !this.data.length,
 
             deleteHoverPoint: () => {
-                const hover =
-                    !!this.hover?.pointIndex || !!this.hover?.midpointIndex;
-                if (hover) {
-                    this.deletePoint();
-                }
-                return hover;
+                if (!this.getHoverPoint()) return false;
+                this.deletePoint();
             },
 
             hoveringOverPoint: (mouseEvent) => {
@@ -817,10 +814,10 @@ export default class DwLasso_class extends Base_tools_class {
             crop: () => this.crop(),
 
             smooth: () => {
-                if (typeof this.hover?.pointIndex === 'number')
-                    return actions.smoothAroundVertex();
-                if (typeof this.hover?.midpointIndex === 'number')
-                    return actions.smoothAroundMinorVertex();
+                const isMajorVertex = this.getHoverInfo()?.type === 'major';
+                const isMinorVertex = this.getHoverInfo()?.type === 'minor';
+                if (isMajorVertex) return actions.smoothAroundVertex();
+                if (isMinorVertex) return actions.smoothAroundMinorVertex();
                 return actions.smoothAllData();
             },
 
@@ -864,27 +861,15 @@ export default class DwLasso_class extends Base_tools_class {
             },
 
             centerAt: () => {
-                const isMajorVertex =
-                    typeof this.hover?.pointIndex === 'number';
-                const isMinorVertex =
-                    !isMajorVertex &&
-                    typeof this.hover?.midpointIndex === 'number';
+                const hoverInfo = this.getHoverInfo();
+                if (!hoverInfo) return false;
+                const isMajorVertex = hoverInfo.type === 'major';
+                const isMinorVertex = hoverInfo.type === 'minor';
 
-                if (isMajorVertex) {
-                    const pointIndex = this.hover.pointIndex;
-                    this.centerAt(this.data[pointIndex]);
-                } else if (isMinorVertex) {
-                    const pointIndex = this.hover.midpointIndex;
-                    this.centerAt(
-                        center(
-                            this.data.at(pointIndex),
-                            this.data.at((pointIndex + 1) % this.data.length),
-                        ),
-                    );
-                } else {
-                    return;
+                if (isMajorVertex || isMinorVertex) {
+                    this.centerAt(hoverInfo.point);
+                    this.renderData();
                 }
-                this.renderData();
             },
         });
 
@@ -1192,7 +1177,7 @@ export default class DwLasso_class extends Base_tools_class {
     movePoint(dx, dy) {
         if (!dx && !dy) return; // nothing to do
 
-        const isMidpoint = this.hover?.midpointIndex >= 0;
+        const isMidpoint = this.getHoverInfo()?.type === 'minor';
 
         const timeOfLastMove = this.metrics.timeOfMove;
         this.metrics.timeOfMove = Date.now();
@@ -1243,9 +1228,8 @@ export default class DwLasso_class extends Base_tools_class {
     moveToNextVertex(indexOffset) {
         if (!indexOffset) return;
 
-        const isMidpoint = this.hover?.midpointIndex >= 0;
-        let pointIndex =
-            this.hover?.pointIndex || this.hover?.midpointIndex || 0;
+        const isMidpoint = this.getHoverInfo()?.type === 'minor';
+        let pointIndex = this.getHoverInfo()?.pointIndex || 0;
 
         if (isMidpoint) {
             pointIndex += indexOffset;
@@ -1395,10 +1379,10 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     deletePoint() {
+        if (!this.data.length) return false;
+
         const pointIndex =
-            this.hover?.pointIndex ||
-            this.hover?.midpointIndex ||
-            this.data.length - 1;
+            this.getHoverInfo()?.pointIndex || this.data.length - 1;
 
         this.snapshot('before deleting point', () => {
             this.data.splice(pointIndex, 1);
