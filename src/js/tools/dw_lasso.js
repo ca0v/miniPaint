@@ -16,7 +16,7 @@
  * - arrow panning has a little when using keyboard
  *
  * ** TODO **
- * - would be nice to add deceleration when user stops moving a point with the arrow keys
+ * - would be nice to add deceleration when user stops moving a point with the arrow keys (decoupled from keydown repeat rate and delay)
  * - panViewport and panViewport2 can be combined?
  */
 import app from '../app.js';
@@ -149,6 +149,7 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     on_leave() {
+        this.state.setCurrentState(Status.none);
         this.state.off();
 
         this.Base_state.action_history_max =
@@ -1145,7 +1146,13 @@ export default class DwLasso_class extends Base_tools_class {
                 ),
             );
         } else {
-            this.metrics.speed = this.metrics.DEFAULT_SPEED;
+            this.metrics.speed = Math.max(
+                this.metrics.DEFAULT_SPEED,
+                this.metrics.speed -
+                    (this.metrics.ACCELERATION *
+                        (this.metrics.timeOfMove - timeOfLastMove)) /
+                        30,
+            );
         }
 
         dx *= this.metrics.speed * this.scale;
