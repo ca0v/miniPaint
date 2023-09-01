@@ -17,7 +17,6 @@
  *
  * ** TODO **
  * - panViewport and panViewport2 can be combined?
- * - consolidate pointIndex and midpointIndex into a hoverIndex + hoverVertexType on the 'metrics'
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -1264,17 +1263,18 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     setHoverInfo(type, index) {
-        this.hover = {
+        this.metrics.hover = {
             type,
             pointIndex: index,
         };
     }
 
     getHoverInfo() {
-        if (!this.hover) return null;
-        const isMajor = this.hover.type === 'major';
-        const isMinor = this.hover.type === 'minor';
-        const pointIndex = this.hover.pointIndex;
+        const hover = this.metrics.hover;
+        if (!hover) return null;
+        const isMajor = hover.type === 'major';
+        const isMinor = hover.type === 'minor';
+        const pointIndex = hover.pointIndex;
 
         if (isMajor)
             return {
