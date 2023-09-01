@@ -236,6 +236,11 @@ export default class DwLasso_class extends Base_tools_class {
         ctx.closePath();
         ctx.stroke();
 
+        const hoverInfo = this.getHoverInfo();
+        const hoverIndex = hoverInfo?.pointIndex;
+        const isMajorVertex = hoverInfo?.type === 'major';
+        const isMinorVertex = hoverInfo?.type === 'minor';
+
         // now render the drag-points over the top of the lines
         data.forEach((currentPoint, i) => {
             if (
@@ -249,7 +254,7 @@ export default class DwLasso_class extends Base_tools_class {
                     lineWidth: Drawings.lastMoveVertex.lineWidth * this.scale,
                     gapSize: 2 * this.scale,
                 });
-            } else if (this.hover?.pointIndex === i) {
+            } else if (isMajorVertex && hoverIndex === i) {
                 // draw cursor
                 cross(ctx, currentPoint, {
                     color: Drawings.cursor.color,
@@ -275,7 +280,7 @@ export default class DwLasso_class extends Base_tools_class {
 
             const centerPoint = center(currentPoint, nextPoint);
 
-            if (this.hover && this.hover.midpointIndex == i) {
+            if (isMinorVertex && hoverIndex === i) {
                 plus(ctx, centerPoint, {
                     color: Drawings.cursor.color,
                     size: Drawings.cursor.size * this.scale,
@@ -632,8 +637,13 @@ export default class DwLasso_class extends Base_tools_class {
                 const currentPoint = this.mousePoint(mouseEvent);
                 if (!currentPoint) return false;
 
-                if (this.hover?.pointIndex >= 0) {
-                    const index = this.hover.pointIndex;
+                const hoverInfo = this.getHoverInfo();
+                const isMajorVertex = hoverInfo?.type === 'major';
+                const isMinorVertex = hoverInfo?.type === 'minor';
+                const hoverIndex = hoverInfo?.pointIndex;
+
+                if (isMajorVertex) {
+                    const index = hoverIndex;
                     this.hover.point = this.data.at(index);
 
                     const { x: original_x, y: original_y } =
@@ -656,8 +666,8 @@ export default class DwLasso_class extends Base_tools_class {
                     );
                     // render the line
                     this.renderData();
-                } else if (this.hover?.midpointIndex >= 0) {
-                    const index = this.hover.midpointIndex;
+                } else if (isMinorVertex) {
+                    const index = hoverIndex;
                     this.undoredo(
                         `before dragging midpoint ${index}`,
                         () => this.data.splice(index + 1, 0, currentPoint),
@@ -673,12 +683,13 @@ export default class DwLasso_class extends Base_tools_class {
                 const currentPoint = this.mousePoint(mouseEvent);
                 if (!currentPoint) return false;
 
-                if (this.hover?.point) {
-                    const point = this.hover.point;
-                    point.x = currentPoint.x;
-                    point.y = currentPoint.y;
+                const hoverPoint = this.getHoverPoint();
+
+                if (hoverPoint) {
+                    hoverPoint.x = currentPoint.x;
+                    hoverPoint.y = currentPoint.y;
                     this.metrics.timeOfMove = Date.now();
-                    this.metrics.lastPointMoved = point;
+                    this.metrics.lastPointMoved = hoverPoint;
                     this.renderData();
                 } else {
                     log(`mousemove: no point to drag`);
