@@ -354,6 +354,9 @@ IMPORTANT: any new icon should also must be added on /service-worker.js + its ve
 .sidebar_left .crop:after {
     background-image: url('images/icons/crop.svg');
 }
+.sidebar_left .dw_lasso:after {
+    background-image: url('images/icons/dw_lasso.svg');
+}
 .sidebar_left .blur:after {
     background-image: url('images/icons/blur.svg');
 }
@@ -817,4 +820,14 @@ canvas {
         margin-left: 0;
         margin-top: 1rem;
     }
+}
+
+/* dataworks extensions */
+.canvas_wrapper.dw_dragging,
+.canvas_wrapper.dw_placing {
+    cursor: none;
+}
+
+.canvas_wrapper.dw_hover {
+    cursor: pointer;
 }
