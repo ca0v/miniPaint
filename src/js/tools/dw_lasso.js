@@ -1,11 +1,7 @@
 /**
  * ---------------------------------------------------------------------
  * Magic Crop Tool
- * -----------------      const { x, y, width, height, width_original, height_original } = link;
-      const width_ratio = (width / width_original);
-      const height_ratio = (height / height_original);
-
-----------------------------------------------------
+ * ---------------------------------------------------------------------
  * status values: ready, drawing, placing, editing, hover, dragging, done
  * ready - tool has been initialized and is listening for 1st click
  * drawing - tool has placed a point
