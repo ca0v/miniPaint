@@ -67,6 +67,7 @@ export default class DwLasso_class extends Base_tools_class {
         this.data = [];
 
         this.metrics = {
+            hover: { type: null, pointIndex: null, point: null },
             timeOfMove: Date.now(),
             lastPointMoved: null,
             prior_action_history_max: null,
@@ -330,8 +331,11 @@ export default class DwLasso_class extends Base_tools_class {
         }
     }
 
-    reset() {
-        this.snapshot('before reset', () => (this.data = []));
+    reset(about = 'before reset') {
+        this.snapshot(about, () => {
+            this.data = [];
+            this.setHoverInfo(null, null);
+        });
         this.renderData();
     }
 
@@ -483,7 +487,7 @@ export default class DwLasso_class extends Base_tools_class {
             }
         });
 
-        this.snapshot('before cropping', () => (this.data = []));
+        this.reset('before cropping');
 
         await doActions(actions);
     }
@@ -566,6 +570,7 @@ export default class DwLasso_class extends Base_tools_class {
         if (this.state) {
             this.state.off();
             this.data = [];
+            this.setHoverInfo(null, null);
         }
         this.state = new StateMachine(Object.values(Status));
 
@@ -1279,10 +1284,18 @@ export default class DwLasso_class extends Base_tools_class {
         const pointIndex = hover.pointIndex;
 
         if (typeof pointIndex === 'number') {
-            if (isMajor) hover.point = this.data.at(pointIndex);
+            if (pointIndex >= this.data.length) {
+                // invalid state, ignore it
+                console.warn(
+                    `invalid hover state: ${pointIndex}, the data was modified without updating the hover state`,
+                );
+                return null;
+            }
+            if (isMajor)
+                hover.point = this.data.at(pointIndex % this.data.length);
             else if (isMinor)
                 hover.point = center(
-                    this.data.at(pointIndex),
+                    this.data.at(pointIndex % this.data.length),
                     this.data.at((pointIndex + 1) % this.data.length),
                 );
         }
