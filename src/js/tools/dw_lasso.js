@@ -17,6 +17,7 @@
  *
  * ** TODO **
  * - panViewport and panViewport2 can be combined?
+ * - consolidate pointIndex and midpointIndex into a hoverIndex + hoverVertexType on the 'metrics'
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -112,9 +113,6 @@ export default class DwLasso_class extends Base_tools_class {
             alertify.error(
                 `Cannot activate ${this.name} tool without an image`,
             );
-            return [
-                // no actions to execute
-            ];
         }
 
         this.state = this.defineStateMachine();
@@ -123,10 +121,10 @@ export default class DwLasso_class extends Base_tools_class {
             this.Base_state.action_history_max;
         this.Base_state.action_history_max = this.metrics.ACTION_HISTORY_MAX;
 
-        const layer = config?.layers.find((l) => l.type === this.name);
+        let layer = config?.layers.find((l) => l.type === this.name);
 
         if (!layer) {
-            const layer = {
+            layer = {
                 name: 'DW Lasso',
                 type: this.name,
                 params: this.clone(this.getParams()),
@@ -511,14 +509,24 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     insertPointBeforeHoverLocation() {
-        const index = this.hover?.pointIndex;
-        if (typeof index !== 'number') return false;
-        const { x, y } = this.data.at(index);
+        const hoverInfo = this.getHoverInfo();
+        if (!hoverInfo) return false;
+
+        const isMinorVertex = hoverInfo.type === 'minor';
+        if (isMinorVertex) return false;
+
+        const { x, y } = hoverInfo.point;
+        const index = hoverInfo.pointIndex;
+
         this.undoredo(
-            `before inserting point ${index}`,
+            `before cloning major vertex ${index}`,
             () => {
                 this.data.splice(index, 0, { x, y });
-                this.hover.pointIndex++;
+                if (!isMinorVertex) {
+                    this.hover.pointIndex++;
+                } else {
+                    this.hover.midpointIndex++;
+                }
             },
             () => {
                 this.data.splice(index, 1);
@@ -559,18 +567,21 @@ export default class DwLasso_class extends Base_tools_class {
         }
         this.state = new StateMachine(Object.values(Status));
 
+        this.state.on('stateChanged', () => {
+            const wrapper = document.getElementById('canvas_wrapper');
+            // remove anything that starts with 'dw_'
+            wrapper.classList.forEach((c) => {
+                if (c.startsWith('dw_')) wrapper.classList.remove(c);
+            });
+            wrapper.classList.add(`dw_${this.state.currentState}`);
+        });
+
         this.state.on('execute', (context) => {
             const from = context.from;
             const goto = context.goto || context.from;
             log(
                 `${context.when}: ${context.about} (state: ${from} -> ${goto})`,
             );
-            const wrapper = document.getElementById('canvas_wrapper');
-            // remove anything that starts with 'dw_'
-            wrapper.classList.forEach((c) => {
-                if (c.startsWith('dw_')) wrapper.classList.remove(c);
-            });
-            wrapper.classList.add(`dw_${goto}`);
         });
 
         this.state.on('PressDrag', (dragEvent) => {
@@ -975,7 +986,7 @@ export default class DwLasso_class extends Base_tools_class {
 
         this.state
             .about(`place a point at the mouse location behind the drag point`)
-            .from(Status.dragging)
+            .from([Status.dragging, Status.editing])
             .when(Keyboard.InsertPointAtCursorPosition)
             .do(actions.insertPointBeforeHoverLocation);
 
@@ -1269,22 +1280,33 @@ export default class DwLasso_class extends Base_tools_class {
         lasso.Base_layers.render();
     }
 
-    getHoverPoint() {
+    getHoverInfo() {
         const lasso = this;
         const pointIndex = lasso.hover?.pointIndex;
         if (typeof pointIndex === 'number') {
-            return lasso.data.at(pointIndex);
+            return {
+                pointIndex,
+                point: lasso.data.at(pointIndex),
+                type: 'major',
+            };
         }
 
         const midpointIndex = lasso.hover?.midpointIndex;
         if (typeof midpointIndex === 'number') {
-            const point = center(
-                lasso.data.at(midpointIndex),
-                lasso.data.at((midpointIndex + 1) % lasso.data.length),
-            );
-            return point;
+            return {
+                pointIndex: midpointIndex,
+                point: center(
+                    lasso.data.at(midpointIndex),
+                    lasso.data.at((midpointIndex + 1) % lasso.data.length),
+                ),
+                type: 'minor',
+            };
         }
         return null;
+    }
+
+    getHoverPoint() {
+        return this.getHoverInfo()?.point;
     }
 
     zoomViewport(mouseEvent, zoom) {
