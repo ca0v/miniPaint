@@ -45,8 +45,9 @@ export class Update_layer_action extends Base_action {
         this.cropperState.isRedo = true;
         console.log(`undo: ${this.about}`);
         this.cropperState.undo.data = deep(this.cropper.data);
-        this.cropperState.undo.status = deep(this.cropper.status);
+        this.cropperState.undo.status = this.cropper.status;
         this.cropper.data = deep(this.cropperState.do.data);
+        this.cropper.status = this.cropperState.do.status;
         this.cropper.Base_layers.render();
         super.undo();
     }

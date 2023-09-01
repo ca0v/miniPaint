@@ -14,6 +14,7 @@
  *
  * ** KNOWN ISSUES **
  * - draw a shape, convert to raster then clip it...the right edge is not clipped
+ * - after cut(), state is 'ready', but undo does not restore state
  *
  * ** TODO **
  * - would be nice to add deceleration when user stops moving a point with the arrow keys (decoupled from keydown repeat rate and delay)
