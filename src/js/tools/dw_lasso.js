@@ -112,6 +112,7 @@ export default class DwLasso_class extends Base_tools_class {
             alertify.error(
                 `Cannot activate ${this.name} tool without an image`,
             );
+            return;
         }
 
         this.state = this.defineStateMachine();
@@ -1270,29 +1271,22 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     getHoverInfo() {
-        const hover = this.metrics.hover;
-        if (!hover) return null;
+        const hover = (this.metrics.hover = this.metrics.hover || {});
+
         const isMajor = hover.type === 'major';
         const isMinor = hover.type === 'minor';
+
         const pointIndex = hover.pointIndex;
 
-        if (isMajor)
-            return {
-                type: 'major',
-                pointIndex,
-                point: this.data.at(pointIndex),
-            };
-
-        if (isMinor)
-            return {
-                type: 'minor',
-                pointIndex,
-                point: center(
+        if (typeof pointIndex === 'number') {
+            if (isMajor) hover.point = this.data.at(pointIndex);
+            else if (isMinor)
+                hover.point = center(
                     this.data.at(pointIndex),
                     this.data.at((pointIndex + 1) % this.data.length),
-                ),
-            };
-        return null;
+                );
+        }
+        return hover;
     }
 
     getHoverPoint() {
