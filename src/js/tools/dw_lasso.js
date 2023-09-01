@@ -13,19 +13,17 @@
  * done - user has clicked the "Magic Crop" button, all points are cleared
  *
  * ** KNOWN ISSUES **
- * - none
+ * - arrow panning has a little when using keyboard
  *
  * ** TODO **
  * - would be nice to add deceleration when user stops moving a point with the arrow keys
+ * - panViewport and panViewport2 can be combined?
  */
 import app from '../app.js';
 import config from '../config.js';
 import Base_tools_class from '../core/base-tools.js';
 import Base_layers_class from '../core/base-layers.js';
-import GUI_tools_class from '../core/gui/gui-tools.js';
-import Base_gui_class from '../core/base-gui.js';
 import GUI_preview_class from '../core/gui/gui-preview.js';
-import Base_selection_class from '../core/base-selection.js';
 import alertify from 'alertifyjs/build/alertify.min.js';
 import Base_state_class from '../core/base-state.js';
 import zoomView from './../libs/zoomView.js';
@@ -1262,20 +1260,23 @@ export default class DwLasso_class extends Base_tools_class {
                 dragDistanceInPixels: distance,
                 dragDirectionInDegrees: degrees,
             } = e;
-            const draggingUp = closeTo(degrees, -90);
-            const draggingDown = closeTo(degrees, 90);
-            const draggingLeft = closeTo(degrees, 180);
-            const draggingRight = closeTo(degrees, 0);
+            if (distance) {
+                dx = dy = 0;
+                const draggingUp = closeTo(degrees, -90);
+                const draggingDown = closeTo(degrees, 90);
+                const draggingLeft = closeTo(degrees, 180);
+                const draggingRight = closeTo(degrees, 0);
 
-            if (draggingLeft) dx = -distance; // pan right
-            else if (draggingRight) dx = distance; // pan left
+                if (draggingLeft) dx = -distance; // pan right
+                else if (draggingRight) dx = distance; // pan left
 
-            if (draggingUp) dy = -distance; // pan down
-            else if (draggingDown) dy = distance; // pan up
+                if (draggingUp) dy = -distance; // pan down
+                else if (draggingDown) dy = distance; // pan up
+
+                dx *= this.scale;
+                dy *= this.scale;
+            }
         }
-
-        dx *= this.scale;
-        dy *= this.scale;
 
         this.panViewport(dx, dy);
     }
