@@ -510,7 +510,7 @@ export default class DwLasso_class extends Base_tools_class {
         if (!lastPoint) return;
         const newPoint = { x: lastPoint.x, y: lastPoint.y };
         this.data.push(newPoint);
-        this.hover = { pointIndex: this.data.length - 1 };
+        this.setHoverInfo('major', this.data.length - 1);
         this.renderData();
     }
 
@@ -545,7 +545,7 @@ export default class DwLasso_class extends Base_tools_class {
             `before placing point ${this.data.length + 1}`,
             () => {
                 this.data.push(currentPoint);
-                this.hover = { pointIndex: this.data.length - 1 };
+                this.setHoverInfo('major', this.data.length - 1);
             },
             () => this.data.pop(),
         );
@@ -558,7 +558,7 @@ export default class DwLasso_class extends Base_tools_class {
         const p = this.data.at(-1);
         p.x = currentPoint.x;
         p.y = currentPoint.y;
-        this.hover = { pointIndex: this.data.length - 1 };
+        this.setHoverInfo('major', this.data.length - 1);
         this.renderData();
     }
 
@@ -640,21 +640,18 @@ export default class DwLasso_class extends Base_tools_class {
                 const hoverIndex = hoverInfo?.pointIndex;
 
                 if (isMajorVertex) {
-                    const index = hoverIndex;
-                    this.hover.point = this.data.at(index);
-
                     const { x: original_x, y: original_y } =
-                        this.data.at(index);
+                        this.data.at(hoverIndex);
                     let { x: redo_x, y: redo_y } = currentPoint;
                     this.undoredo(
-                        `before dragging point ${index} from ${original_x}, ${original_y}`,
+                        `before dragging point ${hoverIndex} from ${original_x}, ${original_y}`,
                         () => {
-                            const point = this.data.at(index);
+                            const point = this.data.at(hoverIndex);
                             point.x = redo_x;
                             point.y = redo_y;
                         },
                         () => {
-                            const point = this.data.at(index);
+                            const point = this.data.at(hoverIndex);
                             redo_x = point.x;
                             redo_y = point.y;
                             point.x = original_x;
@@ -663,17 +660,20 @@ export default class DwLasso_class extends Base_tools_class {
                     );
                     // render the line
                     this.renderData();
-                } else if (isMinorVertex) {
+                    return;
+                }
+
+                if (isMinorVertex) {
                     const index = hoverIndex;
                     this.undoredo(
                         `before dragging midpoint ${index}`,
                         () => this.data.splice(index + 1, 0, currentPoint),
                         () => this.data.splice(index + 1, 1),
                     );
-                    this.hover = { pointIndex: index + 1 };
-                    this.hover.point = this.data.at(index + 1);
+                    this.setHoverInfo('major', index + 1);
                     // render the line
                     this.renderData();
+                    return;
                 }
             },
             draggingHoverPoint: (mouseEvent) => {
@@ -729,7 +729,7 @@ export default class DwLasso_class extends Base_tools_class {
                 }
                 if (drawPoint) {
                     data.push(currentPoint);
-                    this.hover = { pointIndex: data.length - 1 };
+                    this.setHoverInfo('major', data.length - 1);
                 } else {
                     const p = data.at(-1);
                     p.x = currentPoint.x;
@@ -784,11 +784,11 @@ export default class DwLasso_class extends Base_tools_class {
             hoveringOverPoint: (mouseEvent) => {
                 const currentPoint = this.mousePoint(mouseEvent);
                 if (!currentPoint) return false;
-                const priorHover = JSON.stringify(this.hover || null);
+                const priorHover = JSON.stringify(this.getHoverInfo() || null);
                 const hover = this.computeHover(this.data, currentPoint);
                 if (hover) {
                     // track the last point we were hovering over
-                    this.hover = hover;
+                    this.setHoverInfo(hover.type, hover.pointIndex);
                 }
                 if (priorHover != JSON.stringify(hover)) {
                     this.renderData();
@@ -1154,7 +1154,7 @@ export default class DwLasso_class extends Base_tools_class {
             );
         });
 
-        if (pointIndex > -1) return { pointIndex };
+        if (pointIndex > -1) return { type: 'major', pointIndex };
 
         // is the current point within 5 pixels of any of the midpoints of the lines?
         const midpointIndex = data.findIndex((point, i) => {
@@ -1167,7 +1167,7 @@ export default class DwLasso_class extends Base_tools_class {
         });
 
         if (midpointIndex > -1) {
-            return { midpointIndex };
+            return { type: 'minor', pointIndex: midpointIndex };
         }
 
         return null;
@@ -1210,7 +1210,7 @@ export default class DwLasso_class extends Base_tools_class {
         }
 
         this.delayedSnapshot('point moved');
-        const point = this.data.at(this.hover.pointIndex);
+        const point = this.data.at(hoverInfo.pointIndex);
         point.x += dx;
         point.y += dy;
         this.metrics.timeOfMove = Date.now();
@@ -1221,24 +1221,23 @@ export default class DwLasso_class extends Base_tools_class {
     moveToNextVertex(indexOffset) {
         if (!indexOffset) return;
 
-        const isMidpoint = this.getHoverInfo()?.type === 'minor';
+        const isMinor = this.getHoverInfo()?.type === 'minor';
         let pointIndex = this.getHoverInfo()?.pointIndex || 0;
 
-        if (isMidpoint) {
+        if (isMinor) {
             pointIndex += indexOffset;
             if (indexOffset < 0) pointIndex++;
-
-            this.hover = {
-                pointIndex: (pointIndex + this.data.length) % this.data.length,
-            };
+            this.setHoverInfo(
+                'major',
+                (pointIndex + this.data.length) % this.data.length,
+            );
         } else {
             pointIndex += indexOffset;
             if (indexOffset > 0) pointIndex--;
-
-            this.hover = {
-                midpointIndex:
-                    (pointIndex + this.data.length) % this.data.length,
-            };
+            this.setHoverInfo(
+                'minor',
+                (pointIndex + this.data.length) % this.data.length,
+            );
         }
 
         {
@@ -1272,26 +1271,27 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     getHoverInfo() {
-        const pointIndex = this.hover?.pointIndex;
-        if (typeof pointIndex === 'number') {
+        if (!this.hover) return null;
+        const isMajor = this.hover.type === 'major';
+        const isMinor = this.hover.type === 'minor';
+        const pointIndex = this.hover.pointIndex;
+
+        if (isMajor)
             return {
+                type: 'major',
                 pointIndex,
                 point: this.data.at(pointIndex),
-                type: 'major',
             };
-        }
 
-        const midpointIndex = this.hover?.midpointIndex;
-        if (typeof midpointIndex === 'number') {
+        if (isMinor)
             return {
-                pointIndex: midpointIndex,
-                point: center(
-                    this.data.at(midpointIndex),
-                    this.data.at((midpointIndex + 1) % this.data.length),
-                ),
                 type: 'minor',
+                pointIndex,
+                point: center(
+                    this.data.at(pointIndex),
+                    this.data.at((pointIndex + 1) % this.data.length),
+                ),
             };
-        }
         return null;
     }
 
