@@ -1294,9 +1294,9 @@ export default class DwLasso_class extends Base_tools_class {
         }
 
         {
-            // is there an active vertex?
-            if (typeof lasso.hover?.pointIndex === 'number') {
-                const point = lasso.data.at(lasso.hover.pointIndex);
+            // is there an hover point?
+            const point = this.getHoverPoint();
+            if (point) {
                 const screenPoint = zoomView.toScreen(point);
                 lasso.GUI_preview.zoom_data.x = screenPoint.x;
                 lasso.GUI_preview.zoom_data.y = screenPoint.y;
