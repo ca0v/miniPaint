@@ -14,12 +14,9 @@
  *
  * ** KNOWN ISSUES **
  * - draw a shape, convert to raster then clip it...the right edge is not clipped
- * - after cut(), state is 'ready', but undo does not restore state
  *
  * ** TODO **
- * - would be nice to add deceleration when user stops moving a point with the arrow keys (decoupled from keydown repeat rate and delay)
  * - panViewport and panViewport2 can be combined?
- * - when dragging a point, [space] should insert points before the drag point
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -1063,7 +1060,7 @@ export default class DwLasso_class extends Base_tools_class {
 
         this.state
             .about('move the point')
-            .from([Status.editing, Status.placing])
+            .from([Status.editing, Status.placing, Status.hover])
             .when(Keyboard.MovePointLeft)
             .do(actions.movePointLeft1Units)
             .butWhen(Keyboard.MovePointRight)
