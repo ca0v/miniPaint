@@ -528,15 +528,11 @@ export default class DwLasso_class extends Base_tools_class {
             `before cloning major vertex ${index}`,
             () => {
                 this.data.splice(index, 0, { x, y });
-                if (!isMinorVertex) {
-                    this.hover.pointIndex++;
-                } else {
-                    this.hover.midpointIndex++;
-                }
+                this.setHoverInfo('major', index + 1);
             },
             () => {
                 this.data.splice(index, 1);
-                this.hover.pointIndex--;
+                this.setHoverInfo('major', index - 1);
             },
         );
     }
@@ -829,22 +825,26 @@ export default class DwLasso_class extends Base_tools_class {
             },
 
             smoothAroundVertex: () => {
-                const index = this.hover.pointIndex;
-                if (typeof index !== 'number') return false;
+                const hoverInfo = this.getHoverInfo();
+                if (!hoverInfo) return false;
+                const index = hoverInfo.pointIndex;
+
                 this.snapshot(`before smoothing around vertex ${index}`, () => {
                     const success = new Smooth().smoothAroundVertex(
                         this.data,
                         index,
                     );
                     if (success) {
-                        this.hover.pointIndex = index + 1;
+                        this.setHoverInfo('major', index + 1);
                     }
                 });
             },
 
             smoothAroundMinorVertex: () => {
-                const index = this.hover.midpointIndex;
-                if (typeof index !== 'number') return false;
+                const hoverInfo = this.getHoverInfo();
+                if (!hoverInfo) return false;
+                const index = hoverInfo.pointIndex;
+
                 this.snapshot(
                     `before smoothing around minor vertex ${index}`,
                     () => {
@@ -853,8 +853,7 @@ export default class DwLasso_class extends Base_tools_class {
                             index,
                         );
                         if (success) {
-                            this.hover.pointIndex = index + 1;
-                            this.hover.midpointIndex = null;
+                            this.setHoverInfo('major', index + 1);
                         }
                     },
                 );
@@ -1177,8 +1176,6 @@ export default class DwLasso_class extends Base_tools_class {
     movePoint(dx, dy) {
         if (!dx && !dy) return; // nothing to do
 
-        const isMidpoint = this.getHoverInfo()?.type === 'minor';
-
         const timeOfLastMove = this.metrics.timeOfMove;
         this.metrics.timeOfMove = Date.now();
         // if the time between moves is short, then increase the speed, but if it's long, then reset the speed
@@ -1203,17 +1200,13 @@ export default class DwLasso_class extends Base_tools_class {
         dx *= this.metrics.speed * this.scale;
         dy *= this.metrics.speed * this.scale;
 
+        const hoverInfo = this.getHoverInfo();
+        const isMidpoint = hoverInfo?.type === 'minor';
         if (isMidpoint) {
-            // create the point an select the new point
-            const index = this.hover.midpointIndex;
-            const point = center(
-                this.data.at(index),
-                this.data.at((index + 1) % this.data.length),
-            );
             this.snapshot('before moving point', () => {
-                this.data.splice(index + 1, 0, point);
+                this.data.splice(hoverInfo.pointIndex + 1, 0, hoverInfo.point);
             });
-            this.hover = { pointIndex: index + 1 };
+            this.setHoverInfo('major', hoverInfo.pointIndex + 1);
         }
 
         this.delayedSnapshot('point moved');
@@ -1269,6 +1262,13 @@ export default class DwLasso_class extends Base_tools_class {
             }
         }
         this.Base_layers.render();
+    }
+
+    setHoverInfo(type, index) {
+        this.hover = {
+            type,
+            pointIndex: index,
+        };
     }
 
     getHoverInfo() {
