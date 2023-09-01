@@ -1181,9 +1181,7 @@ export default class DwLasso_class extends Base_tools_class {
     movePoint(dx, dy) {
         if (!dx && !dy) return; // nothing to do
 
-        const lasso = this;
-
-        const isMidpoint = lasso.hover?.midpointIndex >= 0;
+        const isMidpoint = this.hover?.midpointIndex >= 0;
 
         const timeOfLastMove = this.metrics.timeOfMove;
         this.metrics.timeOfMove = Date.now();
@@ -1211,49 +1209,47 @@ export default class DwLasso_class extends Base_tools_class {
 
         if (isMidpoint) {
             // create the point an select the new point
-            const index = lasso.hover.midpointIndex;
+            const index = this.hover.midpointIndex;
             const point = center(
-                lasso.data.at(index),
-                lasso.data.at((index + 1) % lasso.data.length),
+                this.data.at(index),
+                this.data.at((index + 1) % this.data.length),
             );
-            lasso.snapshot('before moving point', () => {
-                lasso.data.splice(index + 1, 0, point);
+            this.snapshot('before moving point', () => {
+                this.data.splice(index + 1, 0, point);
             });
-            lasso.hover = { pointIndex: index + 1 };
+            this.hover = { pointIndex: index + 1 };
         }
 
-        lasso.delayedSnapshot('point moved');
-        const point = lasso.data.at(lasso.hover.pointIndex);
+        this.delayedSnapshot('point moved');
+        const point = this.data.at(this.hover.pointIndex);
         point.x += dx;
         point.y += dy;
-        lasso.metrics.timeOfMove = Date.now();
-        lasso.metrics.lastPointMoved = point;
-        lasso.Base_layers.render();
+        this.metrics.timeOfMove = Date.now();
+        this.metrics.lastPointMoved = point;
+        this.Base_layers.render();
     }
 
     moveToNextVertex(indexOffset) {
         if (!indexOffset) return;
-        const lasso = this;
 
-        const isMidpoint = lasso.hover?.midpointIndex >= 0;
+        const isMidpoint = this.hover?.midpointIndex >= 0;
         let pointIndex =
-            lasso.hover?.pointIndex || lasso.hover?.midpointIndex || 0;
+            this.hover?.pointIndex || this.hover?.midpointIndex || 0;
 
         if (isMidpoint) {
             pointIndex += indexOffset;
             if (indexOffset < 0) pointIndex++;
 
-            lasso.hover = {
-                pointIndex:
-                    (pointIndex + lasso.data.length) % lasso.data.length,
+            this.hover = {
+                pointIndex: (pointIndex + this.data.length) % this.data.length,
             };
         } else {
             pointIndex += indexOffset;
             if (indexOffset > 0) pointIndex--;
 
-            lasso.hover = {
+            this.hover = {
                 midpointIndex:
-                    (pointIndex + lasso.data.length) % lasso.data.length,
+                    (pointIndex + this.data.length) % this.data.length,
             };
         }
 
@@ -1277,27 +1273,26 @@ export default class DwLasso_class extends Base_tools_class {
                 this.centerAt(point);
             }
         }
-        lasso.Base_layers.render();
+        this.Base_layers.render();
     }
 
     getHoverInfo() {
-        const lasso = this;
-        const pointIndex = lasso.hover?.pointIndex;
+        const pointIndex = this.hover?.pointIndex;
         if (typeof pointIndex === 'number') {
             return {
                 pointIndex,
-                point: lasso.data.at(pointIndex),
+                point: this.data.at(pointIndex),
                 type: 'major',
             };
         }
 
-        const midpointIndex = lasso.hover?.midpointIndex;
+        const midpointIndex = this.hover?.midpointIndex;
         if (typeof midpointIndex === 'number') {
             return {
                 pointIndex: midpointIndex,
                 point: center(
-                    lasso.data.at(midpointIndex),
-                    lasso.data.at((midpointIndex + 1) % lasso.data.length),
+                    this.data.at(midpointIndex),
+                    this.data.at((midpointIndex + 1) % this.data.length),
                 ),
                 type: 'minor',
             };
@@ -1310,7 +1305,6 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     zoomViewport(mouseEvent, zoom) {
-        const lasso = this;
         if (!zoom) return;
 
         // is this a pinch gesture?
@@ -1319,9 +1313,9 @@ export default class DwLasso_class extends Base_tools_class {
             const touch2 = mouseEvent.touches[1];
             const centerPoint = center(touch1, touch2);
 
-            lasso.GUI_preview.zoom_data.x = centerPoint.x;
-            lasso.GUI_preview.zoom_data.y = centerPoint.y;
-            lasso.GUI_preview.zoom(zoom);
+            this.GUI_preview.zoom_data.x = centerPoint.x;
+            this.GUI_preview.zoom_data.y = centerPoint.y;
+            this.GUI_preview.zoom(zoom);
             return;
         }
 
@@ -1330,23 +1324,23 @@ export default class DwLasso_class extends Base_tools_class {
             const point = this.getHoverPoint();
             if (point) {
                 const screenPoint = zoomView.toScreen(point);
-                lasso.GUI_preview.zoom_data.x = screenPoint.x;
-                lasso.GUI_preview.zoom_data.y = screenPoint.y;
-                lasso.GUI_preview.zoom(zoom);
+                this.GUI_preview.zoom_data.x = screenPoint.x;
+                this.GUI_preview.zoom_data.y = screenPoint.y;
+                this.GUI_preview.zoom(zoom);
                 return;
             }
         }
 
-        lasso.undoredo(
+        this.undoredo(
             'before zooming',
             () => {
-                lasso.GUI_preview.zoom(zoom);
+                this.GUI_preview.zoom(zoom);
             },
             () => {
-                lasso.GUI_preview.zoom(-zoom);
+                this.GUI_preview.zoom(-zoom);
             },
         );
-        lasso.Base_layers.render();
+        this.Base_layers.render();
     }
 
     panViewport(dx, dy) {
@@ -1390,14 +1384,13 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     deletePoint() {
-        const lasso = this;
         const pointIndex =
-            lasso.hover?.pointIndex ||
-            lasso.hover?.midpointIndex ||
+            this.hover?.pointIndex ||
+            this.hover?.midpointIndex ||
             this.data.length - 1;
 
-        lasso.snapshot('before deleting point', () => {
-            lasso.data.splice(pointIndex, 1);
+        this.snapshot('before deleting point', () => {
+            this.data.splice(pointIndex, 1);
         });
     }
 }
