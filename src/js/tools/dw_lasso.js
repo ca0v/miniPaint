@@ -13,7 +13,10 @@
  * done - user has clicked the "Magic Crop" button, all points are cleared
  *
  * ** KNOWN ISSUES **
+ * - none
+ *
  * ** TODO **
+ * - would be nice to add deceleration when user stops moving a point with the arrow keys
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -69,12 +72,14 @@ export default class DwLasso_class extends Base_tools_class {
         this.metrics = {
             timeOfMove: Date.now(),
             lastPointMoved: null,
+            prior_action_history_max: null,
             speed: 1,
             ACCELERATION: 0.3,
             MAX_SPEED: 25,
             MIN_SPEED: 1,
             DEFAULT_SPEED: 1,
             ACTION_HISTORY_MAX: 1000,
+            DURATION_TO_SHOW_LAST_MOVE: 1000,
         };
 
         this.Base_layers = new Base_layers_class();
@@ -84,6 +89,19 @@ export default class DwLasso_class extends Base_tools_class {
         this.delayedSnapshot = debounce((about) => {
             this.snapshot(about);
         }, Settings.delayedSnapshotTimeout);
+
+        const delayRestoreCursor = debounce(() => {
+            document
+                .getElementById('canvas_wrapper')
+                .classList.remove('dw_hideCursor');
+        }, 1000);
+
+        this.hideCursor = () => {
+            document
+                .getElementById('canvas_wrapper')
+                .classList.add('dw_hideCursor');
+            delayRestoreCursor();
+        };
     }
 
     get scale() {
@@ -151,16 +169,14 @@ export default class DwLasso_class extends Base_tools_class {
         this.state.setCurrentState(value);
     }
 
-    load() {}
-
-    default_dragStart(event) {
-        this.is_mousedown_canvas = false;
-        if (config.TOOL.name != this.name) return;
-        if (!event.target.closest('#main_wrapper')) return;
-        this.is_mousedown_canvas = true;
-        this.mousedown(event);
+    load() {
+        // activate and deactivate handle lifecycle
     }
 
+    /**
+     * center the viewport on the given point
+     * @param {x: number,y: number} point
+     */
     centerAt(point) {
         const { x: px, y: py } = point;
         const dx = -0.5 * config.visible_width * this.scale;
@@ -198,17 +214,14 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     drawTool(ctx, layer) {
-        const { x, y, color, params } = layer;
-
-        // scale down the size based on the zoom level
-        const size = (params.size || 1) * this.scale;
-
         const data = this.data;
         if (!data.length) return;
 
+        const { x, y } = layer;
+
         //set styles
-        ctx.strokeStyle = Drawings.defaultStrokeColor;
-        ctx.lineWidth = size;
+        ctx.strokeStyle = Drawings.edge.color;
+        ctx.lineWidth = Drawings.edge.lineWidth * this.scale;
         ctx.translate(x, y);
 
         ctx.beginPath();
@@ -220,18 +233,22 @@ export default class DwLasso_class extends Base_tools_class {
         data.forEach((currentPoint, i) => {
             if (
                 currentPoint === this.metrics.lastPointMoved &&
-                age(this.metrics.timeOfMove) < 1000
+                age(this.metrics.timeOfMove) <
+                    this.metrics.DURATION_TO_SHOW_LAST_MOVE
             ) {
                 cross(ctx, currentPoint, {
-                    color: Drawings.lastMoveStrokeColor,
-                    size: Drawings.hoverMajor.size * this.scale,
-                    lineWidth: 2 * this.scale,
+                    color: Drawings.lastMoveVertex.color,
+                    size: Drawings.lastMoveVertex.size * this.scale,
+                    lineWidth: Drawings.lastMoveVertex.lineWidth * this.scale,
+                    gapSize: 2 * this.scale,
                 });
             } else if (this.hover?.pointIndex === i) {
+                // draw cursor
                 cross(ctx, currentPoint, {
-                    color: Drawings.hoverMajor.color,
-                    size: Drawings.hoverMajor.size * this.scale,
-                    lineWidth: 1 * this.scale,
+                    color: Drawings.cursor.color,
+                    size: Drawings.cursor.size * this.scale,
+                    lineWidth: Drawings.cursor.lineWidth * this.scale,
+                    gapSize: 2 * this.scale,
                 });
             } else {
                 // draw a circle
@@ -253,9 +270,9 @@ export default class DwLasso_class extends Base_tools_class {
 
             if (this.hover && this.hover.midpointIndex == i) {
                 plus(ctx, centerPoint, {
-                    color: Drawings.hoverMinor.color,
-                    size: Drawings.hoverMinor.size * this.scale,
-                    lineWidth: 1 * this.scale,
+                    color: Drawings.cursor.color,
+                    size: Drawings.cursor.size * this.scale,
+                    lineWidth: Drawings.cursor.lineWidth * this.scale,
                 });
             } else {
                 // draw a circle
@@ -516,13 +533,19 @@ export default class DwLasso_class extends Base_tools_class {
         }
         this.state = new StateMachine(Object.values(Status));
 
-        this.state.on('execute', (context) =>
+        this.state.on('execute', (context) => {
+            const from = context.from;
+            const goto = context.goto || context.from;
             log(
-                `${context.when}: ${context.about} (state: ${context.from} -> ${
-                    context.goto || context.from
-                })`,
-            ),
-        );
+                `${context.when}: ${context.about} (state: ${from} -> ${goto})`,
+            );
+            const wrapper = document.getElementById('canvas_wrapper');
+            // remove anything that starts with 'dw_'
+            wrapper.classList.forEach((c) => {
+                if (c.startsWith('dw_')) wrapper.classList.remove(c);
+            });
+            wrapper.classList.add(`dw_${goto}`);
+        });
 
         this.state.on('PressDrag', (dragEvent) => {
             // nothing to do

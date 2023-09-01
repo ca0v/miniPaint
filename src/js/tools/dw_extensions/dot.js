@@ -23,10 +23,22 @@ export function cross(ctx, point, options) {
     ctx.strokeStyle = options.color || 'red';
     ctx.lineWidth = options.lineWidth || 1;
     const size = options.size || 5;
-    ctx.moveTo(point.x - size, point.y - size);
-    ctx.lineTo(point.x + size, point.y + size);
-    ctx.moveTo(point.x + size, point.y - size);
-    ctx.lineTo(point.x - size, point.y + size);
+    const gapSize = options.gapSize || 0;
+    if (!gapSize) {
+        ctx.moveTo(point.x - size, point.y - size);
+        ctx.lineTo(point.x + size, point.y + size);
+        ctx.moveTo(point.x + size, point.y - size);
+        ctx.lineTo(point.x - size, point.y + size);
+    } else {
+        ctx.moveTo(point.x - size, point.y - size);
+        ctx.lineTo(point.x - gapSize, point.y - gapSize);
+        ctx.moveTo(point.x + size, point.y + size);
+        ctx.lineTo(point.x + gapSize, point.y + gapSize);
+        ctx.moveTo(point.x + size, point.y - size);
+        ctx.lineTo(point.x + gapSize, point.y - gapSize);
+        ctx.moveTo(point.x - size, point.y + size);
+        ctx.lineTo(point.x - gapSize, point.y + gapSize);
+    }
     ctx.stroke();
 }
 
