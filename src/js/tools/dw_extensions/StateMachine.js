@@ -221,6 +221,9 @@ export class StateMachine {
 
             this.events.on('keyup', (keyboardEvent) => {
                 keysThatAreDown.delete(keyboardEvent.key);
+                // if meta key is up, clear all keysThatAreDown
+                if (keyboardEvent.key === 'Meta') keysThatAreDown.clear();
+                // keyup events are not firing for the individual keys
             });
 
             this.events.on('keydown', (keyboardEvent) => {
