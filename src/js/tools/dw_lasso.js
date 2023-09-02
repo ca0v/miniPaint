@@ -770,6 +770,24 @@ export default class DwLasso_class extends Base_tools_class {
             movingLastPointToMouseLocation: (e) =>
                 this.movingLastPointToMouseLocation(e),
 
+            movedLastPointToFirstPoint: (e) => {
+                // if there are enough points and this is close to the first point, close the polygon
+                if (this.data.length > 3) {
+                    const firstPoint = this.data.at(0);
+                    const lastPoint = this.data.at(-1);
+                    const d = distance(firstPoint, lastPoint);
+                    if (
+                        d <
+                        Settings.minimalDistanceBetweenPoints * this.scale
+                    ) {
+                        this.data.pop();
+                        return true;
+                    }
+                    console.log(`movedLastPointToFirstPoint: ${d}`);
+                }
+                return false;
+            },
+
             moveToPriorPoint: () => this.moveToNextVertex(-1),
             moveToNextPoint: () => this.moveToNextVertex(1),
 
@@ -1018,6 +1036,13 @@ export default class DwLasso_class extends Base_tools_class {
             .from(Status.placing)
             .goto(Status.drawing)
             .when(['Left+mousedown']);
+
+        this.state
+            .about('close poly when the last is also the first')
+            .from(Status.placing)
+            .goto(Status.editing)
+            .when('mousemove')
+            .do(actions.movedLastPointToFirstPoint);
 
         this.state
             .about('continue moving the last point to the mouse location')
