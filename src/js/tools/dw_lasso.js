@@ -228,15 +228,18 @@ export default class DwLasso_class extends Base_tools_class {
 
         const { x, y } = layer;
 
-        //set styles
-        ctx.strokeStyle = Drawings.edge.color;
-        ctx.lineWidth = Drawings.edge.lineWidth * this.scale;
-        ctx.translate(x, y);
+        {
+            //set styles
+            const style = Drawings.edge[this.status] || Drawings.edge.default;
+            ctx.strokeStyle = style.color;
+            ctx.lineWidth = style.lineWidth * this.scale;
+            ctx.translate(x, y);
 
-        ctx.beginPath();
-        renderAsPath(ctx, data);
-        ctx.closePath();
-        ctx.stroke();
+            ctx.beginPath();
+            renderAsPath(ctx, data);
+            ctx.closePath();
+            ctx.stroke();
+        }
 
         const hoverInfo = this.getHoverInfo();
         const hoverIndex = hoverInfo?.pointIndex;
@@ -593,10 +596,8 @@ export default class DwLasso_class extends Base_tools_class {
         });
 
         this.state.on('execute', (context) => {
-            const from = context.from;
-            const goto = context.goto || context.from;
             log(
-                `${context.when}: ${context.about} (state: ${from} -> ${goto})`,
+                `${context.when}: ${context.about} (state: ${context.from} -> ${this.status})`,
             );
         });
 
@@ -771,7 +772,7 @@ export default class DwLasso_class extends Base_tools_class {
                 this.movingLastPointToMouseLocation(e),
 
             movedLastPointToFirstPoint: (e) => {
-                // if there are enough points and this is close to the first point, close the polygon
+                // if there are points and this is close to the first point, close the polygon
                 if (this.data.length > 3) {
                     const firstPoint = this.data.at(0);
                     const lastPoint = this.data.at(-1);
