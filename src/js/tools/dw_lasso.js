@@ -908,7 +908,7 @@ export default class DwLasso_class extends Base_tools_class {
 
         this.state
             .about('no data found')
-            .from(Status.none)
+            .from([Status.none, Status.editing])
             .goto(Status.ready)
             .do(actions.noDataPoints);
 
