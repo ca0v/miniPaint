@@ -528,6 +528,15 @@ export default class DwLasso_class extends Base_tools_class {
         const { x, y } = hoverInfo.point;
         const index = hoverInfo.pointIndex;
 
+        // if we are minimum distance away from the prior point, insert a point
+        const priorPoint = this.data.at(
+            (index - 1 + this.data.length) % this.data.length,
+        );
+        const d = distance(priorPoint, { x, y });
+        if (d < Settings.minimalDistanceBetweenPoints * this.scale) {
+            return false;
+        }
+
         this.undoredo(
             `before cloning major vertex ${index}`,
             () => {
