@@ -1,5 +1,13 @@
 export class EventManager {
-    constructor() {
+    constructor(scope) {
+        if (typeof scope === 'string') {
+            scope = document.querySelector(scope);
+        }
+        if (scope) {
+            scope.tabIndex = 0;
+            scope.focus();
+        }
+        this.scope = scope || document
         this.ops = {};
         this.events = {};
     }
@@ -12,7 +20,7 @@ export class EventManager {
                     callback(e);
                 });
             };
-            document.addEventListener(event, op);
+            this.scope.addEventListener(event, op);
             this.ops[event] = op;
         }
         this.events[event].push(callback);
@@ -24,7 +32,7 @@ export class EventManager {
     off(event, callback) {
         if (!event) {
             Object.keys(this.ops).forEach((eventName) =>
-                document.removeEventListener(eventName, this.ops[eventName]),
+            this.scope.removeEventListener(eventName, this.ops[eventName]),
             );
             this.ops = [];
             this.events = {};
@@ -37,7 +45,7 @@ export class EventManager {
 
         this.events[event] = this.events[event].filter((cb) => cb !== callback);
         if (this.events[event].length === 0) {
-            document.removeEventListener(event, this.ops[event]);
+            this.scope.removeEventListener(event, this.ops[event]);
             delete this.events[event];
             delete this.ops[event];
         }

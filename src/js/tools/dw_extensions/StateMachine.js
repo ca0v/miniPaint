@@ -17,7 +17,7 @@ export class StateMachine {
         this.contexts = [];
         this.actions = {};
 
-        this.events = new EventManager();
+        this.events = new EventManager(document.body);
 
         const mouseDownState = {
             buttons: 0,

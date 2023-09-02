@@ -1423,13 +1423,25 @@ export default class DwLasso_class extends Base_tools_class {
 
     deletePoint() {
         if (!this.data.length) return false;
+        const hoverInfo = this.getHoverInfo();
+        if (!hoverInfo) return false;
+        if (hoverInfo.type === 'minor') return false;
 
-        const pointIndex =
-            this.getHoverInfo()?.pointIndex || this.data.length - 1;
+        const { point, pointIndex } = hoverInfo;
+        if (typeof pointIndex !== 'number') return false;
 
-        this.snapshot('before deleting point', () => {
-            this.data.splice(pointIndex, 1);
-        });
+        this.undoredo(
+            'before deleting point',
+            () => {
+                this.data.splice(pointIndex, 1);
+                this.setHoverInfo('major', pointIndex % this.data.length);
+                console.log(`deleted point ${pointIndex}`);
+            },
+            () => {
+                this.data.splice(pointIndex, 0, point);
+                this.setHoverInfo('major', pointIndex);
+            },
+        );
     }
 }
 
