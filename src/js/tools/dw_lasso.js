@@ -292,16 +292,17 @@ export default class DwLasso_class extends Base_tools_class {
                     lineWidth: Drawings.cursor.lineWidth * this.scale,
                 });
             } else {
-                // draw a circle
-                circle(ctx, centerPoint, {
-                    size: Drawings.minor.size * this.scale,
-                    color: Drawings.minor.color || Drawings.defaultStrokeColor,
-                    lineWidth: 1 * this.scale,
-                });
+                if (this.status === Status.editing) {
+                    // draw a circle
+                    circle(ctx, centerPoint, {
+                        size: Drawings.minor.size * this.scale,
+                        color:
+                            Drawings.minor.color || Drawings.defaultStrokeColor,
+                        lineWidth: 1 * this.scale,
+                    });
+                }
             }
         });
-
-        ctx.translate(-x, -y);
     }
 
     snapshot(why, cb) {
