@@ -813,6 +813,7 @@ export default class DwLasso_class extends Base_tools_class {
             deleteHoverPoint: () => {
                 if (!this.getHoverPoint()) return false;
                 this.deletePoint();
+                this.moveIntoView();
             },
 
             hoveringOverPoint: (mouseEvent) => {
@@ -1281,8 +1282,12 @@ export default class DwLasso_class extends Base_tools_class {
             );
         }
 
+        this.moveIntoView();
+        this.Base_layers.render();
+    }
+
+    moveIntoView() {
         {
-            // is point outside of viewport?
             const point = this.getHoverPoint();
             if (!point) throw `no hover point found`;
             const screenPoint = zoomView.toScreen(point);
@@ -1301,7 +1306,6 @@ export default class DwLasso_class extends Base_tools_class {
                 this.centerAt(point);
             }
         }
-        this.Base_layers.render();
     }
 
     setHoverInfo(type, index) {
