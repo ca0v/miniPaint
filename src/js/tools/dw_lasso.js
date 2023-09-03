@@ -835,6 +835,21 @@ export default class DwLasso_class extends Base_tools_class {
 
             zoomIn: (e) => this.zoomViewport(e, 1),
             zoomOut: (e) => this.zoomViewport(e, -1),
+            panFrom: (e) => {
+                this.metrics.panFrom = { x: e.clientX, y: e.clientY };
+                console.log(
+                    `panFrom: ${this.metrics.panFrom.x}, ${this.metrics.panFrom.y}`,
+                );
+                return false; // do not handle this event
+            },
+            panTo: (e) => {
+                if (!this.metrics.panFrom) throw `panFrom not set`;
+                const mouse = { x: e.clientX, y: e.clientY };
+                const dx = mouse.x - this.metrics.panFrom.x;
+                const dy = mouse.y - this.metrics.panFrom.y;
+                this.metrics.panFrom = mouse;
+                this.panViewport(dx * this.scale, dy * this.scale);
+            },
             panLeft: (e) => this.panViewport2(e, 1, 0),
             panRight: (e) => this.panViewport2(e, -1, 0),
             panUp: (e) => this.panViewport2(e, 0, 1),
@@ -1095,7 +1110,11 @@ export default class DwLasso_class extends Base_tools_class {
             .butWhen(Keyboard.PanUp)
             .do(actions.panUp)
             .butWhen(Keyboard.PanDown)
-            .do(actions.panDown);
+            .do(actions.panDown)
+            .butWhen(Keyboard.PanFrom)
+            .do(actions.panFrom)
+            .butWhen(Keyboard.PanTo)
+            .do(actions.panTo);
 
         this.state
             .about('set focus to sibling vertex')
@@ -1387,15 +1406,16 @@ export default class DwLasso_class extends Base_tools_class {
 
     panViewport(dx, dy) {
         if (!dx && !dy) return;
-        dx = -Math.round(dx);
-        dy = -Math.round(dy);
+        dx = Math.round(dx);
+        dy = Math.round(dy);
 
         let { x, y } = zoomView.getPosition();
-        const currentPosition = { x: -x * this.scale, y: -y * this.scale };
+        const currentPosition = { x: x * this.scale, y: y * this.scale };
         this.GUI_preview.zoom_to_position(
-            currentPosition.x + dx,
-            currentPosition.y + dy,
+            -(currentPosition.x + dx),
+            -(currentPosition.y + dy),
         );
+        console.log('pan: ', dx, dy);
     }
 
     panViewport2(e, dx, dy) {

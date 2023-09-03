@@ -23,8 +23,10 @@ export class StateMachine {
             buttons: 0,
         };
 
+        const keysThatAreDown = new Set();
+
         this.events.on('mousemove', (mouseEvent) => {
-            const mouseState = computeMouseState(mouseEvent);
+            const mouseState = computeMouseState(mouseEvent,keysThatAreDown);
             const preventBubble =
                 false !== this.trigger(mouseState, mouseEvent);
             if (preventBubble) mouseEvent.preventDefault();
@@ -32,7 +34,7 @@ export class StateMachine {
 
         this.events.on('mousedown', (mouseEvent) => {
             mouseDownState.buttons = mouseEvent.buttons;
-            const mouseState = computeMouseState(mouseEvent);
+            const mouseState = computeMouseState(mouseEvent,keysThatAreDown);
             const preventBubble =
                 false !== this.trigger(mouseState, mouseEvent);
             if (preventBubble) mouseEvent.preventDefault();
@@ -40,7 +42,7 @@ export class StateMachine {
 
         this.events.on('mouseup', (mouseEvent) => {
             const priorButtons = mouseDownState.buttons;
-            let mouseState = computeMouseState(mouseEvent);
+            let mouseState = computeMouseState(mouseEvent,keysThatAreDown);
             if (priorButtons === 1) mouseState = `Left+${mouseState}`;
             if (priorButtons === 2) mouseState = `Right+${mouseState}`;
             const preventBubble =
@@ -212,7 +214,6 @@ export class StateMachine {
         });
 
         {
-            const keysThatAreDown = new Set();
 
             this.events.on('keydown', (keyboardEvent) => {
                 // keep track of what keys are down but not up

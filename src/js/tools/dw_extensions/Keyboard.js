@@ -21,6 +21,8 @@ export const Keyboard = Object.freeze({
     PanRight: ['DragDragLeft', 'Shift+ArrowRight'],
     PanUp: ['DragDragDown', 'Shift+ArrowUp'],
     PanDown: ['DragDragUp', 'Shift+ArrowDown'],
+    PanFrom: ['mousemove'],
+    PanTo: ['Shift+mousemove'],
     Reset: 'Shift+Escape',
     ClearInterior: 'Shift+X',
     ClearExterior: 'Control+Shift+X',
