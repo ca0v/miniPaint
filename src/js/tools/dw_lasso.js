@@ -665,6 +665,7 @@ export default class DwLasso_class extends Base_tools_class {
                             const point = this.data.at(hoverIndex);
                             point.x = redo_x;
                             point.y = redo_y;
+                            this.setHoverInfo('major', hoverIndex);
                         },
                         () => {
                             const point = this.data.at(hoverIndex);
@@ -672,6 +673,7 @@ export default class DwLasso_class extends Base_tools_class {
                             redo_y = point.y;
                             point.x = original_x;
                             point.y = original_y;
+                            this.setHoverInfo('major', hoverIndex);
                         },
                     );
                     // render the line
