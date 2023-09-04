@@ -46,6 +46,7 @@ import { Smooth } from './dw_extensions/Smooth.js';
 import { Tests } from './dw_extensions/Tests.js';
 import { StateMachine } from './dw_extensions/StateMachine.js';
 import { log } from './dw_extensions/log.js';
+import { dump } from './dw_extensions/dump.js';
 
 async function doActions(actions) {
     await app.State.do_action(
@@ -513,16 +514,7 @@ export default class DwLasso_class extends Base_tools_class {
         };
     }
 
-    clonePoint() {
-        const lastPoint = this.data.at(-1);
-        if (!lastPoint) return;
-        const newPoint = { x: lastPoint.x, y: lastPoint.y };
-        this.data.push(newPoint);
-        this.setHoverInfo('major', this.data.length - 1);
-        this.renderData();
-    }
-
-    insertPointBeforeHoverLocation() {
+    insertPointAfterHoverLocation() {
         const { type, pointIndex } = this.getHoverInfo();
         const isMinorVertex = type === 'minor';
         if (isMinorVertex) return false;
@@ -541,12 +533,14 @@ export default class DwLasso_class extends Base_tools_class {
         this.undoredo(
             `before cloning major vertex ${pointIndex}`,
             () => {
-                this.data.splice(pointIndex, 0, { x, y });
-                this.setHoverInfo('major', pointIndex);
+                this.data.splice(pointIndex + 1, 0, { x, y });
+                this.setHoverInfo('major', pointIndex + 1);
+                console.log(`redo: hover ${pointIndex + 1}`);
             },
             () => {
-                this.data.splice(pointIndex, 1);
+                this.data.splice(pointIndex + 1, 1);
                 this.setHoverInfo('major', pointIndex);
+                console.log(`undo: hover ${pointIndex}`);
             },
         );
     }
@@ -766,9 +760,8 @@ export default class DwLasso_class extends Base_tools_class {
                 });
             },
 
-            clonePoint: () => this.clonePoint(),
             insertPointBeforeHoverLocation: (e) =>
-                this.insertPointBeforeHoverLocation(e),
+                this.insertPointAfterHoverLocation(e),
             placePointAtClickLocation: (e) => this.placePointAtClickLocation(e),
             movingLastPointToMouseLocation: (e) =>
                 this.movingLastPointToMouseLocation(e),
@@ -1017,7 +1010,7 @@ export default class DwLasso_class extends Base_tools_class {
             )
             .from(Status.drawing)
             .goto(Status.placing)
-            .when(Keyboard.Placing)
+            .when(Keyboard.PlacingVertex)
             .do(actions.placePointAtClickLocation);
 
         theState
@@ -1030,39 +1023,33 @@ export default class DwLasso_class extends Base_tools_class {
             .about('create the 1st point of the polygon')
             .from(Status.ready)
             .goto(Status.drawing)
-            .when(['Left+mousedown', 'touchmove'])
+            .when(Keyboard.PlaceFirstVertex)
             .do(actions.placeFirstPointAtMouseLocation);
+
+        theState
+            .about('continue moving the last point to the mouse location')
+            .from(Status.placing)
+            .when(Keyboard.PlacingVertex)
+            .do(actions.movingLastPointToMouseLocation);
 
         theState
             .about('stop placing and enter drawing mode')
             .from(Status.placing)
             .goto(Status.drawing)
-            .when(['Left+mousedown']);
+            .when(Keyboard.PlaceVertex);
 
         theState
             .about('close poly when the last is also the first')
             .from(Status.placing)
             .goto(Status.editing)
-            .when('mousemove')
+            .when(Keyboard.PlacingVertex)
             .do(actions.movedLastPointToFirstPoint);
-
-        theState
-            .about('continue moving the last point to the mouse location')
-            .from(Status.placing)
-            .when('mousemove')
-            .do(actions.movingLastPointToMouseLocation);
 
         theState
             .about('add a point to the polygon')
             .from(Status.drawing)
-            .when(['Left+mousedown', 'touchmove', 'touchstart'])
+            .when(Keyboard.Drawing)
             .do(actions.placePointAtClickLocation);
-
-        theState
-            .about('add a point to the polygon')
-            .from(Status.placing)
-            .when(Keyboard.ClonePoint)
-            .do(actions.clonePoint);
 
         theState
             .about('zoom')
@@ -1152,24 +1139,17 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.deleteHoverPoint);
 
         theState
-            .about('delete the hover point')
-            .from(Status.hover)
-            .goto(Status.editing)
-            .when('Shift+Left+mousedown')
-            .do(actions.deleteHoverPoint);
-
-        theState
             .about('mouse has moved over a point')
             .from(Status.editing)
             .goto(Status.hover)
-            .when(['Shift+mousemove', 'mousemove', 'touchmove'])
+            .when(Keyboard.Hover)
             .do(actions.hoveringOverPoint);
 
         theState
             .about('mouse is no longer over a point')
             .from(Status.hover)
             .goto(Status.editing)
-            .when(['Shift+mousemove', 'mousemove', 'touchmove'])
+            .when(Keyboard.Hover)
             .do(actions.notHoveringOverPoint);
 
         theState
@@ -1295,6 +1275,7 @@ export default class DwLasso_class extends Base_tools_class {
 
         this.moveIntoView();
         this.Base_layers.render();
+        dump(this.hoverInfo);
     }
 
     moveIntoView() {
