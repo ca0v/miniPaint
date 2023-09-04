@@ -14,7 +14,7 @@ export class Update_layer_action extends Base_action {
             do: {
                 data: deep(this.cropper.data),
                 status: this.cropper.status,
-                hoverInfo: { ...this.cropper.metrics.hover },
+                hoverInfo: { ...this.cropper.getHoverInfo() },
             },
             undo: {
                 data: null,
@@ -31,19 +31,18 @@ export class Update_layer_action extends Base_action {
             if (this.cropperState.isRedo) {
                 this.cropper.data = deep(this.cropperState.do.data);
                 this.cropper.status = this.cropperState.do.status;
-                this.cropper.metrics.hover = {
-                    ...this.cropperState.do.hoverInfo,
-                };
+                this.cropper.setHoverInfo(this.cropperState.do.hoverInfo);
+                dump(this.cropper.getHoverInfo());
+                this.cropper.renderData();
             }
             this.cb();
             this.cropper.Base_layers.render();
         } else if (this.cropperState.isRedo) {
             this.cropper.data = deep(this.cropperState.undo.data);
             this.cropper.status = this.cropperState.undo.status;
-            this.cropper.metrics.hover = {
-                ...this.cropperState.undo.hoverInfo,
-            };
-            this.cropper.Base_layers.render();
+            this.cropper.setHoverInfo(this.cropperState.undo.hoverInfo);
+            dump(this.cropper.getHoverInfo());
+            this.cropper.renderData();
         } else {
             // nothing to do
         }
@@ -54,14 +53,13 @@ export class Update_layer_action extends Base_action {
         console.log(`undo: ${this.about}`);
         this.cropperState.undo.data = deep(this.cropper.data);
         this.cropperState.undo.status = this.cropper.status;
-        this.cropperState.undo.hoverInfo = { ...this.cropper.hoverInfo };
+        this.cropperState.undo.hoverInfo = { ...this.cropper.getHoverInfo() };
         this.cropper.data = deep(this.cropperState.do.data);
         this.cropper.status = this.cropperState.do.status;
-        this.cropper.metrics.hover = { ...this.cropperState.do.hoverInfo };
-        this.cropper.Base_layers.render();
+        this.cropper.setHoverInfo(this.cropperState.do.hoverInfo);
+        dump(this.cropper.getHoverInfo());
+        this.cropper.renderData();
         super.undo();
-        console.log('do', dump(this.cropperState.do.hoverInfo));
-        console.log('undo', dump(this.cropperState.undo.hoverInfo));
     }
 
     free() {
