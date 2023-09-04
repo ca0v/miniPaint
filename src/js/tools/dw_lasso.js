@@ -530,7 +530,7 @@ export default class DwLasso_class extends Base_tools_class {
         const isMinorVertex = hoverInfo.type === 'minor';
         if (isMinorVertex) return false;
 
-        const { x, y } = hoverInfo.point;
+        const { x, y } = this.getHoverPoint();
         const index = hoverInfo.pointIndex;
 
         // if we are minimum distance away from the prior point, insert a point
@@ -918,7 +918,7 @@ export default class DwLasso_class extends Base_tools_class {
                 const isMinorVertex = hoverInfo.type === 'minor';
 
                 if (isMajorVertex || isMinorVertex) {
-                    this.centerAt(hoverInfo.point);
+                    this.centerAt(this.getHoverPoint());
                     this.renderData();
                 }
             },
@@ -1009,19 +1009,19 @@ export default class DwLasso_class extends Base_tools_class {
             .about('begin dragging this point')
             .from(Status.before_dragging)
             .goto(Status.dragging)
-            .when(['Left+mousemove', 'touchmove'])
+            .when(Keyboard.Dragging)
             .do(actions.draggingHoverPoint);
 
         theState
             .about('drag this point')
             .from(Status.dragging)
-            .when(['Left+mousemove', 'touchmove'])
+            .when(Keyboard.Dragging)
             .do(actions.draggingHoverPoint);
 
         theState
             .about('automatically create vertices as mouse moves')
             .from(Status.drawing)
-            .when(['Left+mousemove', 'touchmove'])
+            .when(Keyboard.Dragging)
             .do(actions.drawPoints);
 
         theState
@@ -1030,7 +1030,7 @@ export default class DwLasso_class extends Base_tools_class {
             )
             .from(Status.drawing)
             .goto(Status.placing)
-            .when('mousemove')
+            .when(Keyboard.Placing)
             .do(actions.placePointAtClickLocation);
 
         theState
