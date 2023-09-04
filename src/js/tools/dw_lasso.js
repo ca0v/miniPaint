@@ -228,15 +228,18 @@ export default class DwLasso_class extends Base_tools_class {
 
         const { x, y } = layer;
 
-        //set styles
-        ctx.strokeStyle = Drawings.edge.color;
-        ctx.lineWidth = Drawings.edge.lineWidth * this.scale;
-        ctx.translate(x, y);
+        {
+            //set styles
+            const style = Drawings.edge[this.status] || Drawings.edge.default;
+            ctx.strokeStyle = style.color;
+            ctx.lineWidth = style.lineWidth * this.scale;
+            ctx.translate(x, y);
 
-        ctx.beginPath();
-        renderAsPath(ctx, data);
-        ctx.closePath();
-        ctx.stroke();
+            ctx.beginPath();
+            renderAsPath(ctx, data);
+            ctx.closePath();
+            ctx.stroke();
+        }
 
         const hoverInfo = this.getHoverInfo();
         const hoverIndex = hoverInfo?.pointIndex;
@@ -289,16 +292,17 @@ export default class DwLasso_class extends Base_tools_class {
                     lineWidth: Drawings.cursor.lineWidth * this.scale,
                 });
             } else {
-                // draw a circle
-                circle(ctx, centerPoint, {
-                    size: Drawings.minor.size * this.scale,
-                    color: Drawings.minor.color || Drawings.defaultStrokeColor,
-                    lineWidth: 1 * this.scale,
-                });
+                if (this.status === Status.editing) {
+                    // draw a circle
+                    circle(ctx, centerPoint, {
+                        size: Drawings.minor.size * this.scale,
+                        color:
+                            Drawings.minor.color || Drawings.defaultStrokeColor,
+                        lineWidth: 1 * this.scale,
+                    });
+                }
             }
         });
-
-        ctx.translate(-x, -y);
     }
 
     snapshot(why, cb) {
@@ -528,6 +532,15 @@ export default class DwLasso_class extends Base_tools_class {
         const { x, y } = hoverInfo.point;
         const index = hoverInfo.pointIndex;
 
+        // if we are minimum distance away from the prior point, insert a point
+        const priorPoint = this.data.at(
+            (index - 1 + this.data.length) % this.data.length,
+        );
+        const d = distance(priorPoint, { x, y });
+        if (d < Settings.minimalDistanceBetweenPoints * this.scale) {
+            return false;
+        }
+
         this.undoredo(
             `before cloning major vertex ${index}`,
             () => {
@@ -584,10 +597,8 @@ export default class DwLasso_class extends Base_tools_class {
         });
 
         this.state.on('execute', (context) => {
-            const from = context.from;
-            const goto = context.goto || context.from;
             log(
-                `${context.when}: ${context.about} (state: ${from} -> ${goto})`,
+                `${context.when}: ${context.about} (state: ${context.from} -> ${this.status})`,
             );
         });
 
@@ -761,6 +772,24 @@ export default class DwLasso_class extends Base_tools_class {
             movingLastPointToMouseLocation: (e) =>
                 this.movingLastPointToMouseLocation(e),
 
+            movedLastPointToFirstPoint: (e) => {
+                // if there are points and this is close to the first point, close the polygon
+                if (this.data.length > 3) {
+                    const firstPoint = this.data.at(0);
+                    const lastPoint = this.data.at(-1);
+                    const d = distance(firstPoint, lastPoint);
+                    if (
+                        d <
+                        Settings.minimalDistanceBetweenPoints * this.scale
+                    ) {
+                        this.data.pop();
+                        return true;
+                    }
+                    console.log(`movedLastPointToFirstPoint: ${d}`);
+                }
+                return false;
+            },
+
             moveToPriorPoint: () => this.moveToNextVertex(-1),
             moveToNextPoint: () => this.moveToNextVertex(1),
 
@@ -784,6 +813,7 @@ export default class DwLasso_class extends Base_tools_class {
             deleteHoverPoint: () => {
                 if (!this.getHoverPoint()) return false;
                 this.deletePoint();
+                this.moveIntoView();
             },
 
             hoveringOverPoint: (mouseEvent) => {
@@ -805,6 +835,21 @@ export default class DwLasso_class extends Base_tools_class {
 
             zoomIn: (e) => this.zoomViewport(e, 1),
             zoomOut: (e) => this.zoomViewport(e, -1),
+            panFrom: (e) => {
+                this.metrics.panFrom = { x: e.clientX, y: e.clientY };
+                console.log(
+                    `panFrom: ${this.metrics.panFrom.x}, ${this.metrics.panFrom.y}`,
+                );
+                return false; // do not handle this event
+            },
+            panTo: (e) => {
+                if (!this.metrics.panFrom) throw `panFrom not set`;
+                const mouse = { x: e.clientX, y: e.clientY };
+                const dx = mouse.x - this.metrics.panFrom.x;
+                const dy = mouse.y - this.metrics.panFrom.y;
+                this.metrics.panFrom = mouse;
+                this.panViewport(dx * this.scale, dy * this.scale);
+            },
             panLeft: (e) => this.panViewport2(e, 1, 0),
             panRight: (e) => this.panViewport2(e, -1, 0),
             panUp: (e) => this.panViewport2(e, 0, 1),
@@ -879,7 +924,7 @@ export default class DwLasso_class extends Base_tools_class {
 
         this.state
             .about('no data found')
-            .from(Status.none)
+            .from([Status.none, Status.editing])
             .goto(Status.ready)
             .do(actions.noDataPoints);
 
@@ -1011,6 +1056,13 @@ export default class DwLasso_class extends Base_tools_class {
             .when(['Left+mousedown']);
 
         this.state
+            .about('close poly when the last is also the first')
+            .from(Status.placing)
+            .goto(Status.editing)
+            .when('mousemove')
+            .do(actions.movedLastPointToFirstPoint);
+
+        this.state
             .about('continue moving the last point to the mouse location')
             .from(Status.placing)
             .when('mousemove')
@@ -1058,7 +1110,11 @@ export default class DwLasso_class extends Base_tools_class {
             .butWhen(Keyboard.PanUp)
             .do(actions.panUp)
             .butWhen(Keyboard.PanDown)
-            .do(actions.panDown);
+            .do(actions.panDown)
+            .butWhen(Keyboard.PanFrom)
+            .do(actions.panFrom)
+            .butWhen(Keyboard.PanTo)
+            .do(actions.panTo);
 
         this.state
             .about('set focus to sibling vertex')
@@ -1245,8 +1301,12 @@ export default class DwLasso_class extends Base_tools_class {
             );
         }
 
+        this.moveIntoView();
+        this.Base_layers.render();
+    }
+
+    moveIntoView() {
         {
-            // is point outside of viewport?
             const point = this.getHoverPoint();
             if (!point) throw `no hover point found`;
             const screenPoint = zoomView.toScreen(point);
@@ -1265,7 +1325,6 @@ export default class DwLasso_class extends Base_tools_class {
                 this.centerAt(point);
             }
         }
-        this.Base_layers.render();
     }
 
     setHoverInfo(type, index) {
@@ -1347,15 +1406,16 @@ export default class DwLasso_class extends Base_tools_class {
 
     panViewport(dx, dy) {
         if (!dx && !dy) return;
-        dx = -Math.round(dx);
-        dy = -Math.round(dy);
+        dx = Math.round(dx);
+        dy = Math.round(dy);
 
         let { x, y } = zoomView.getPosition();
-        const currentPosition = { x: -x * this.scale, y: -y * this.scale };
+        const currentPosition = { x: x * this.scale, y: y * this.scale };
         this.GUI_preview.zoom_to_position(
-            currentPosition.x + dx,
-            currentPosition.y + dy,
+            -(currentPosition.x + dx),
+            -(currentPosition.y + dy),
         );
+        console.log('pan: ', dx, dy);
     }
 
     panViewport2(e, dx, dy) {
@@ -1387,13 +1447,25 @@ export default class DwLasso_class extends Base_tools_class {
 
     deletePoint() {
         if (!this.data.length) return false;
+        const hoverInfo = this.getHoverInfo();
+        if (!hoverInfo) return false;
+        if (hoverInfo.type === 'minor') return false;
 
-        const pointIndex =
-            this.getHoverInfo()?.pointIndex || this.data.length - 1;
+        const { point, pointIndex } = hoverInfo;
+        if (typeof pointIndex !== 'number') return false;
 
-        this.snapshot('before deleting point', () => {
-            this.data.splice(pointIndex, 1);
-        });
+        this.undoredo(
+            'before deleting point',
+            () => {
+                this.data.splice(pointIndex, 1);
+                this.setHoverInfo('major', pointIndex % this.data.length);
+                console.log(`deleted point ${pointIndex}`);
+            },
+            () => {
+                this.data.splice(pointIndex, 0, point);
+                this.setHoverInfo('major', pointIndex);
+            },
+        );
     }
 }
 
