@@ -2,6 +2,13 @@ import { Base_action } from '../../actions/base.js';
 import { dump } from './dump.js';
 import { deep } from './deep.js';
 
+function captureInto(source, target = {}) {
+    target.data = deep(source.data);
+    target.status = source.status;
+    target.hoverInfo = { ...source.hoverInfo };
+    return target;
+}
+
 export class Update_lasso_action extends Base_action {
     constructor(cropper, about = 'no description provided', cb = null) {
         super('update_dw_lasso_data', 'dw_lasso Changes');
@@ -11,53 +18,28 @@ export class Update_lasso_action extends Base_action {
 
         this.cropperState = {
             isRedo: false,
-            do: {
-                data: deep(this.cropper.data),
-                status: this.cropper.status,
-                hoverInfo: { ...this.cropper.getHoverInfo() },
-            },
-            undo: {
-                data: null,
-                status: '',
-                hoverInfo: {},
-            },
+            do: {},
+            undo: {},
         };
     }
 
     async do() {
         super.do();
         console.log(`do: ${this.about}`);
-        if (this.cb) {
-            if (this.cropperState.isRedo) {
-                this.cropper.data = deep(this.cropperState.do.data);
-                this.cropper.status = this.cropperState.do.status;
-                this.cropper.setHoverInfo(this.cropperState.do.hoverInfo);
-                dump(this.cropper.getHoverInfo());
-                this.cropper.renderData();
-            }
-            this.cb();
-            this.cropper.Base_layers.render();
-        } else if (this.cropperState.isRedo) {
-            this.cropper.data = deep(this.cropperState.undo.data);
-            this.cropper.status = this.cropperState.undo.status;
-            this.cropper.setHoverInfo(this.cropperState.undo.hoverInfo);
-            dump(this.cropper.getHoverInfo());
-            this.cropper.renderData();
+        if (this.cropperState.isRedo) {
+            captureInto(this.cropperState.undo, this.cropper);
         } else {
-            // nothing to do
+            captureInto(this.cropper, this.cropperState.do);
         }
+        this.cb && this.cb();
+        this.cropper.renderData();
     }
 
     async undo() {
         this.cropperState.isRedo = true;
         console.log(`undo: ${this.about}`);
-        this.cropperState.undo.data = deep(this.cropper.data);
-        this.cropperState.undo.status = this.cropper.status;
-        this.cropperState.undo.hoverInfo = { ...this.cropper.getHoverInfo() };
-        this.cropper.data = deep(this.cropperState.do.data);
-        this.cropper.status = this.cropperState.do.status;
-        this.cropper.setHoverInfo(this.cropperState.do.hoverInfo);
-        dump(this.cropper.getHoverInfo());
+        captureInto(this.cropper, this.cropperState.undo);
+        captureInto(this.cropperState.do, this.cropper);
         this.cropper.renderData();
         super.undo();
     }
