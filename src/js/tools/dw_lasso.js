@@ -768,19 +768,16 @@ export default class DwLasso_class extends Base_tools_class {
 
             movedLastPointToFirstPoint: (e) => {
                 // if there are points and this is close to the first point, close the polygon
-                if (this.data.length > 3) {
-                    const firstPoint = this.data.at(0);
-                    const lastPoint = this.data.at(-1);
-                    const d = distance(firstPoint, lastPoint);
-                    if (
-                        d <
-                        Settings.minimalDistanceBetweenPoints * this.scale
-                    ) {
-                        this.data.pop();
-                        return true;
-                    }
-                }
-                return false;
+                if (this.data.length <= 3) return false;
+                const firstPoint = this.data.at(0);
+                const lastPoint = this.data.at(-1);
+                const d = distance(firstPoint, lastPoint);
+                if (d > Settings.minimalDistanceBetweenPoints * this.scale)
+                    return false;
+
+                this.data.pop();
+                this.snapshot('before closing polygon', () => {});
+                return true;
             },
 
             moveToPriorPoint: () => this.moveToNextVertex(-1),
@@ -796,9 +793,11 @@ export default class DwLasso_class extends Base_tools_class {
             movePointDownLeft1Units: () => this.movePoint(-1, 1),
             movePointDownRight1Units: () => this.movePoint(1, 1),
 
-            closePolygon: () => {},
+            closePolygon: () => {
+                this.snapshot('before closing polygon');
+            },
             deletePointAndClosePolygon: () => {
-                this.deletePoint();
+                this.deletePoint('before closing polygon');
             },
             dataPoints: () => !!this.data.length,
             noDataPoints: () => !this.data.length,
@@ -1423,7 +1422,7 @@ export default class DwLasso_class extends Base_tools_class {
         this.panViewport(dx, dy);
     }
 
-    deletePoint() {
+    deletePoint(why = 'before deleting point') {
         if (!this.data.length) return false;
         const { pointIndex, type } = this.getHoverInfo();
         if (typeof pointIndex !== 'number') return false;
@@ -1431,15 +1430,23 @@ export default class DwLasso_class extends Base_tools_class {
 
         const point = this.getHoverPoint();
 
+        const state = {
+            pointIndex,
+            point,
+            status: this.status,
+        };
+
         this.undoredo(
-            'before deleting point',
+            why,
             () => {
-                this.data.splice(pointIndex, 1);
-                this.setHoverInfo('major', pointIndex % this.data.length);
+                this.data.splice(state.pointIndex, 1);
+                this.setHoverInfo('major', state.pointIndex % this.data.length);
             },
             () => {
-                this.data.splice(pointIndex, 0, point);
-                this.setHoverInfo('major', pointIndex);
+                state.status = this.status;
+                this.data.splice(state.pointIndex, 0, state.point);
+                this.setHoverInfo('major', state.pointIndex);
+                this.status = state.status;
             },
         );
     }
