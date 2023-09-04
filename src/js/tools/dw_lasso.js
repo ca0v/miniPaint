@@ -785,7 +785,6 @@ export default class DwLasso_class extends Base_tools_class {
                         this.data.pop();
                         return true;
                     }
-                    console.log(`movedLastPointToFirstPoint: ${d}`);
                 }
                 return false;
             },
@@ -837,9 +836,6 @@ export default class DwLasso_class extends Base_tools_class {
             zoomOut: (e) => this.zoomViewport(e, -1),
             panFrom: (e) => {
                 this.metrics.panFrom = { x: e.clientX, y: e.clientY };
-                console.log(
-                    `panFrom: ${this.metrics.panFrom.x}, ${this.metrics.panFrom.y}`,
-                );
                 return false; // do not handle this event
             },
             panTo: (e) => {
@@ -980,6 +976,7 @@ export default class DwLasso_class extends Base_tools_class {
             .about('center about the current point')
             .from([
                 Status.editing,
+                Status.dragging,
                 Status.drawing,
                 Status.placing,
                 Status.hover,
@@ -1318,10 +1315,6 @@ export default class DwLasso_class extends Base_tools_class {
 
             // if not within viewport, then center the viewport on the point
             if (x < 0 || x > width || y < 0 || y > height) {
-                console.log(
-                    `point: ${x}, ${y}`,
-                    `viewport: ${width}, ${height}`,
-                );
                 this.centerAt(point);
             }
         }
@@ -1415,7 +1408,6 @@ export default class DwLasso_class extends Base_tools_class {
             -(currentPosition.x + dx),
             -(currentPosition.y + dy),
         );
-        console.log('pan: ', dx, dy);
     }
 
     panViewport2(e, dx, dy) {
@@ -1459,7 +1451,6 @@ export default class DwLasso_class extends Base_tools_class {
             () => {
                 this.data.splice(pointIndex, 1);
                 this.setHoverInfo('major', pointIndex % this.data.length);
-                console.log(`deleted point ${pointIndex}`);
             },
             () => {
                 this.data.splice(pointIndex, 0, point);
