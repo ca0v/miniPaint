@@ -2,7 +2,7 @@ import { Base_action } from '../../actions/base.js';
 import { dump } from './dump.js';
 import { deep } from './deep.js';
 
-export class Update_layer_action extends Base_action {
+export class Update_lasso_action extends Base_action {
     constructor(cropper, about = 'no description provided', cb = null) {
         super('update_dw_lasso_data', 'dw_lasso Changes');
         this.cropper = cropper;

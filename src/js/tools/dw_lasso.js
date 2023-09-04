@@ -32,7 +32,7 @@ import { Drawings } from './dw_extensions/Drawings.js';
 import { Keyboard } from './dw_extensions/Keyboard.js';
 import { Settings } from './dw_extensions/Settings.js';
 import { Generic_action } from './dw_extensions/Generic_action.js';
-import { Update_layer_action } from './dw_extensions/Update_layer_action.js';
+import { Update_lasso_action } from './dw_extensions/Update_layer_action.js';
 import { circle } from './dw_extensions/circle.js';
 import { cross, plus } from './dw_extensions/dot.js';
 import { center } from './dw_extensions/center.js';
@@ -307,7 +307,7 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     snapshot(why, cb) {
-        const action = new Update_layer_action(this, why, cb);
+        const action = new Update_lasso_action(this, why, cb);
         app.State.do_action(action);
     }
 
@@ -337,10 +337,21 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     reset(about = 'before reset') {
-        this.snapshot(about, () => {
-            this.data = [];
-            this.setHoverInfo(null, null);
-        });
+        const state = {
+            hover: { ...this.getHoverInfo() },
+            data: [...this.data],
+        };
+        this.undoredo(
+            about,
+            () => {
+                this.data = [];
+                this.setHoverInfo(null, null);
+            },
+            () => {
+                this.data = [...state.data];
+                this.setHoverInfo(state.hover);
+            },
+        );
         this.renderData();
     }
 
@@ -942,6 +953,7 @@ export default class DwLasso_class extends Base_tools_class {
                 Status.drawing,
                 Status.placing,
                 Status.hover,
+                Status.ready,
             ])
             .goto(Status.ready)
             .when(Keyboard.Reset)
