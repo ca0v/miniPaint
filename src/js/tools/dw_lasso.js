@@ -86,10 +86,6 @@ export default class DwLasso_class extends Base_tools_class {
         this.Base_state = new Base_state_class();
         this.GUI_preview = new GUI_preview_class();
 
-        this.delayedSnapshot = debounce((about) => {
-            this.snapshot(about);
-        }, Settings.delayedSnapshotTimeout);
-
         const delayRestoreCursor = debounce(() => {
             document
                 .getElementById('canvas_wrapper')
@@ -706,8 +702,8 @@ export default class DwLasso_class extends Base_tools_class {
             endDraggingHoverPoint: () => {},
 
             drawPoints: (mouseEvent) => {
-                const currentPoint = this.mousePoint(mouseEvent);
-                if (!currentPoint) return false;
+                const mouse = this.mousePoint(mouseEvent);
+                if (!mouse) return false;
 
                 const data = this.data;
                 const priorPoint = data.at(-2);
@@ -718,7 +714,7 @@ export default class DwLasso_class extends Base_tools_class {
 
                 const isSecondPoint = data.length === 2;
 
-                const d = distance(priorPoint, currentPoint) / this.scale;
+                const d = distance(priorPoint, mouse) / this.scale;
                 let drawPoint =
                     d >
                     (isSecondPoint
@@ -730,26 +726,30 @@ export default class DwLasso_class extends Base_tools_class {
                     data.length > 2 &&
                     d > Settings.minimalDistanceBetweenPoints
                 ) {
-                    const a =
-                        Math.PI -
-                        angleOf(data.at(-3), priorPoint, currentPoint);
+                    const a = Math.PI - angleOf(data.at(-3), priorPoint, mouse);
                     drawPoint =
                         d * a >
                         Settings.radiusThreshold *
                             Settings.distanceBetweenPoints;
                 }
                 if (drawPoint) {
-                    data.push(currentPoint);
-                    this.setHoverInfo('major', data.length - 1);
+                    this.undoredo(
+                        `before drawing point ${data.length}`,
+                        () => {
+                            this.data.push(mouse);
+                            this.setHoverInfo('major', this.data.length - 1);
+                        },
+                        () => {
+                            this.data.pop();
+                            this.setHoverInfo('major', this.data.length - 1);
+                        },
+                    );
                 } else {
-                    const p = data.at(-1);
-                    p.x = currentPoint.x;
-                    p.y = currentPoint.y;
+                    const p = this.data.at(-1);
+                    p.x = mouse.x;
+                    p.y = mouse.y;
+                    this.renderData();
                 }
-                this.renderData();
-                this.delayedSnapshot(
-                    `before drawing points at location ${data.length}`,
-                );
             },
 
             placeFirstPointAtMouseLocation: (mouseEvent) => {
@@ -1240,13 +1240,21 @@ export default class DwLasso_class extends Base_tools_class {
                 },
             );
         } else {
-            this.delayedSnapshot('point moved');
             const point = this.data.at(pointIndex);
-            point.x += dx;
-            point.y += dy;
+            const { x, y } = point;
             this.metrics.timeOfMove = Date.now();
             this.metrics.lastPointMoved = point;
-            this.Base_layers.render();
+            this.undoredo(
+                `before moving point ${pointIndex}`,
+                () => {
+                    point.x += dx;
+                    point.y += dy;
+                },
+                () => {
+                    point.x = x;
+                    point.y = y;
+                },
+            );
         }
     }
 
