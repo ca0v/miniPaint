@@ -14,6 +14,7 @@
  *
  * ** KNOWN ISSUES **
  * - draw a shape, convert to raster then clip it...the right edge is not clipped
+ * - Space+Left+mousemove not drawing points in edit mode
  *
  * ** TODO **
  * - panViewport and panViewport2 can be combined?
@@ -665,6 +666,7 @@ export default class DwLasso_class extends Base_tools_class {
                             const point = this.data.at(hoverIndex);
                             point.x = redo_x;
                             point.y = redo_y;
+                            this.setHoverInfo('major', hoverIndex);
                         },
                         () => {
                             const point = this.data.at(hoverIndex);
@@ -672,6 +674,7 @@ export default class DwLasso_class extends Base_tools_class {
                             redo_y = point.y;
                             point.x = original_x;
                             point.y = original_y;
+                            this.setHoverInfo('major', hoverIndex);
                         },
                     );
                     // render the line
@@ -683,8 +686,14 @@ export default class DwLasso_class extends Base_tools_class {
                     const index = hoverIndex;
                     this.undoredo(
                         `before dragging midpoint ${index}`,
-                        () => this.data.splice(index + 1, 0, currentPoint),
-                        () => this.data.splice(index + 1, 1),
+                        () => {
+                            this.data.splice(index + 1, 0, currentPoint);
+                            this.setHoverInfo('major', index + 1);
+                        },
+                        () => {
+                            this.data.splice(index + 1, 1);
+                            this.setHoverInfo('minor', index);
+                        },
                     );
                     this.setHoverInfo('major', index + 1);
                     // render the line
@@ -785,7 +794,6 @@ export default class DwLasso_class extends Base_tools_class {
                         this.data.pop();
                         return true;
                     }
-                    console.log(`movedLastPointToFirstPoint: ${d}`);
                 }
                 return false;
             },
@@ -837,9 +845,6 @@ export default class DwLasso_class extends Base_tools_class {
             zoomOut: (e) => this.zoomViewport(e, -1),
             panFrom: (e) => {
                 this.metrics.panFrom = { x: e.clientX, y: e.clientY };
-                console.log(
-                    `panFrom: ${this.metrics.panFrom.x}, ${this.metrics.panFrom.y}`,
-                );
                 return false; // do not handle this event
             },
             panTo: (e) => {
@@ -980,6 +985,7 @@ export default class DwLasso_class extends Base_tools_class {
             .about('center about the current point')
             .from([
                 Status.editing,
+                Status.dragging,
                 Status.drawing,
                 Status.placing,
                 Status.hover,
@@ -1261,17 +1267,26 @@ export default class DwLasso_class extends Base_tools_class {
         dx *= this.metrics.speed * this.scale;
         dy *= this.metrics.speed * this.scale;
 
-        const hoverInfo = this.getHoverInfo();
-        const isMidpoint = hoverInfo?.type === 'minor';
+        const { pointIndex, type } = this.getHoverInfo();
+        const isMidpoint = type === 'minor';
         if (isMidpoint) {
-            this.snapshot('before moving point', () => {
-                this.data.splice(hoverInfo.pointIndex + 1, 0, hoverInfo.point);
-            });
-            this.setHoverInfo('major', hoverInfo.pointIndex + 1);
+            const hoverPoint = this.getHoverPoint();
+            this.undoredo(
+                'before moving point',
+                () => {
+                    this.data.splice(pointIndex + 1, 0, hoverPoint);
+                    this.setHoverInfo('major', pointIndex + 1);
+                },
+                () => {
+                    this.data.splice(pointIndex + 1, 1);
+                    this.setHoverInfo('minor', pointIndex);
+                },
+            );
+            return;
         }
 
         this.delayedSnapshot('point moved');
-        const point = this.data.at(hoverInfo.pointIndex);
+        const point = this.data.at(pointIndex);
         point.x += dx;
         point.y += dy;
         this.metrics.timeOfMove = Date.now();
@@ -1318,10 +1333,6 @@ export default class DwLasso_class extends Base_tools_class {
 
             // if not within viewport, then center the viewport on the point
             if (x < 0 || x > width || y < 0 || y > height) {
-                console.log(
-                    `point: ${x}, ${y}`,
-                    `viewport: ${width}, ${height}`,
-                );
                 this.centerAt(point);
             }
         }
@@ -1362,7 +1373,28 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     getHoverPoint() {
-        return this.getHoverInfo()?.point;
+        const { pointIndex, type } = this.getHoverInfo();
+
+        if (typeof pointIndex !== 'number') return null;
+        const isMajor = type === 'major';
+        const isMinor = type === 'minor';
+        if (pointIndex >= this.data.length) {
+            // invalid state, ignore it
+            console.warn(
+                `invalid hover state: ${pointIndex}, the data was modified without updating the hover state`,
+            );
+            return null;
+        }
+
+        if (isMajor) return this.data.at(pointIndex % this.data.length);
+
+        if (isMinor)
+            return center(
+                this.data.at(pointIndex % this.data.length),
+                this.data.at((pointIndex + 1) % this.data.length),
+            );
+
+        return null;
     }
 
     zoomViewport(mouseEvent, zoom) {
@@ -1415,7 +1447,6 @@ export default class DwLasso_class extends Base_tools_class {
             -(currentPosition.x + dx),
             -(currentPosition.y + dy),
         );
-        console.log('pan: ', dx, dy);
     }
 
     panViewport2(e, dx, dy) {
@@ -1459,7 +1490,6 @@ export default class DwLasso_class extends Base_tools_class {
             () => {
                 this.data.splice(pointIndex, 1);
                 this.setHoverInfo('major', pointIndex % this.data.length);
-                console.log(`deleted point ${pointIndex}`);
             },
             () => {
                 this.data.splice(pointIndex, 0, point);

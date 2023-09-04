@@ -1,5 +1,4 @@
 import { Base_action } from '../../actions/base.js';
-import { dump } from './dump.js';
 
 export class Generic_action extends Base_action {
     constructor(cropper, { why, doit, undo }) {
