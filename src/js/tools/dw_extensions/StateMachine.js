@@ -26,7 +26,7 @@ export class StateMachine {
         const keysThatAreDown = new Set();
 
         this.events.on('mousemove', (mouseEvent) => {
-            const mouseState = computeMouseState(mouseEvent,keysThatAreDown);
+            const mouseState = computeMouseState(mouseEvent, keysThatAreDown);
             const preventBubble =
                 false !== this.trigger(mouseState, mouseEvent);
             if (preventBubble) mouseEvent.preventDefault();
@@ -34,7 +34,7 @@ export class StateMachine {
 
         this.events.on('mousedown', (mouseEvent) => {
             mouseDownState.buttons = mouseEvent.buttons;
-            const mouseState = computeMouseState(mouseEvent,keysThatAreDown);
+            const mouseState = computeMouseState(mouseEvent, keysThatAreDown);
             const preventBubble =
                 false !== this.trigger(mouseState, mouseEvent);
             if (preventBubble) mouseEvent.preventDefault();
@@ -42,7 +42,7 @@ export class StateMachine {
 
         this.events.on('mouseup', (mouseEvent) => {
             const priorButtons = mouseDownState.buttons;
-            let mouseState = computeMouseState(mouseEvent,keysThatAreDown);
+            let mouseState = computeMouseState(mouseEvent, keysThatAreDown);
             if (priorButtons === 1) mouseState = `Left+${mouseState}`;
             if (priorButtons === 2) mouseState = `Right+${mouseState}`;
             const preventBubble =
@@ -214,7 +214,6 @@ export class StateMachine {
         });
 
         {
-
             this.events.on('keydown', (keyboardEvent) => {
                 // keep track of what keys are down but not up
                 keysThatAreDown.add(keyboardEvent.key);
@@ -270,11 +269,12 @@ export class StateMachine {
             );
         if (!targetEvents.length) return false;
         let stateChanged = false;
-        return targetEvents.some((targetEvent) => {
+        let handled = false;
+        targetEvents.forEach((targetEvent) => {
             if (targetEvent.do) {
-                if (false === targetEvent.do.call(this, eventData))
-                    return false;
+                if (false === targetEvent.do.call(this, eventData)) return;
                 this.events.trigger('execute', targetEvent);
+                handled = true;
                 if (stateChanged)
                     throw new Error(
                         `A handler already exists for state ${targetEvent.from} and event ${targetEvent.when} so this do statement should have returned false`,
@@ -286,6 +286,8 @@ export class StateMachine {
             }
             return true;
         });
+
+        return handled;
     }
 
     trigger(eventName, eventData) {

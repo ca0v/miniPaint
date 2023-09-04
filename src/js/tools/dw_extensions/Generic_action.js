@@ -13,13 +13,13 @@ export class Generic_action extends Base_action {
         super.do();
         console.log(`generic do: ${this._why}`);
         this._doit();
-        this.cropper.Base_layers.render();
+        this.cropper.renderData();
     }
 
     async undo() {
         console.log(`generic undo: ${this._why}`);
         this._undo();
         super.undo();
-        this.cropper.Base_layers.render();
+        this.cropper.renderData();
     }
 }
