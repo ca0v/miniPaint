@@ -1498,16 +1498,20 @@ function documentStateMachine(stateMachine) {
             if (when) {
                 result.push(`- <b>${about}</b>`);
                 const whenKeys = when
+                    .map((v) => {
+                        const keys = v.split('+').map((v) => {
+                            switch (v) {
+                                case ' ':
+                                    return 'Space';
+                                default:
+                                    return v;
+                            }
+                        });
+                        return keys.join(' ');
+                    })
                     .map((v) => `<kbd>${v}</kbd>`)
                     .join(' or ');
                 result.push(`when ${whenKeys}`);
-                if (goto) {
-                    result[result.length - 1] =
-                        result[result.length - 1] + ` (${from} -> ${goto})`;
-                } else if (from) {
-                    result[result.length - 1] =
-                        result[result.length - 1] + ` (from ${from})`;
-                }
             }
         });
     result.push('');
