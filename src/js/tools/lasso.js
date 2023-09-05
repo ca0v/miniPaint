@@ -64,7 +64,7 @@ export default class DwLasso_class extends Base_tools_class {
         const allowSystemToTrackMouseCoordinates = true;
         super(allowSystemToTrackMouseCoordinates);
 
-        this.name = 'dw_lasso';
+        this.name = 'lasso';
         this.ctx = ctx;
         this.data = [];
 
@@ -115,6 +115,7 @@ export default class DwLasso_class extends Base_tools_class {
         }
 
         this.state = this.defineStateMachine();
+        documentStateMachine(this.state);
         this.state.setCurrentState(Status.none);
         this.metrics.prior_action_history_max =
             this.Base_state.action_history_max;
@@ -129,7 +130,7 @@ export default class DwLasso_class extends Base_tools_class {
                     'Magic Crop Layer',
                     [
                         new app.Actions.Insert_layer_action({
-                            name: 'DW Lasso',
+                            name: 'Lasso',
                             type: this.name,
                             params: this.clone(this.getParams()),
                             status: 'draft',
@@ -317,14 +318,14 @@ export default class DwLasso_class extends Base_tools_class {
      */
     async on_params_update(event) {
         switch (event.key) {
-            case 'dw_cut':
+            case 'apply_cut':
                 this.state.trigger(Keyboard.ClearInterior);
                 this.getParams()[event.key] = true;
                 break;
-            case 'dw_crop':
+            case 'apply_crop':
                 this.state.trigger(Keyboard.ClearExterior);
                 break;
-            case 'dw_reset':
+            case 'apply_reset':
                 this.state.trigger(Keyboard.Reset);
                 break;
             default:
@@ -383,7 +384,7 @@ export default class DwLasso_class extends Base_tools_class {
             ctx.closePath();
             ctx.clip();
 
-            if (!this.getParams().dw_transparent) {
+            if (!this.getParams().transparent) {
                 // fill the canvas with the background color
                 ctx.fillStyle = fillColor;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -461,7 +462,7 @@ export default class DwLasso_class extends Base_tools_class {
             ctx.closePath();
             ctx.fill();
 
-            if (!this.getParams().dw_transparent) {
+            if (!this.getParams().transparent) {
                 // now create a solid background
                 const background = document
                     .createElement('canvas')
@@ -1051,7 +1052,7 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.placePointAtClickLocation);
 
         theState
-            .about('zoom')
+            .about('zoom in')
             .from([
                 Status.drawing,
                 Status.hover,
@@ -1062,10 +1063,11 @@ export default class DwLasso_class extends Base_tools_class {
             .when(Keyboard.ZoomIn)
             .do(actions.zoomIn)
             .butWhen(Keyboard.ZoomOut)
+            .about('zoom out')
             .do(actions.zoomOut);
 
         theState
-            .about('pan')
+            .about('pan left')
             .from([
                 Status.drawing,
                 Status.hover,
@@ -1076,43 +1078,56 @@ export default class DwLasso_class extends Base_tools_class {
             .when(Keyboard.PanLeft)
             .do(actions.panLeft)
             .butWhen(Keyboard.PanRight)
+            .about('pan right')
             .do(actions.panRight)
             .butWhen(Keyboard.PanUp)
+            .about('pan up')
             .do(actions.panUp)
             .butWhen(Keyboard.PanDown)
+            .about('pan down')
             .do(actions.panDown)
             .butWhen(Keyboard.PanFrom)
+            .about('pan from')
             .do(actions.panFrom)
             .butWhen(Keyboard.PanTo)
+            .about('pan to')
             .do(actions.panTo);
 
         theState
-            .about('set focus to sibling vertex')
+            .about('go to prior vertex')
             .from([Status.editing, Status.hover])
             .goto(Status.editing)
             .when(Keyboard.PriorVertex)
             .do(actions.moveToPriorPoint)
             .butWhen(Keyboard.NextVertex)
+            .about('go to next vertex')
             .do(actions.moveToNextPoint);
 
         theState
-            .about('move the point')
+            .about('move the point left')
             .from([Status.editing, Status.placing, Status.hover])
             .when(Keyboard.MovePointLeft)
             .do(actions.movePointLeft1Units)
             .butWhen(Keyboard.MovePointRight)
+            .about('move the point right')
             .do(actions.movePointRight1Units)
             .butWhen(Keyboard.MovePointUp)
+            .about('move the point up')
             .do(actions.movePointUp1Units)
             .butWhen(Keyboard.MovePointDown)
+            .about('move the point down')
             .do(actions.movePointDown1Units)
             .butWhen(Keyboard.MovePointUpLeft)
+            .about('move the point up and left')
             .do(actions.movePointUpLeft1Units)
             .butWhen(Keyboard.MovePointUpRight)
+            .about('move the point up and right')
             .do(actions.movePointUpRight1Units)
             .butWhen(Keyboard.MovePointDownLeft)
+            .about('move the point down and left')
             .do(actions.movePointDownLeft1Units)
             .butWhen(Keyboard.MovePointDownRight)
+            .about('move the point down and right')
             .do(actions.movePointDownRight1Units);
 
         theState
@@ -1125,14 +1140,8 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.noDataPoints);
 
         theState
-            .about('delete the hover point after dragging')
-            .from(Status.editing)
-            .when(Keyboard.Delete)
-            .do(actions.deleteHoverPoint);
-
-        theState
             .about('delete the hover point')
-            .from(Status.hover)
+            .from([Status.editing, Status.hover])
             .goto(Status.editing)
             .when(Keyboard.Delete)
             .do(actions.deleteHoverPoint);
@@ -1158,6 +1167,7 @@ export default class DwLasso_class extends Base_tools_class {
             .when(Keyboard.ClosePolygon)
             .do(actions.closePolygon)
             .butWhen(Keyboard.DeleteAndClosePolygon)
+            .about('delete the polygon and reset state')
             .do(actions.deletePointAndClosePolygon);
 
         theState
@@ -1434,7 +1444,10 @@ export default class DwLasso_class extends Base_tools_class {
         if (!this.data.length) return false;
         const { pointIndex, type } = this.getHoverInfo();
         if (typeof pointIndex !== 'number') return false;
-        if (type === 'minor') return false;
+        if (type === 'minor') {
+            this.moveToNextVertex(-1);
+            return false;
+        }
 
         const point = this.getHoverPoint();
 
@@ -1469,6 +1482,46 @@ function renderAsPath(ctx, points) {
 
 function closeTo(expected, actual, tolerance = 70) {
     return Math.abs(expected - actual) < tolerance;
+}
+
+function documentStateMachine(stateMachine) {
+    const { contexts, actions } = stateMachine;
+    const result = [];
+    result.push('## Commands');
+    [...contexts]
+        .toSorted((a, b) => {
+            // sort by the about property
+            return a.about.localeCompare(b.about);
+        })
+        .forEach((context) => {
+            const { from, when, goto, about } = context;
+            if (when) {
+                result.push(`- <b>${about}</b>`);
+                const whenKeys = when
+                    .map((v) => {
+                        const keys = v.split('+').map((v) => {
+                            switch (v) {
+                                case ' ':
+                                    return 'Space';
+                                default:
+                                    return v;
+                            }
+                        });
+                        return keys.join(' ');
+                    })
+                    .map((v) => `<kbd>${v}</kbd>`)
+                    .join(' or ');
+                result.push(`when ${whenKeys}`);
+            }
+        });
+    result.push('');
+    result.push('## Actions');
+    Object.keys(actions)
+        .toSorted()
+        .forEach((action) => {
+            result.push(`- ${action}`);
+        });
+    console.log(result.join('\n'));
 }
 
 new Tests().tests();
