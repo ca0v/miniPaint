@@ -631,8 +631,10 @@ export default class DwLasso_class extends Base_tools_class {
         });
 
         theState.on('execute', (context) => {
-            log(
-                `${context.when}: ${context.about} (state: ${context.from} -> ${this.status})`,
+            verbose(
+                `${context.when}: ${context.about} (state: ${context.from} -> ${
+                    context.goto || this.status
+                })`,
             );
         });
 
@@ -1141,12 +1143,21 @@ export default class DwLasso_class extends Base_tools_class {
 
         theState
             .about('go to prior vertex')
-            .from([Status.editing, Status.hover])
+            .from([Status.hover, Status.editing])
             .goto(Status.editing)
             .when(Keyboard.PriorVertex)
             .do(actions.moveToPriorPoint)
             .butWhen(Keyboard.NextVertex)
             .about('go to next vertex')
+            .do(actions.moveToNextPoint);
+
+        theState
+            .about('go to prior vertex while still placing points')
+            .from([Status.placing])
+            .when(Keyboard.PriorVertex)
+            .do(actions.moveToPriorPoint)
+            .butWhen(Keyboard.NextVertex)
+            .about('go to next vertex while still placing points')
             .do(actions.moveToNextPoint);
 
         theState

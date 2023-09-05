@@ -17,9 +17,11 @@
 -   <b>close poly when the last is also the first</b>
     when <kbd>mousemove</kbd>
 -   <b>complete the polygon</b>
-    when <kbd>Right mousedown</kbd> or <kbd>touchend</kbd>
+    when <kbd>Enter</kbd> or <kbd>touchend</kbd>
 -   <b>continue moving the last point to the mouse location</b>
     when <kbd>mousemove</kbd>
+-   <b>continue moving the last point to the mouse location</b>
+    when <kbd>Space</kbd>
 -   <b>create the 1st point of the polygon</b>
     when <kbd>Left mousedown</kbd> or <kbd>touchstart</kbd>
 -   <b>delete the hover point</b>
@@ -32,7 +34,11 @@
     when <kbd>Left mousemove</kbd> or <kbd>Space Left mousemove</kbd> or <kbd>touchmove</kbd>
 -   <b>go to next vertex</b>
     when <kbd>Tab</kbd>
+-   <b>go to next vertex while still placing points</b>
+    when <kbd>Tab</kbd>
 -   <b>go to prior vertex</b>
+    when <kbd>Shift Tab</kbd>
+-   <b>go to prior vertex while still placing points</b>
     when <kbd>Shift Tab</kbd>
 -   <b>inject smoothing points into the polygon</b>
     when <kbd>q</kbd>
@@ -89,6 +95,7 @@
 
 -   beforeDraggingHoverPoint
 -   centerAt
+-   cloneLastPoint
 -   closePolygon
 -   crop
 -   cut
@@ -129,3 +136,4 @@
 -   smoothAroundVertex
 -   start
 -   zoomIn
+-   zoomOut

@@ -24,7 +24,7 @@ export const Keyboard = Object.freeze({
     PanFrom: ['mousemove'],
     PanTo: ['Shift+mousemove'],
     Reset: 'Shift+Escape',
-    StartDragging: [`${MOUSE_BUTTON}+mousedown`, `${SPACE}+${MOUSE_BUTTON}+mousedown`, 'touchmove'],
+    StartDragging: [`${MOUSE_BUTTON}+mousedown`, `${SPACE}+${MOUSE_BUTTON}+mousedown`, 'touchmove', 'touchstart'],
     Dragging: [`${MOUSE_BUTTON}+mousemove`, `${SPACE}+${MOUSE_BUTTON}+mousemove`, 'touchmove'],
     EndDragging: [`${MOUSE_BUTTON}+mouseup`, `${SPACE}+${MOUSE_BUTTON}+mouseup`, 'touchend'],
     PlacingVertex: ['mousemove'],
@@ -36,7 +36,7 @@ export const Keyboard = Object.freeze({
     ClosePolygon: ['Enter', 'touchend'],
     DeleteAndClosePolygon: ['Escape'],
     InsertPointAtCursorPosition: [SPACE, `${SPACE}+${MOUSE_BUTTON}+mousemove`],
-    Hover: ['Shift+mousemove', 'mousemove', 'touchmove'],
+    Hover: ['Shift+mousemove', 'mousemove', 'touchmove', 'touchstart'],
     PlaceFirstVertex: [`${MOUSE_BUTTON}+mousedown`, 'touchstart'],
     Drawing: [`${MOUSE_BUTTON}+mousedown`, 'touchmove', 'touchstart'],
 });

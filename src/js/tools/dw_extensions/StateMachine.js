@@ -3,7 +3,7 @@ import { computeKeyboardState } from './computeKeyboardState.js';
 import { computeMouseState } from './computeMouseState.js';
 import { distance } from './distance.js';
 import { isShortcutMatch } from './isShortcutMatch.js';
-import { log } from './log.js';
+import { verbose } from './log.js';
 
 const MINIMAL_SPREAD_DISTANCE = 25;
 
@@ -293,7 +293,7 @@ export class StateMachine {
     trigger(eventName, eventData) {
         const success = false !== this.execute(eventName, eventData);
         if (!success)
-            log(
+            verbose(
                 `No handler found for event ${eventName}, state ${this.currentState}`,
             );
         return success;
