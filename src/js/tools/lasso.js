@@ -191,8 +191,10 @@ export default class DwLasso_class extends Base_tools_class {
         const pointData = this.data;
         if (pointData.length < 3) return;
 
+        const style = Drawings[this.status] || Drawings.defaults;
+
         // fill the entire ctx with a light gray except the polygon defined by the point data
-        ctx.fillStyle = Drawings.fill.exclusionColor;
+        ctx.fillStyle = style.fill.exclusionColor;
         ctx.beginPath();
         ctx.rect(0, 0, config.WIDTH, config.HEIGHT);
         const clockwiseData = clockwise(pointData);
@@ -201,7 +203,7 @@ export default class DwLasso_class extends Base_tools_class {
         ctx.fill();
 
         ctx.beginPath();
-        ctx.fillStyle = Drawings.fill.color;
+        ctx.fillStyle = style.fill.color;
         renderAsPath(ctx, pointData);
         ctx.closePath();
         ctx.fill();
@@ -213,11 +215,12 @@ export default class DwLasso_class extends Base_tools_class {
 
         const { x, y } = layer;
 
+        const style = Drawings[this.status] || Drawings.defaults;
+
         {
             //set styles
-            const style = Drawings.edge[this.status] || Drawings.edge.default;
-            ctx.strokeStyle = style.color;
-            ctx.lineWidth = style.lineWidth * this.scale;
+            ctx.strokeStyle = style.edge.color;
+            ctx.lineWidth = style.edge.lineWidth * this.scale;
             ctx.translate(x, y);
 
             ctx.beginPath();
@@ -238,27 +241,26 @@ export default class DwLasso_class extends Base_tools_class {
                     this.metrics.DURATION_TO_SHOW_LAST_MOVE
             ) {
                 cross(ctx, currentPoint, {
-                    color: Drawings.lastMoveVertex.color,
-                    size: Drawings.lastMoveVertex.size * this.scale,
-                    lineWidth: Drawings.lastMoveVertex.lineWidth * this.scale,
+                    color: style.lastMoveVertex.color,
+                    size: style.lastMoveVertex.size * this.scale,
+                    lineWidth: style.lastMoveVertex.lineWidth * this.scale,
                     gapSize: 2 * this.scale,
                 });
             } else if (isMajorVertex && hoverIndex === i) {
                 // draw cursor
                 cross(ctx, currentPoint, {
-                    color: Drawings.cursor.color,
-                    size: Drawings.cursor.size * this.scale,
-                    lineWidth: Drawings.cursor.lineWidth * this.scale,
+                    color: style.cursor.color,
+                    size: style.cursor.size * this.scale,
+                    lineWidth: style.cursor.lineWidth * this.scale,
                     gapSize: 2 * this.scale,
                 });
             } else {
-                // draw a circle
                 circle(ctx, currentPoint, {
-                    size: Drawings.major.size * this.scale,
+                    size: style.major.size * this.scale,
                     lineWidth: this.scale,
-                    color: Drawings.major.color || Drawings.defaultStrokeColor,
+                    color: style.major.color || style.defaultStrokeColor,
                 });
-                //dot(ctx, currentPoint, { size: this.scale, color: Drawings.major.color });
+                //dot(ctx, currentPoint, { size: this.scale, color: style.major.color });
             }
         });
 
@@ -271,17 +273,16 @@ export default class DwLasso_class extends Base_tools_class {
 
             if (isMinorVertex && hoverIndex === i) {
                 plus(ctx, centerPoint, {
-                    color: Drawings.cursor.color,
-                    size: Drawings.cursor.size * this.scale,
-                    lineWidth: Drawings.cursor.lineWidth * this.scale,
+                    color: style.cursor.color,
+                    size: style.cursor.size * this.scale,
+                    lineWidth: style.cursor.lineWidth * this.scale,
                 });
             } else {
                 if (this.status === Status.editing) {
                     // draw a circle
                     circle(ctx, centerPoint, {
-                        size: Drawings.minor.size * this.scale,
-                        color:
-                            Drawings.minor.color || Drawings.defaultStrokeColor,
+                        size: style.minor.size * this.scale,
+                        color: style.minor.color || style.defaultStrokeColor,
                         lineWidth: 1 * this.scale,
                     });
                 }
@@ -791,7 +792,7 @@ export default class DwLasso_class extends Base_tools_class {
             movingLastPointToMouseLocation: (e) =>
                 this.movingLastPointToMouseLocation(e),
 
-            cloneLastPoint: () => {
+            cloneHoverPoint: () => {
                 if (!this.data.length) return false;
                 const lastPoint = this.getHoverPoint();
                 if (!lastPoint) return false;
@@ -1076,9 +1077,9 @@ export default class DwLasso_class extends Base_tools_class {
 
         theState
             .about('continue moving the last point to the mouse location')
-            .from(Status.placing)
+            .from([Status.placing, Status.drawing, Status.editing])
             .when(Keyboard.CloneVertex)
-            .do(actions.cloneLastPoint);
+            .do(actions.cloneHoverPoint);
 
         theState
             .about('stop placing and enter drawing mode')
@@ -1243,11 +1244,11 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     computeHover(data, currentPoint) {
+        const style = Drawings[this.status] || Drawings.defaults;
+
         const pointIndex = data.findIndex((point) => {
             const distanceToCurrentPoint = distance(point, currentPoint);
-            return (
-                distanceToCurrentPoint < Drawings.hoverMajor.size * this.scale
-            );
+            return distanceToCurrentPoint < style.hoverMajor.size * this.scale;
         });
 
         if (pointIndex > -1) return { type: 'major', pointIndex };
@@ -1257,9 +1258,7 @@ export default class DwLasso_class extends Base_tools_class {
             const nextPoint = data[(i + 1) % data.length];
             const centerPoint = center(point, nextPoint);
             const distanceToCurrentPoint = distance(centerPoint, currentPoint);
-            return (
-                distanceToCurrentPoint < Drawings.hoverMinor.size * this.scale
-            );
+            return distanceToCurrentPoint < style.hoverMinor.size * this.scale;
         });
 
         if (midpointIndex > -1) {

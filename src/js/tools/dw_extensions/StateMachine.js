@@ -226,14 +226,20 @@ export class StateMachine {
                 // keyup events are not firing for the individual keys
             });
 
-            this.events.on('keydown', (keyboardEvent) => {
+            this.events.on('keydown', (event) => {
                 const keyboardState = computeKeyboardState(
-                    keyboardEvent,
+                    event,
                     keysThatAreDown,
                 );
                 const preventBubble =
-                    false !== this.trigger(keyboardState, keyboardEvent);
-                if (preventBubble) keyboardEvent.preventDefault();
+                    false !== this.trigger(keyboardState, event);
+
+                if (preventBubble) {
+                    verbose(`Preventing bubble for ${keyboardState}`);
+                    event.preventDefault(); // prevent default behavior
+                    event.stopPropagation(); // handlers on parent elements will not be called
+                    event.stopImmediatePropagation(); // handlers on this same element will not be called
+                }
             });
 
             // if we lose focus, clear the keysThatAreDown
