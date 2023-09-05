@@ -1162,7 +1162,12 @@ export default class DwLasso_class extends Base_tools_class {
 
         theState
             .about('move the point left')
-            .from([Status.editing, Status.placing, Status.hover])
+            .from([
+                Status.editing,
+                Status.placing,
+                Status.hover,
+                Status.drawing,
+            ])
             .when(Keyboard.MovePointLeft)
             .do(actions.movePointLeft1Units)
             .butWhen(Keyboard.MovePointRight)
