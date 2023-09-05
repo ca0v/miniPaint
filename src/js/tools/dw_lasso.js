@@ -1434,7 +1434,10 @@ export default class DwLasso_class extends Base_tools_class {
         if (!this.data.length) return false;
         const { pointIndex, type } = this.getHoverInfo();
         if (typeof pointIndex !== 'number') return false;
-        if (type === 'minor') return false;
+        if (type === 'minor') {
+            this.moveToNextVertex(-1);
+            return false;
+        }
 
         const point = this.getHoverPoint();
 
