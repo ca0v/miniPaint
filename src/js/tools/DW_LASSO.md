@@ -1,48 +1,47 @@
 Commands:
 
--   reset the tool when "Shift+Escape"
--   clear the interior during an edit when "Shift+X"
--   clear the exterior during an edit when "Control+Shift+X"
+-   reset the tool when "Shift+Escape" (editing,drawing,placing,hover,ready -> ready)
+-   clear the interior during an edit when "Shift+X" (editing,drawing,placing,hover -> ready)
+-   clear the exterior during an edit when "Control+Shift+X" (editing,drawing,placing,hover -> ready)
 -   inject smoothing points into the polygon when "q"
 -   center about the current point when "c"
--   prepare to drag this point when "Left+mousedown, +Left+mousedown,touchmove"
--   begin dragging this point when "Left+mousemove, +Left+mousemove,touchmove"
--   drag this point when "Left+mousemove, +Left+mousemove,touchmove"
--   stop dragging this point when "Left+mouseup, +Left+mouseup,touchend"
--   automatically create vertices as mouse moves when "Left+mousemove, +Left+mousemove,touchmove"
--   when moving the mouse, move the last point to the mouse location when "mousemove"
--   place a point at the mouse location behind the drag point when " , +Left+mousemove"
--   create the 1st point of the polygon when "Left+mousedown,touchstart"
+-   prepare to drag this point when "Left+mousedown" or " +Left+mousedown" or "touchmove" (hover -> before_dragging)
+-   begin dragging this point when "Left+mousemove" or " +Left+mousemove" or "touchmove" (before_dragging -> dragging)
+-   drag this point when "Left+mousemove" or " +Left+mousemove" or "touchmove"
+-   stop dragging this point when "Left+mouseup" or " +Left+mouseup" or "touchend" (dragging -> editing)
+-   automatically create vertices as mouse moves when "Left+mousemove" or " +Left+mousemove" or "touchmove"
+-   when moving the mouse, move the last point to the mouse location when "mousemove" (drawing -> placing)
+-   place a point at the mouse location behind the drag point when " " or " +Left+mousemove"
+-   create the 1st point of the polygon when "Left+mousedown" or "touchstart" (ready -> drawing)
 -   continue moving the last point to the mouse location when "mousemove"
--   stop placing and enter drawing mode when "Left+mousedown"
--   close poly when the last is also the first when "mousemove"
--   add a point to the polygon when "Left+mousedown,touchmove,touchstart"
--   zoom when "+,=,Shift++,Spread"
--   zoom when "-,Shift+\_,Pinch"
--   pan when "DragDragRight,Shift+ArrowLeft"
--   pan when "DragDragLeft,Shift+ArrowRight"
--   pan when "DragDragDown,Shift+ArrowUp"
--   pan when "DragDragUp,Shift+ArrowDown"
--   pan when "mousemove"
--   pan when "Shift+mousemove"
--   set focus to sibling vertex when "Shift+Tab"
--   set focus to sibling vertex when "Tab"
--   move the point when "ArrowLeft"
--   move the point when "ArrowRight"
--   move the point when "ArrowUp"
--   move the point when "ArrowDown"
--   move the point when "Control+ArrowLeft+ArrowUp,ArrowLeft+ArrowUp"
--   move the point when "Control+ArrowRight+ArrowUp,ArrowRight+ArrowUp"
--   move the point when "Control+ArrowLeft+ArrowDown,ArrowLeft+ArrowDown"
--   move the point when "Control+ArrowRight+ArrowDown,ArrowRight+ArrowDown"
--   after deleting the last point indicate we are ready for the 1st point when "Delete,Backspace,Shift+Left+mousedown"
--   delete the hover point after dragging when "Delete,Backspace,Shift+Left+mousedown"
--   delete the hover point when "Delete,Backspace,Shift+Left+mousedown"
--   mouse has moved over a point when "Shift+mousemove,mousemove,touchmove"
--   mouse is no longer over a point when "Shift+mousemove,mousemove,touchmove"
--   complete the polygon when "Right+mousedown,touchend"
--   complete the polygon when "Escape"
--   delete the polygon and reset state when "Escape"
+-   stop placing and enter drawing mode when "Left+mousedown" (placing -> drawing)
+-   close poly when the last is also the first when "mousemove" (placing -> editing)
+-   add a point to the polygon when "Left+mousedown" or "touchmove" or "touchstart"
+-   zoom in when "+" or "=" or "Shift++" or "Spread"
+-   zoom out when "-" or "Shift+\_" or "Pinch"
+-   pan left when "DragDragRight" or "Shift+ArrowLeft"
+-   pan right when "DragDragLeft" or "Shift+ArrowRight"
+-   pan up when "DragDragDown" or "Shift+ArrowUp"
+-   pan down when "DragDragUp" or "Shift+ArrowDown"
+-   pan from when "mousemove"
+-   pan to when "Shift+mousemove"
+-   go to prior vertex when "Shift+Tab" (editing,hover -> editing)
+-   go to next vertex when "Tab" (editing,hover -> editing)
+-   move the point left when "ArrowLeft"
+-   move the point right when "ArrowRight"
+-   move the point up when "ArrowUp"
+-   move the point down when "ArrowDown"
+-   move the point up and left when "Control+ArrowLeft+ArrowUp" or "ArrowLeft+ArrowUp"
+-   move the point up and right when "Control+ArrowRight+ArrowUp" or "ArrowRight+ArrowUp"
+-   move the point down and left when "Control+ArrowLeft+ArrowDown" or "ArrowLeft+ArrowDown"
+-   move the point down and right when "Control+ArrowRight+ArrowDown" or "ArrowRight+ArrowDown"
+-   after deleting the last point indicate we are ready for the 1st point when "Delete" or "Backspace" or "Shift+Left+mousedown" (editing -> ready)
+-   delete the hover point when "Delete" or "Backspace" or "Shift+Left+mousedown" (editing,hover -> editing)
+-   mouse has moved over a point when "Shift+mousemove" or "mousemove" or "touchmove" (editing -> hover)
+-   mouse is no longer over a point when "Shift+mousemove" or "mousemove" or "touchmove" (hover -> editing)
+-   complete the polygon when "Right+mousedown" or "touchend" (drawing,placing -> editing)
+-   delete the polygon and reset state when "Escape" (drawing,placing -> editing)
+-   delete the polygon and reset state when "Escape" (editing -> ready)
 
 Actions:
 

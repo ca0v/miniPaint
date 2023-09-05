@@ -87,13 +87,13 @@ export default class DwLasso_class extends Base_tools_class {
         this.GUI_preview = new GUI_preview_class();
 
         const delayRestoreCursor = debounce(() => {
-            documentStateMachine
+            document
                 .getElementById('canvas_wrapper')
                 .classList.remove('dw_hideCursor');
         }, 1000);
 
         this.hideCursor = () => {
-            documentStateMachine
+            document
                 .getElementById('canvas_wrapper')
                 .classList.add('dw_hideCursor');
             delayRestoreCursor();
@@ -366,7 +366,7 @@ export default class DwLasso_class extends Base_tools_class {
             const sx = width / width_original;
             const sy = height / height_original;
 
-            const canvas = documentStateMachine.createElement('canvas');
+            const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             canvas.width = link.width;
             canvas.height = link.height;
@@ -442,7 +442,7 @@ export default class DwLasso_class extends Base_tools_class {
             const sx = width / width_original;
             const sy = height / height_original;
 
-            const canvas = documentStateMachine.createElement('canvas');
+            const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             canvas.width = link.width;
             canvas.height = link.height;
@@ -464,7 +464,7 @@ export default class DwLasso_class extends Base_tools_class {
 
             if (!this.getParams().dw_transparent) {
                 // now create a solid background
-                const background = documentStateMachine
+                const background = document
                     .createElement('canvas')
                     .getContext('2d');
                 background.canvas.width = canvas.width;
@@ -576,8 +576,7 @@ export default class DwLasso_class extends Base_tools_class {
         const theState = new StateMachine(Object.values(Status));
 
         theState.on('stateChanged', () => {
-            const wrapper =
-                documentStateMachine.getElementById('canvas_wrapper');
+            const wrapper = document.getElementById('canvas_wrapper');
             // remove anything that starts with 'dw_'
             wrapper.classList.forEach((c) => {
                 if (c.startsWith('dw_')) wrapper.classList.remove(c);
@@ -1053,7 +1052,7 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.placePointAtClickLocation);
 
         theState
-            .about('zoom')
+            .about('zoom in')
             .from([
                 Status.drawing,
                 Status.hover,
@@ -1064,10 +1063,11 @@ export default class DwLasso_class extends Base_tools_class {
             .when(Keyboard.ZoomIn)
             .do(actions.zoomIn)
             .butWhen(Keyboard.ZoomOut)
+            .about('zoom out')
             .do(actions.zoomOut);
 
         theState
-            .about('pan')
+            .about('pan left')
             .from([
                 Status.drawing,
                 Status.hover,
@@ -1078,43 +1078,56 @@ export default class DwLasso_class extends Base_tools_class {
             .when(Keyboard.PanLeft)
             .do(actions.panLeft)
             .butWhen(Keyboard.PanRight)
+            .about('pan right')
             .do(actions.panRight)
             .butWhen(Keyboard.PanUp)
+            .about('pan up')
             .do(actions.panUp)
             .butWhen(Keyboard.PanDown)
+            .about('pan down')
             .do(actions.panDown)
             .butWhen(Keyboard.PanFrom)
+            .about('pan from')
             .do(actions.panFrom)
             .butWhen(Keyboard.PanTo)
+            .about('pan to')
             .do(actions.panTo);
 
         theState
-            .about('set focus to sibling vertex')
+            .about('go to prior vertex')
             .from([Status.editing, Status.hover])
             .goto(Status.editing)
             .when(Keyboard.PriorVertex)
             .do(actions.moveToPriorPoint)
             .butWhen(Keyboard.NextVertex)
+            .about('go to next vertex')
             .do(actions.moveToNextPoint);
 
         theState
-            .about('move the point')
+            .about('move the point left')
             .from([Status.editing, Status.placing, Status.hover])
             .when(Keyboard.MovePointLeft)
             .do(actions.movePointLeft1Units)
             .butWhen(Keyboard.MovePointRight)
+            .about('move the point right')
             .do(actions.movePointRight1Units)
             .butWhen(Keyboard.MovePointUp)
+            .about('move the point up')
             .do(actions.movePointUp1Units)
             .butWhen(Keyboard.MovePointDown)
+            .about('move the point down')
             .do(actions.movePointDown1Units)
             .butWhen(Keyboard.MovePointUpLeft)
+            .about('move the point up and left')
             .do(actions.movePointUpLeft1Units)
             .butWhen(Keyboard.MovePointUpRight)
+            .about('move the point up and right')
             .do(actions.movePointUpRight1Units)
             .butWhen(Keyboard.MovePointDownLeft)
+            .about('move the point down and left')
             .do(actions.movePointDownLeft1Units)
             .butWhen(Keyboard.MovePointDownRight)
+            .about('move the point down and right')
             .do(actions.movePointDownRight1Units);
 
         theState
@@ -1127,14 +1140,8 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.noDataPoints);
 
         theState
-            .about('delete the hover point after dragging')
-            .from(Status.editing)
-            .when(Keyboard.Delete)
-            .do(actions.deleteHoverPoint);
-
-        theState
             .about('delete the hover point')
-            .from(Status.hover)
+            .from([Status.editing, Status.hover])
             .goto(Status.editing)
             .when(Keyboard.Delete)
             .do(actions.deleteHoverPoint);
@@ -1160,6 +1167,7 @@ export default class DwLasso_class extends Base_tools_class {
             .when(Keyboard.ClosePolygon)
             .do(actions.closePolygon)
             .butWhen(Keyboard.DeleteAndClosePolygon)
+            .about('delete the polygon and reset state')
             .do(actions.deletePointAndClosePolygon);
 
         theState
@@ -1483,7 +1491,12 @@ function documentStateMachine(stateMachine) {
     contexts.forEach((context) => {
         const { from, when, goto, about } = context;
         if (when) {
-            result.push(`- ${about} when "${when}"`);
+            const whenKeys = when.map((v) => `"${v}"`).join(' or ');
+            result.push(`- ${about} when ${whenKeys}`);
+            if (goto) {
+                result[result.length - 1] =
+                    result[result.length - 1] + ` (${from} -> ${goto})`;
+            }
         }
     });
     result.push('');
