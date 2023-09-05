@@ -349,7 +349,7 @@ IMPORTANT: any new icon should also must be added on /service-worker.js + its ve
 .sidebar_left .crop:after {
     background-image: url('images/icons/crop.svg');
 }
-.sidebar_left .dw_lasso:after {
+.sidebar_left .lasso:after {
     background-image: url('images/icons/dw_lasso.svg');
 }
 .sidebar_left .blur:after {

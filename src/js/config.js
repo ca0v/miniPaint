@@ -460,15 +460,15 @@ config.TOOLS = [
         },
     },
     {
-        name: 'dw_lasso',
+        name: 'lasso',
         on_activate: 'on_activate',
         on_update: 'on_params_update',
         on_leave: 'on_leave',
         attributes: {
-            dw_crop: true,
-            dw_cut: true,
-            dw_reset: true,
-            dw_transparent: true,
+            apply_crop: true,
+            apply_cut: true,
+            apply_reset: true,
+            transparent: true,
         },
     },
     {

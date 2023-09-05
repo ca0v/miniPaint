@@ -64,7 +64,7 @@ export default class DwLasso_class extends Base_tools_class {
         const allowSystemToTrackMouseCoordinates = true;
         super(allowSystemToTrackMouseCoordinates);
 
-        this.name = 'dw_lasso';
+        this.name = 'lasso';
         this.ctx = ctx;
         this.data = [];
 
@@ -130,7 +130,7 @@ export default class DwLasso_class extends Base_tools_class {
                     'Magic Crop Layer',
                     [
                         new app.Actions.Insert_layer_action({
-                            name: 'DW Lasso',
+                            name: 'Lasso',
                             type: this.name,
                             params: this.clone(this.getParams()),
                             status: 'draft',
@@ -318,14 +318,14 @@ export default class DwLasso_class extends Base_tools_class {
      */
     async on_params_update(event) {
         switch (event.key) {
-            case 'dw_cut':
+            case 'apply_cut':
                 this.state.trigger(Keyboard.ClearInterior);
                 this.getParams()[event.key] = true;
                 break;
-            case 'dw_crop':
+            case 'apply_crop':
                 this.state.trigger(Keyboard.ClearExterior);
                 break;
-            case 'dw_reset':
+            case 'apply_reset':
                 this.state.trigger(Keyboard.Reset);
                 break;
             default:
@@ -384,7 +384,7 @@ export default class DwLasso_class extends Base_tools_class {
             ctx.closePath();
             ctx.clip();
 
-            if (!this.getParams().dw_transparent) {
+            if (!this.getParams().transparent) {
                 // fill the canvas with the background color
                 ctx.fillStyle = fillColor;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -462,7 +462,7 @@ export default class DwLasso_class extends Base_tools_class {
             ctx.closePath();
             ctx.fill();
 
-            if (!this.getParams().dw_transparent) {
+            if (!this.getParams().transparent) {
                 // now create a solid background
                 const background = document
                     .createElement('canvas')
