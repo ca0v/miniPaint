@@ -87,13 +87,13 @@ export default class DwLasso_class extends Base_tools_class {
         this.GUI_preview = new GUI_preview_class();
 
         const delayRestoreCursor = debounce(() => {
-            document
+            documentStateMachine
                 .getElementById('canvas_wrapper')
                 .classList.remove('dw_hideCursor');
         }, 1000);
 
         this.hideCursor = () => {
-            document
+            documentStateMachine
                 .getElementById('canvas_wrapper')
                 .classList.add('dw_hideCursor');
             delayRestoreCursor();
@@ -115,6 +115,7 @@ export default class DwLasso_class extends Base_tools_class {
         }
 
         this.state = this.defineStateMachine();
+        documentStateMachine(this.state);
         this.state.setCurrentState(Status.none);
         this.metrics.prior_action_history_max =
             this.Base_state.action_history_max;
@@ -365,7 +366,7 @@ export default class DwLasso_class extends Base_tools_class {
             const sx = width / width_original;
             const sy = height / height_original;
 
-            const canvas = document.createElement('canvas');
+            const canvas = documentStateMachine.createElement('canvas');
             const ctx = canvas.getContext('2d');
             canvas.width = link.width;
             canvas.height = link.height;
@@ -441,7 +442,7 @@ export default class DwLasso_class extends Base_tools_class {
             const sx = width / width_original;
             const sy = height / height_original;
 
-            const canvas = document.createElement('canvas');
+            const canvas = documentStateMachine.createElement('canvas');
             const ctx = canvas.getContext('2d');
             canvas.width = link.width;
             canvas.height = link.height;
@@ -463,7 +464,7 @@ export default class DwLasso_class extends Base_tools_class {
 
             if (!this.getParams().dw_transparent) {
                 // now create a solid background
-                const background = document
+                const background = documentStateMachine
                     .createElement('canvas')
                     .getContext('2d');
                 background.canvas.width = canvas.width;
@@ -575,7 +576,8 @@ export default class DwLasso_class extends Base_tools_class {
         const theState = new StateMachine(Object.values(Status));
 
         theState.on('stateChanged', () => {
-            const wrapper = document.getElementById('canvas_wrapper');
+            const wrapper =
+                documentStateMachine.getElementById('canvas_wrapper');
             // remove anything that starts with 'dw_'
             wrapper.classList.forEach((c) => {
                 if (c.startsWith('dw_')) wrapper.classList.remove(c);
@@ -1472,6 +1474,24 @@ function renderAsPath(ctx, points) {
 
 function closeTo(expected, actual, tolerance = 70) {
     return Math.abs(expected - actual) < tolerance;
+}
+
+function documentStateMachine(stateMachine) {
+    const { contexts, actions } = stateMachine;
+    const result = [];
+    result.push('Commands:');
+    contexts.forEach((context) => {
+        const { from, when, goto, about } = context;
+        if (when) {
+            result.push(`- ${about} when "${when}"`);
+        }
+    });
+    result.push('');
+    result.push('Actions:');
+    Object.keys(actions).forEach((action) => {
+        result.push(`- ${action}`);
+    });
+    console.log(result.join('\n'));
 }
 
 new Tests().tests();
