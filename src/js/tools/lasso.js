@@ -1049,7 +1049,7 @@ export default class DwLasso_class extends Base_tools_class {
             .about('add a point to the polygon')
             .from(Status.drawing)
             .when(Keyboard.Drawing)
-            .do(actions.placePointAtClickLocation);
+            .do(actions.drawPoints);
 
         theState
             .about('zoom in')
