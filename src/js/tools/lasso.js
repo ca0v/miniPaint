@@ -517,15 +517,7 @@ export default class DwLasso_class extends Base_tools_class {
         if (isMinorVertex) return false;
 
         const { x, y } = this.getHoverPoint();
-
-        // if we are minimum distance away from the prior point, insert a point
-        const priorPoint = this.data.at(
-            (pointIndex - 1 + this.data.length) % this.data.length,
-        );
-        const d = distance(priorPoint, { x, y });
-        if (d < Settings.minimalDistanceBetweenPoints * this.scale) {
-            return false;
-        }
+        if (!this.allowInsertPoint(pointIndex, { x, y })) return false;
 
         this.undoredo(
             `before cloning major vertex ${pointIndex}`,
@@ -565,6 +557,41 @@ export default class DwLasso_class extends Base_tools_class {
         p.y = currentPoint.y;
         this.setHoverInfo('major', this.data.length - 1);
         this.renderData();
+    }
+
+    getDataAt(index) {
+        return this.data.at((index + this.data.length) % this.data.length);
+    }
+
+    allowInsertPoint(pointIndex, mouse) {
+        const priorPoint = this.data.at(pointIndex - 1);
+        if (!priorPoint) {
+            this.placePointAtClickLocation(mouseEvent);
+            return false;
+        }
+
+        const isSecondPoint = this.data.length === 2;
+
+        const d = distance(priorPoint, mouse) / this.scale;
+        let drawPoint =
+            d >
+            (isSecondPoint
+                ? Settings.minimalDistanceBetweenPoints
+                : Settings.distanceBetweenPoints);
+
+        if (
+            !drawPoint &&
+            this.data.length > 2 &&
+            d > Settings.minimalDistanceBetweenPoints
+        ) {
+            const a =
+                Math.PI -
+                angleOf(this.data.at(pointIndex - 2), priorPoint, mouse);
+            drawPoint =
+                d * a >
+                Settings.radiusThreshold * Settings.distanceBetweenPoints;
+        }
+        return drawPoint;
     }
 
     defineStateMachine() {
@@ -706,47 +733,22 @@ export default class DwLasso_class extends Base_tools_class {
                 const mouse = this.mousePoint(mouseEvent);
                 if (!mouse) return false;
 
-                const data = this.data;
-                const priorPoint = data.at(-2);
-                if (!priorPoint) {
-                    this.placePointAtClickLocation(mouseEvent);
-                    return false;
-                }
+                const pointIndex = -1;
 
-                const isSecondPoint = data.length === 2;
-
-                const d = distance(priorPoint, mouse) / this.scale;
-                let drawPoint =
-                    d >
-                    (isSecondPoint
-                        ? Settings.minimalDistanceBetweenPoints
-                        : Settings.distanceBetweenPoints);
-
-                if (
-                    !drawPoint &&
-                    data.length > 2 &&
-                    d > Settings.minimalDistanceBetweenPoints
-                ) {
-                    const a = Math.PI - angleOf(data.at(-3), priorPoint, mouse);
-                    drawPoint =
-                        d * a >
-                        Settings.radiusThreshold *
-                            Settings.distanceBetweenPoints;
-                }
-                if (drawPoint) {
+                if (this.allowInsertPoint(pointIndex, mouse)) {
                     this.undoredo(
-                        `before drawing point ${data.length}`,
+                        `before drawing point ${this.data.length}`,
                         () => {
                             this.data.push(mouse);
-                            this.setHoverInfo('major', this.data.length - 1);
+                            this.setHoverInfo('major', pointIndex);
                         },
                         () => {
                             this.data.pop();
-                            this.setHoverInfo('major', this.data.length - 1);
+                            this.setHoverInfo('major', pointIndex);
                         },
                     );
                 } else {
-                    const p = this.data.at(-1);
+                    const p = this.data.at(pointIndex);
                     p.x = mouse.x;
                     p.y = mouse.y;
                     this.renderData();
@@ -1277,17 +1279,11 @@ export default class DwLasso_class extends Base_tools_class {
         if (isMinor) {
             let index = pointIndex + indexOffset;
             if (indexOffset < 0) index++;
-            this.setHoverInfo(
-                'major',
-                (index + this.data.length) % this.data.length,
-            );
+            this.setHoverInfo('major', index);
         } else {
             let index = pointIndex + indexOffset;
             if (indexOffset > 0) index--;
-            this.setHoverInfo(
-                'minor',
-                (index + this.data.length) % this.data.length,
-            );
+            this.setHoverInfo('minor', index);
         }
 
         this.moveIntoView();
@@ -1314,6 +1310,7 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     setHoverInfo(type, pointIndex) {
+        pointIndex = (pointIndex + this.data.length) % this.data.length;
         if (arguments.length === 1) {
             pointIndex = type.pointIndex;
             type = type.type;
@@ -1350,12 +1347,12 @@ export default class DwLasso_class extends Base_tools_class {
             return null;
         }
 
-        if (isMajor) return this.data.at(pointIndex % this.data.length);
+        if (isMajor) return this.getDataAt(pointIndex);
 
         if (isMinor)
             return center(
-                this.data.at(pointIndex % this.data.length),
-                this.data.at((pointIndex + 1) % this.data.length),
+                this.getDataAt(pointIndex),
+                this.getDataAt(pointIndex + 1),
             );
 
         return null;
@@ -1461,7 +1458,7 @@ export default class DwLasso_class extends Base_tools_class {
             why,
             () => {
                 this.data.splice(state.pointIndex, 1);
-                this.setHoverInfo('major', state.pointIndex % this.data.length);
+                this.setHoverInfo('major', state.pointIndex);
             },
             () => {
                 state.status = this.status;
