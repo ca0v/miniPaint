@@ -85,19 +85,6 @@ export default class DwLasso_class extends Base_tools_class {
         this.Base_layers = new Base_layers_class();
         this.Base_state = new Base_state_class();
         this.GUI_preview = new GUI_preview_class();
-
-        const delayRestoreCursor = debounce(() => {
-            document
-                .getElementById('canvas_wrapper')
-                .classList.remove('dw_hideCursor');
-        }, 1000);
-
-        this.hideCursor = () => {
-            document
-                .getElementById('canvas_wrapper')
-                .classList.add('dw_hideCursor');
-            delayRestoreCursor();
-        };
     }
 
     get scale() {
