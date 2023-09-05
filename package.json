@@ -16,6 +16,7 @@
         "deploy": "webpack --mode development --watch --output-path ../../pmw/assets/plugins/image-editor-v2/js",
         "build": "webpack --mode production",
         "go": "npm run build && npm run deploy",
+        "git:merge": "git checkout spline_draw && git pull && git checkout dataworks_dev && git pull && git merge spline_draw",
         "pretty": "prettier --write \"src/**/*.js\""
     },
     "repository": {

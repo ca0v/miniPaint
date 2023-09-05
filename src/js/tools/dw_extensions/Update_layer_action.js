@@ -1,6 +1,6 @@
 import { Base_action } from '../../actions/base.js';
-import { dump } from './dump.js';
 import { deep } from './deep.js';
+import { verbose } from './log.js';
 
 function captureInto(source, target = {}) {
     target.data = deep(source.data);
@@ -25,7 +25,7 @@ export class Update_lasso_action extends Base_action {
 
     async do() {
         super.do();
-        console.log(`do: ${this.about}`);
+        verbose(`do: ${this.about}`);
         if (this.cropperState.isRedo) {
             captureInto(this.cropperState.undo, this.cropper);
         } else {
@@ -37,7 +37,7 @@ export class Update_lasso_action extends Base_action {
 
     async undo() {
         this.cropperState.isRedo = true;
-        console.log(`undo: ${this.about}`);
+        verbose(`undo: ${this.about}`);
         captureInto(this.cropper, this.cropperState.undo);
         captureInto(this.cropperState.do, this.cropper);
         this.cropper.renderData();

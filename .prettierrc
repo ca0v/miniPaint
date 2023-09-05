@@ -2,5 +2,13 @@
     "tabWidth": 4,
     "useTabs": false,
     "singleQuote": true,
-    "printWidth": 80
+    "printWidth": 80,
+    "overrides": [
+        {
+            "files": "Keyboard.js",
+            "options": {
+                "printWidth": 160
+            }
+        }
+    ]
 }
