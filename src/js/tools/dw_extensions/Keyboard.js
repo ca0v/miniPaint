@@ -1,3 +1,7 @@
+const SPACE = ' ';
+const MOUSE_BUTTON = 'Left';
+const PLUS = '+';
+
 export const Keyboard = Object.freeze({
     PriorVertex: 'Shift+Tab',
     NextVertex: 'Tab',
@@ -8,13 +12,10 @@ export const Keyboard = Object.freeze({
     MovePointUpLeft: ['Control+ArrowLeft+ArrowUp', 'ArrowLeft+ArrowUp'],
     MovePointUpRight: ['Control+ArrowRight+ArrowUp', 'ArrowRight+ArrowUp'],
     MovePointDownLeft: ['Control+ArrowLeft+ArrowDown', 'ArrowLeft+ArrowDown'],
-    MovePointDownRight: [
-        'Control+ArrowRight+ArrowDown',
-        'ArrowRight+ArrowDown',
-    ],
+    MovePointDownRight: ['Control+ArrowRight+ArrowDown', 'ArrowRight+ArrowDown'],
     CenterAt: 'c',
-    Delete: ['Delete', 'Backspace', 'Shift+Left+mousedown'],
-    ZoomIn: ['+', '=', 'Shift++', 'Spread'],
+    Delete: ['Delete', 'Backspace', `Shift+${MOUSE_BUTTON}+mousedown`],
+    ZoomIn: [PLUS, '=', `Shift+${PLUS}`, 'Spread'],
     ZoomOut: ['-', 'Shift+_', 'Pinch'],
     PanLeft: ['DragDragRight', 'Shift+ArrowLeft'],
     PanRight: ['DragDragLeft', 'Shift+ArrowRight'],
@@ -23,18 +24,19 @@ export const Keyboard = Object.freeze({
     PanFrom: ['mousemove'],
     PanTo: ['Shift+mousemove'],
     Reset: 'Shift+Escape',
-    StartDragging: ['Left+mousedown', ' +Left+mousedown', 'touchmove'],
-    Dragging: ['Left+mousemove', ' +Left+mousemove', 'touchmove'],
-    EndDragging: ['Left+mouseup', ' +Left+mouseup', 'touchend'],
+    StartDragging: [`${MOUSE_BUTTON}+mousedown`, `${SPACE}+${MOUSE_BUTTON}+mousedown`, 'touchmove'],
+    Dragging: [`${MOUSE_BUTTON}+mousemove`, `${SPACE}+${MOUSE_BUTTON}+mousemove`, 'touchmove'],
+    EndDragging: [`${MOUSE_BUTTON}+mouseup`, `${SPACE}+${MOUSE_BUTTON}+mouseup`, 'touchend'],
     PlacingVertex: ['mousemove'],
-    PlaceVertex: ['Left+mousedown'],
+    CloneVertex: [SPACE],
+    PlaceVertex: [`${MOUSE_BUTTON}+mousedown`],
     ClearInterior: 'Shift+X',
     ClearExterior: 'Control+Shift+X',
     Smooth: 'q',
-    ClosePolygon: ['Right+mousedown', 'touchend'],
+    ClosePolygon: ['Enter', 'touchend'],
     DeleteAndClosePolygon: ['Escape'],
-    InsertPointAtCursorPosition: [' ', ' +Left+mousemove'],
+    InsertPointAtCursorPosition: [SPACE, `${SPACE}+${MOUSE_BUTTON}+mousemove`],
     Hover: ['Shift+mousemove', 'mousemove', 'touchmove'],
-    PlaceFirstVertex: ['Left+mousedown', 'touchstart'],
-    Drawing: ['Left+mousedown', 'touchmove', 'touchstart'],
+    PlaceFirstVertex: [`${MOUSE_BUTTON}+mousedown`, 'touchstart'],
+    Drawing: [`${MOUSE_BUTTON}+mousedown`, 'touchmove', 'touchstart'],
 });

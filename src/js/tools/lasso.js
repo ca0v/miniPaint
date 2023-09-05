@@ -783,9 +783,29 @@ export default class DwLasso_class extends Base_tools_class {
 
             insertPointBeforeHoverLocation: (e) =>
                 this.insertPointAfterHoverLocation(e),
+
             placePointAtClickLocation: (e) => this.placePointAtClickLocation(e),
+
             movingLastPointToMouseLocation: (e) =>
                 this.movingLastPointToMouseLocation(e),
+
+            cloneLastPoint: () => {
+                if (!this.data.length) return false;
+                const lastPoint = this.getHoverPoint();
+                if (!lastPoint) return false;
+                const { pointIndex } = this.getHoverInfo();
+                this.undoredo(
+                    'before cloning last point',
+                    () => {
+                        this.data.splice(pointIndex + 1, 0, { ...lastPoint });
+                        this.setHoverInfo('major', pointIndex + 1);
+                    },
+                    () => {
+                        this.data.splice(pointIndex + 1, 1);
+                        this.setHoverInfo('major', pointIndex);
+                    },
+                );
+            },
 
             movedLastPointToFirstPoint: (e) => {
                 // if there are points and this is close to the first point, close the polygon
@@ -1051,6 +1071,12 @@ export default class DwLasso_class extends Base_tools_class {
             .from(Status.placing)
             .when(Keyboard.PlacingVertex)
             .do(actions.movingLastPointToMouseLocation);
+
+        theState
+            .about('continue moving the last point to the mouse location')
+            .from(Status.placing)
+            .when(Keyboard.CloneVertex)
+            .do(actions.cloneLastPoint);
 
         theState
             .about('stop placing and enter drawing mode')
