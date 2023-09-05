@@ -1,4 +1,5 @@
 import { Base_action } from '../../actions/base.js';
+import { verbose } from '../log.js';
 
 export class Generic_action extends Base_action {
     constructor(cropper, { why, doit, undo }) {
@@ -11,13 +12,13 @@ export class Generic_action extends Base_action {
 
     async do() {
         super.do();
-        console.log(`generic do: ${this._why}`);
+        verbose(`generic do: ${this._why}`);
         this._doit();
         this.cropper.renderData();
     }
 
     async undo() {
-        console.log(`generic undo: ${this._why}`);
+        verbose(`generic undo: ${this._why}`);
         this._undo();
         super.undo();
         this.cropper.renderData();

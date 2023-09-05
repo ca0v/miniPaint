@@ -1,5 +1,4 @@
 import { Base_action } from '../../actions/base.js';
-import { dump } from './dump.js';
 import { deep } from './deep.js';
 
 function captureInto(source, target = {}) {

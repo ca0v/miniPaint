@@ -45,8 +45,7 @@ import { clockwise } from './dw_extensions/clockwise.js';
 import { Smooth } from './dw_extensions/Smooth.js';
 import { Tests } from './dw_extensions/Tests.js';
 import { StateMachine } from './dw_extensions/StateMachine.js';
-import { log } from './dw_extensions/log.js';
-import { dump } from './dw_extensions/dump.js';
+import { log, verbose } from './dw_extensions/log.js';
 
 async function doActions(actions) {
     await app.State.do_action(
@@ -511,12 +510,12 @@ export default class DwLasso_class extends Base_tools_class {
             () => {
                 this.data.splice(pointIndex + 1, 0, { x, y });
                 this.setHoverInfo('major', pointIndex + 1);
-                console.log(`redo: hover ${pointIndex + 1}`);
+                verbose(`redo: hover ${pointIndex + 1}`);
             },
             () => {
                 this.data.splice(pointIndex + 1, 1);
                 this.setHoverInfo('major', pointIndex);
-                console.log(`undo: hover ${pointIndex}`);
+                verbose(`undo: hover ${pointIndex}`);
             },
         );
     }
@@ -539,7 +538,7 @@ export default class DwLasso_class extends Base_tools_class {
         const currentPoint = this.mousePoint(mouseEvent);
         if (!currentPoint) return false;
         if (!this.data.length) return;
-        const p = this.data.at(-1);
+        const p = this.getDataAt(-1);
         p.x = currentPoint.x;
         p.y = currentPoint.y;
         this.setHoverInfo('major', this.data.length - 1);
@@ -551,32 +550,64 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     allowInsertPoint(pointIndex, mouse) {
-        const priorPoint = this.data.at(pointIndex - 1);
-        if (!priorPoint) {
-            this.placePointAtClickLocation(mouseEvent);
-            return false;
+        if (this.data.length <= 1) {
+            verbose(
+                'allowInsertPoint',
+                `can insert at ${pointIndex} because there are ${this.data.length} points}`,
+            );
+            return true;
         }
 
-        const isSecondPoint = this.data.length === 2;
-
+        const priorPoint = this.getDataAt(pointIndex - 1);
         const d = distance(priorPoint, mouse) / this.scale;
         let drawPoint =
             d >
-            (isSecondPoint
+            (this.data.length === 2
                 ? Settings.minimalDistanceBetweenPoints
                 : Settings.distanceBetweenPoints);
 
-        if (
-            !drawPoint &&
-            this.data.length > 2 &&
-            d > Settings.minimalDistanceBetweenPoints
-        ) {
-            const a =
-                Math.PI -
-                angleOf(this.data.at(pointIndex - 2), priorPoint, mouse);
-            drawPoint =
-                d * a >
-                Settings.radiusThreshold * Settings.distanceBetweenPoints;
+        if (drawPoint) {
+            verbose(
+                'allowInsertPoint',
+                `can insert at ${pointIndex} because d=${d}`,
+            );
+        }
+
+        if (!drawPoint) {
+            if (d < Settings.minimalDistanceBetweenPoints) {
+                verbose(
+                    'allowInsertPoint',
+                    `cannot insert at ${pointIndex} because the minimal distance has not been achieved`,
+                );
+                return false;
+            }
+            if (this.data.length <= 2) {
+                verbose(
+                    'allowInsertPoint',
+                    `cannot insert at ${pointIndex} because angle cannot be computed`,
+                );
+                return false;
+            }
+            {
+                const a =
+                    Math.PI -
+                    angleOf(this.getDataAt(pointIndex - 2), priorPoint, mouse);
+                drawPoint =
+                    d * a >
+                    Settings.radiusThreshold * Settings.distanceBetweenPoints;
+
+                if (drawPoint) {
+                    verbose(
+                        'allowInsertPoint',
+                        `can insert at ${pointIndex} because d=${d} and a=${a}`,
+                    );
+                } else {
+                    verbose(
+                        'allowInsertPoint',
+                        `cannot insert at ${pointIndex} because d=${d} and a=${a}`,
+                    );
+                }
+            }
         }
         return drawPoint;
     }
@@ -596,7 +627,7 @@ export default class DwLasso_class extends Base_tools_class {
                 if (c.startsWith('dw_')) wrapper.classList.remove(c);
             });
             wrapper.classList.add(`dw_${theState.currentState}`);
-            console.log(`state: ${theState.currentState}`);
+            verbose(`state: ${theState.currentState}`);
         });
 
         theState.on('execute', (context) => {
@@ -659,18 +690,18 @@ export default class DwLasso_class extends Base_tools_class {
 
                 if (isMajorVertex) {
                     const { x: original_x, y: original_y } =
-                        this.data.at(hoverIndex);
+                        this.getDataAt(hoverIndex);
                     let { x: redo_x, y: redo_y } = currentPoint;
                     this.undoredo(
                         `before dragging point ${hoverIndex} from ${original_x}, ${original_y}`,
                         () => {
-                            const point = this.data.at(hoverIndex);
+                            const point = this.getDataAt(hoverIndex);
                             point.x = redo_x;
                             point.y = redo_y;
                             this.setHoverInfo('major', hoverIndex);
                         },
                         () => {
-                            const point = this.data.at(hoverIndex);
+                            const point = this.getDataAt(hoverIndex);
                             redo_x = point.x;
                             redo_y = point.y;
                             point.x = original_x;
@@ -735,7 +766,7 @@ export default class DwLasso_class extends Base_tools_class {
                         },
                     );
                 } else {
-                    const p = this.data.at(pointIndex);
+                    const p = this.getDataAt(pointIndex);
                     p.x = mouse.x;
                     p.y = mouse.y;
                     this.renderData();
@@ -759,8 +790,8 @@ export default class DwLasso_class extends Base_tools_class {
             movedLastPointToFirstPoint: (e) => {
                 // if there are points and this is close to the first point, close the polygon
                 if (this.data.length <= 3) return false;
-                const firstPoint = this.data.at(0);
-                const lastPoint = this.data.at(-1);
+                const firstPoint = this.getDataAt(0);
+                const lastPoint = this.getDataAt(-1);
                 const d = distance(firstPoint, lastPoint);
                 if (d > Settings.minimalDistanceBetweenPoints * this.scale)
                     return false;
@@ -1239,7 +1270,7 @@ export default class DwLasso_class extends Base_tools_class {
                 },
             );
         } else {
-            const point = this.data.at(pointIndex);
+            const point = this.getDataAt(pointIndex);
             const { x, y } = point;
             this.metrics.timeOfMove = Date.now();
             this.metrics.lastPointMoved = point;
@@ -1275,7 +1306,6 @@ export default class DwLasso_class extends Base_tools_class {
 
         this.moveIntoView();
         this.Base_layers.render();
-        dump(this.hoverInfo);
     }
 
     moveIntoView() {
@@ -1505,7 +1535,7 @@ function documentStateMachine(stateMachine) {
         .forEach((action) => {
             result.push(`- ${action}`);
         });
-    console.log(result.join('\n'));
+    verbose(result.join('\n'));
 }
 
 new Tests().tests();
