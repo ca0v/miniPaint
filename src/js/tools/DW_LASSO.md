@@ -1,90 +1,132 @@
-Commands:
+## Commands
 
--   reset the tool when "Shift+Escape" (editing,drawing,placing,hover,ready -> ready)
--   clear the interior during an edit when "Shift+X" (editing,drawing,placing,hover -> ready)
--   clear the exterior during an edit when "Control+Shift+X" (editing,drawing,placing,hover -> ready)
--   inject smoothing points into the polygon when "q"
--   center about the current point when "c"
--   prepare to drag this point when "Left+mousedown" or " +Left+mousedown" or "touchmove" (hover -> before_dragging)
--   begin dragging this point when "Left+mousemove" or " +Left+mousemove" or "touchmove" (before_dragging -> dragging)
--   drag this point when "Left+mousemove" or " +Left+mousemove" or "touchmove"
--   stop dragging this point when "Left+mouseup" or " +Left+mouseup" or "touchend" (dragging -> editing)
--   automatically create vertices as mouse moves when "Left+mousemove" or " +Left+mousemove" or "touchmove"
--   when moving the mouse, move the last point to the mouse location when "mousemove" (drawing -> placing)
--   place a point at the mouse location behind the drag point when " " or " +Left+mousemove"
--   create the 1st point of the polygon when "Left+mousedown" or "touchstart" (ready -> drawing)
--   continue moving the last point to the mouse location when "mousemove"
--   stop placing and enter drawing mode when "Left+mousedown" (placing -> drawing)
--   close poly when the last is also the first when "mousemove" (placing -> editing)
--   add a point to the polygon when "Left+mousedown" or "touchmove" or "touchstart"
--   zoom in when "+" or "=" or "Shift++" or "Spread"
--   zoom out when "-" or "Shift+\_" or "Pinch"
--   pan left when "DragDragRight" or "Shift+ArrowLeft"
--   pan right when "DragDragLeft" or "Shift+ArrowRight"
--   pan up when "DragDragDown" or "Shift+ArrowUp"
--   pan down when "DragDragUp" or "Shift+ArrowDown"
--   pan from when "mousemove"
--   pan to when "Shift+mousemove"
--   go to prior vertex when "Shift+Tab" (editing,hover -> editing)
--   go to next vertex when "Tab" (editing,hover -> editing)
--   move the point left when "ArrowLeft"
--   move the point right when "ArrowRight"
--   move the point up when "ArrowUp"
--   move the point down when "ArrowDown"
--   move the point up and left when "Control+ArrowLeft+ArrowUp" or "ArrowLeft+ArrowUp"
--   move the point up and right when "Control+ArrowRight+ArrowUp" or "ArrowRight+ArrowUp"
--   move the point down and left when "Control+ArrowLeft+ArrowDown" or "ArrowLeft+ArrowDown"
--   move the point down and right when "Control+ArrowRight+ArrowDown" or "ArrowRight+ArrowDown"
--   after deleting the last point indicate we are ready for the 1st point when "Delete" or "Backspace" or "Shift+Left+mousedown" (editing -> ready)
--   delete the hover point when "Delete" or "Backspace" or "Shift+Left+mousedown" (editing,hover -> editing)
--   mouse has moved over a point when "Shift+mousemove" or "mousemove" or "touchmove" (editing -> hover)
--   mouse is no longer over a point when "Shift+mousemove" or "mousemove" or "touchmove" (hover -> editing)
--   complete the polygon when "Right+mousedown" or "touchend" (drawing,placing -> editing)
--   delete the polygon and reset state when "Escape" (drawing,placing -> editing)
--   delete the polygon and reset state when "Escape" (editing -> ready)
+-   <b>add a point to the polygon</b>
+    when <kbd>Left+mousedown</kbd> or <kbd>touchmove</kbd> or <kbd>touchstart</kbd> (from drawing)
+-   <b>after deleting the last point indicate we are ready for the 1st point</b>
+    when <kbd>Delete</kbd> or <kbd>Backspace</kbd> or <kbd>Shift+Left+mousedown</kbd> (editing -> ready)
+-   <b>automatically create vertices as mouse moves</b>
+    when <kbd>Left+mousemove</kbd> or <kbd> +Left+mousemove</kbd> or <kbd>touchmove</kbd> (from drawing)
+-   <b>begin dragging this point</b>
+    when <kbd>Left+mousemove</kbd> or <kbd> +Left+mousemove</kbd> or <kbd>touchmove</kbd> (before_dragging -> dragging)
+-   <b>center about the current point</b>
+    when <kbd>c</kbd> (from editing,dragging,drawing,placing,hover)
+-   <b>clear the exterior during an edit</b>
+    when <kbd>Control+Shift+X</kbd> (editing,drawing,placing,hover -> ready)
+-   <b>clear the interior during an edit</b>
+    when <kbd>Shift+X</kbd> (editing,drawing,placing,hover -> ready)
+-   <b>close poly when the last is also the first</b>
+    when <kbd>mousemove</kbd> (placing -> editing)
+-   <b>complete the polygon</b>
+    when <kbd>Right+mousedown</kbd> or <kbd>touchend</kbd> (drawing,placing -> editing)
+-   <b>continue moving the last point to the mouse location</b>
+    when <kbd>mousemove</kbd> (from placing)
+-   <b>create the 1st point of the polygon</b>
+    when <kbd>Left+mousedown</kbd> or <kbd>touchstart</kbd> (ready -> drawing)
+-   <b>delete the hover point</b>
+    when <kbd>Delete</kbd> or <kbd>Backspace</kbd> or <kbd>Shift+Left+mousedown</kbd> (editing,hover -> editing)
+-   <b>delete the polygon and reset state</b>
+    when <kbd>Escape</kbd> (drawing,placing -> editing)
+-   <b>delete the polygon and reset state</b>
+    when <kbd>Escape</kbd> (editing -> ready)
+-   <b>drag this point</b>
+    when <kbd>Left+mousemove</kbd> or <kbd> +Left+mousemove</kbd> or <kbd>touchmove</kbd> (from dragging)
+-   <b>go to next vertex</b>
+    when <kbd>Tab</kbd> (editing,hover -> editing)
+-   <b>go to prior vertex</b>
+    when <kbd>Shift+Tab</kbd> (editing,hover -> editing)
+-   <b>inject smoothing points into the polygon</b>
+    when <kbd>q</kbd> (from editing,hover,placing)
+-   <b>mouse has moved over a point</b>
+    when <kbd>Shift+mousemove</kbd> or <kbd>mousemove</kbd> or <kbd>touchmove</kbd> (editing -> hover)
+-   <b>mouse is no longer over a point</b>
+    when <kbd>Shift+mousemove</kbd> or <kbd>mousemove</kbd> or <kbd>touchmove</kbd> (hover -> editing)
+-   <b>move the point down</b>
+    when <kbd>ArrowDown</kbd> (from editing,placing,hover)
+-   <b>move the point down and left</b>
+    when <kbd>Control+ArrowLeft+ArrowDown</kbd> or <kbd>ArrowLeft+ArrowDown</kbd> (from editing,placing,hover)
+-   <b>move the point down and right</b>
+    when <kbd>Control+ArrowRight+ArrowDown</kbd> or <kbd>ArrowRight+ArrowDown</kbd> (from editing,placing,hover)
+-   <b>move the point left</b>
+    when <kbd>ArrowLeft</kbd> (from editing,placing,hover)
+-   <b>move the point right</b>
+    when <kbd>ArrowRight</kbd> (from editing,placing,hover)
+-   <b>move the point up</b>
+    when <kbd>ArrowUp</kbd> (from editing,placing,hover)
+-   <b>move the point up and left</b>
+    when <kbd>Control+ArrowLeft+ArrowUp</kbd> or <kbd>ArrowLeft+ArrowUp</kbd> (from editing,placing,hover)
+-   <b>move the point up and right</b>
+    when <kbd>Control+ArrowRight+ArrowUp</kbd> or <kbd>ArrowRight+ArrowUp</kbd> (from editing,placing,hover)
+-   <b>pan down</b>
+    when <kbd>DragDragUp</kbd> or <kbd>Shift+ArrowDown</kbd> (from drawing,hover,editing,ready,placing)
+-   <b>pan from</b>
+    when <kbd>mousemove</kbd> (from drawing,hover,editing,ready,placing)
+-   <b>pan left</b>
+    when <kbd>DragDragRight</kbd> or <kbd>Shift+ArrowLeft</kbd> (from drawing,hover,editing,ready,placing)
+-   <b>pan right</b>
+    when <kbd>DragDragLeft</kbd> or <kbd>Shift+ArrowRight</kbd> (from drawing,hover,editing,ready,placing)
+-   <b>pan to</b>
+    when <kbd>Shift+mousemove</kbd> (from drawing,hover,editing,ready,placing)
+-   <b>pan up</b>
+    when <kbd>DragDragDown</kbd> or <kbd>Shift+ArrowUp</kbd> (from drawing,hover,editing,ready,placing)
+-   <b>place a point at the mouse location behind the drag point</b>
+    when <kbd> </kbd> or <kbd> +Left+mousemove</kbd> (from dragging,editing)
+-   <b>prepare to drag this point</b>
+    when <kbd>Left+mousedown</kbd> or <kbd> +Left+mousedown</kbd> or <kbd>touchmove</kbd> (hover -> before_dragging)
+-   <b>reset the tool</b>
+    when <kbd>Shift+Escape</kbd> (editing,drawing,placing,hover,ready -> ready)
+-   <b>stop dragging this point</b>
+    when <kbd>Left+mouseup</kbd> or <kbd> +Left+mouseup</kbd> or <kbd>touchend</kbd> (dragging -> editing)
+-   <b>stop placing and enter drawing mode</b>
+    when <kbd>Left+mousedown</kbd> (placing -> drawing)
+-   <b>when moving the mouse, move the last point to the mouse location</b>
+    when <kbd>mousemove</kbd> (drawing -> placing)
+-   <b>zoom in</b>
+    when <kbd>+</kbd> or <kbd>=</kbd> or <kbd>Shift++</kbd> or <kbd>Spread</kbd> (from drawing,hover,editing,ready,placing)
+-   <b>zoom out</b>
+    when <kbd>-</kbd> or <kbd>Shift+\_</kbd> or <kbd>Pinch</kbd> (from drawing,hover,editing,ready,placing)
 
-Actions:
+## Actions
 
--   start
 -   beforeDraggingHoverPoint
+-   centerAt
+-   closePolygon
+-   crop
+-   cut
+-   dataPoints
+-   deleteHoverPoint
+-   deletePointAndClosePolygon
 -   draggingHoverPoint
--   endDraggingHoverPoint
 -   drawPoints
--   placeFirstPointAtMouseLocation
+-   endDraggingHoverPoint
+-   hoveringOverPoint
 -   insertPointBeforeHoverLocation
--   placePointAtClickLocation
--   movingLastPointToMouseLocation
--   movedLastPointToFirstPoint
--   moveToPriorPoint
--   moveToNextPoint
+-   movePointDown1Units
+-   movePointDownLeft1Units
+-   movePointDownRight1Units
 -   movePointLeft1Units
 -   movePointRight1Units
 -   movePointUp1Units
--   movePointDown1Units
 -   movePointUpLeft1Units
 -   movePointUpRight1Units
--   movePointDownLeft1Units
--   movePointDownRight1Units
--   closePolygon
--   deletePointAndClosePolygon
--   dataPoints
+-   moveToNextPoint
+-   moveToPriorPoint
+-   movedLastPointToFirstPoint
+-   movingLastPointToMouseLocation
 -   noDataPoints
--   deleteHoverPoint
--   hoveringOverPoint
 -   notHoveringOverPoint
--   zoomIn
--   zoomOut
+-   panDown
 -   panFrom
--   panTo
 -   panLeft
 -   panRight
+-   panTo
 -   panUp
--   panDown
+-   placeFirstPointAtMouseLocation
+-   placePointAtClickLocation
 -   reset
--   cut
--   crop
 -   smooth
 -   smoothAllData
--   smoothAroundVertex
 -   smoothAroundMinorVertex
--   centerAt
+-   smoothAroundVertex
+-   start
+-   zoomIn
+-   zoomOut

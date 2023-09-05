@@ -1487,23 +1487,36 @@ function closeTo(expected, actual, tolerance = 70) {
 function documentStateMachine(stateMachine) {
     const { contexts, actions } = stateMachine;
     const result = [];
-    result.push('Commands:');
-    contexts.forEach((context) => {
-        const { from, when, goto, about } = context;
-        if (when) {
-            const whenKeys = when.map((v) => `"${v}"`).join(' or ');
-            result.push(`- ${about} when ${whenKeys}`);
-            if (goto) {
-                result[result.length - 1] =
-                    result[result.length - 1] + ` (${from} -> ${goto})`;
+    result.push('## Commands');
+    [...contexts]
+        .toSorted((a, b) => {
+            // sort by the about property
+            return a.about.localeCompare(b.about);
+        })
+        .forEach((context) => {
+            const { from, when, goto, about } = context;
+            if (when) {
+                result.push(`- <b>${about}</b>`);
+                const whenKeys = when
+                    .map((v) => `<kbd>${v}</kbd>`)
+                    .join(' or ');
+                result.push(`when ${whenKeys}`);
+                if (goto) {
+                    result[result.length - 1] =
+                        result[result.length - 1] + ` (${from} -> ${goto})`;
+                } else if (from) {
+                    result[result.length - 1] =
+                        result[result.length - 1] + ` (from ${from})`;
+                }
             }
-        }
-    });
+        });
     result.push('');
-    result.push('Actions:');
-    Object.keys(actions).forEach((action) => {
-        result.push(`- ${action}`);
-    });
+    result.push('## Actions');
+    Object.keys(actions)
+        .toSorted()
+        .forEach((action) => {
+            result.push(`- ${action}`);
+        });
     console.log(result.join('\n'));
 }
 
