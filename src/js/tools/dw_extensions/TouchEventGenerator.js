@@ -1,4 +1,5 @@
 import { EventManager } from './EventManager.js';
+import { distance } from './distance.js';
 
 const MIN_TIME = 100;
 
@@ -104,7 +105,9 @@ export class TouchEventGenerator {
         }
 
         if (PhysicalAnalyzers.isPinch(this.physics)) {
-            switch (PhysicalAnalyzers.getPinchDirection(this.physics)) {
+            const direction = PhysicalAnalyzers.getPinchDirection(this.physics);
+            console.log('xxx:pinchorspread', direction);
+            switch (direction) {
                 case 'in':
                     this.trigger('touch:pinch', { physics: this.physics });
                     break;
@@ -209,7 +212,7 @@ class PhysicalAnalyzers {
         let { degrees, speed, minSpeed } = options || {};
         degrees = degrees || 30; // degrees
         speed = speed || 100; // pixels per second
-        minSpeed = minSpeed || 200;
+        minSpeed = minSpeed || 30;
 
         const [t1, t2] = physics;
 
@@ -280,7 +283,9 @@ class PhysicalAnalyzers {
             return false;
         }
 
-        const degreeDiff = 180 - Math.abs(t1.degree - t2.degree);
+        const degreeDiff = Math.abs(
+            180 - positiveDegree(t1.degree - t2.degree),
+        );
 
         if (degreeDiff > degrees) {
             console.log(
@@ -302,26 +307,14 @@ class PhysicalAnalyzers {
         if (!PhysicalAnalyzers.isPinch(physics, options)) return false;
 
         const [t1, t2] = physics;
+        const [p1, p2] = [t1.position, t2.position];
         const [v1, v2] = [t1.velocity, t2.velocity];
 
-        const distanceNow = Math.sqrt(
-            (t1.position.x - t2.position.x) ** 2 +
-                (t1.position.y - t2.position.y) ** 2,
-        );
-
-        const distanceLater = Math.sqrt(
-            (t1.position.x + v1.x - t2.position.x - v2.x) ** 2 +
-                (t1.position.y + v1.y - t2.position.y - v2.y) ** 2,
-        );
-
-        const distanceDiff = distanceLater - distanceNow;
-        const direction = distanceDiff > 0 ? 'out' : 'in';
-        console.log('xxx:pinchorspread', direction, {
-            distanceLater,
-            distanceNow,
-        });
-
-        return direction;
+        if (p1.x < p2.x && v1.x < 0 && v2.x > 0) return 'out';
+        if (p1.y < p2.y && v1.y < 0 && v2.y > 0) return 'out';
+        if (p1.x > p2.x && v1.x > 0 && v2.x < 0) return 'out';
+        if (p1.y > p2.y && v1.y > 0 && v2.y < 0) return 'out';
+        return 'in';
     }
 }
 
