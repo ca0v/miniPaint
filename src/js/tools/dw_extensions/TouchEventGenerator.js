@@ -34,7 +34,7 @@ export class TouchEventGenerator {
         verbose('aborting touch');
         this.touchHandle?.off();
         this.touchHandle = null;
-        this.trigger('abort');
+        this.events.trigger('touch:abort');
     }
 
     touchStartHandler(touchEvent) {

@@ -68,12 +68,14 @@ export class StateMachine {
 
         // forward touch events through state events to honor "off" status
         // when statemachine is off() the listener will not receive these events
-        'touch:begin,touch:drag,touch:complete'.split(',').forEach((topic) => {
-            touchEventGenerator.on(topic, (e) => {
-                verbose(topic);
-                this.events.trigger(topic, e);
+        'touch:begin,touch:drag,touch:complete,touch:abort,touch:add,touch:remove'
+            .split(',')
+            .forEach((topic) => {
+                touchEventGenerator.on(topic, (e) => {
+                    verbose(topic);
+                    this.events.trigger(topic, e);
+                });
             });
-        });
 
         touchEventGenerator.on('touch:begin', (e) => {
             this.lastPinchSpreadLocation = null;
@@ -204,7 +206,7 @@ export class StateMachine {
     }
 
     on(eventName, callback) {
-        this.events.on(eventName, callback);
+        return this.events.on(eventName, callback);
     }
 
     setCurrentState(state) {

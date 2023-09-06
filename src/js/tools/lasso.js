@@ -639,12 +639,42 @@ export default class DwLasso_class extends Base_tools_class {
             );
         });
 
-        'touch:begin,touch:drag,touch:complete'.split(',').forEach((topic) => {
-            theState.on(topic, (e) => {
-                verbose(topic);
-                theState.trigger(topic, e);
+        {
+            // super hack to prevent accidental drawings
+            let dataCount;
+            let startTime;
+
+            theState.on('touch:begin', () => {
+                startTime = Date.now();
+                dataCount = this.data.length;
             });
-        });
+
+            theState.on('touch:add', () => {
+                const timeDiff = Date.now() - startTime;
+                const dataDiff = this.data.length - dataCount;
+                verbose('user touched with second finger', {
+                    timeDiff,
+                    dataDiff,
+                    dataCount,
+                });
+                if (dataDiff > 0 && dataCount < 10 && timeDiff < 500) {
+                    // this was a mistake, clear the data
+                    setTimeout(() => {
+                        this.reset('undo accidental touch');
+                        this.status = Status.ready;
+                    }, 100);
+                }
+            });
+        }
+
+        'touch:begin,touch:drag,touch:complete,touch:abort,touch:add,touch:remove'
+            .split(',')
+            .forEach((topic) => {
+                theState.on(topic, (e) => {
+                    verbose(topic);
+                    theState.trigger(topic, e);
+                });
+            });
 
         // surfacing for visibility, will not customize
         theState.on('touch:pinch', (dragEvent) => {
