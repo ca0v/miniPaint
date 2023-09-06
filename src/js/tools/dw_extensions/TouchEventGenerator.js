@@ -1,5 +1,5 @@
 import { EventManager } from './EventManager.js';
-import { distance } from './distance.js';
+import { verbose } from './log.js';
 
 const MIN_TIME = 100;
 
@@ -25,20 +25,20 @@ export class TouchEventGenerator {
     }
 
     complete() {
-        console.log('completing touch');
+        verbose('completing touch');
         this.touchHandle?.off();
         this.touchHandle = null;
     }
 
     abort() {
-        console.log('aborting touch');
+        verbose('aborting touch');
         this.touchHandle?.off();
         this.touchHandle = null;
         this.trigger('abort');
     }
 
     touchStartHandler(touchEvent) {
-        console.log('touchStartHandler', touchEvent);
+        verbose('touchStartHandler', touchEvent);
 
         // capture the location of the touch
         this.physics = this.computePhysics(Array.from(touchEvent.touches));
@@ -66,16 +66,19 @@ export class TouchEventGenerator {
             },
         };
 
-        this.trigger('touch:begin', { physics: this.physics });
+        this.trigger(
+            'touch:begin',
+            Object.assign(touchEvent, { physics: this.physics }),
+        );
     }
 
     touchCancelHandler(touchEvent) {
-        console.log('touchCancelHandler', touchEvent);
+        verbose('touchCancelHandler', touchEvent);
         this.abort();
     }
 
     touchMoveHandler(touchEvent) {
-        console.log('touchMoveHandler', touchEvent);
+        verbose('touchMoveHandler', touchEvent);
 
         // if user adds a finger while moving, trigger a synthetic touchstart
         if (this.physics.length < touchEvent.touches.length) {
@@ -89,24 +92,14 @@ export class TouchEventGenerator {
             this.physics,
         );
 
-        if (this.physics.length === 1) {
-            console.log('physics', JSON.stringify(this.physics));
-        } else {
-            // compute the difference in angle, speed of the two touches
-            const [t1, t2] = this.physics;
-            const angleDiff = Math.abs(t1.degree - t2.degree);
-            const speedDiff = Math.abs(t1.speed - t2.speed);
-            const diff = { angleDiff, speedDiff };
-            console.log('physics', JSON.stringify(diff));
-        }
-
         if (PhysicalAnalyzers.isDragDrag(this.physics)) {
             this.trigger('touch:dragdrag', { physics: this.physics });
+            return;
         }
 
         if (PhysicalAnalyzers.isPinch(this.physics)) {
             const direction = PhysicalAnalyzers.getPinchDirection(this.physics);
-            console.log('xxx:pinchorspread', direction);
+            verbose('pinchorspread', direction);
             switch (direction) {
                 case 'in':
                     this.trigger('touch:pinch', { physics: this.physics });
@@ -117,12 +110,20 @@ export class TouchEventGenerator {
                 default:
                     throw `Invalid pinch direction: ${direction}`;
             }
+            return;
+        }
+
+        if (PhysicalAnalyzers.isDrag(this.physics)) {
+            this.trigger(
+                'touch:drag',
+                Object.assign(touchEvent, { physics: this.physics }),
+            );
+            return;
         }
     }
 
     touchEndHandler(touchEvent) {
-        console.log('touchEndHandler', touchEvent);
-        const physical = this.physics;
+        verbose('touchEndHandler', touchEvent);
         if (touchEvent.touches.length === 0) {
             this.complete();
             this.trigger('touch:complete', { physics: this.physics });
@@ -164,7 +165,7 @@ export class TouchEventGenerator {
             const prior = priorPhysics[i];
 
             const timeDiff = currentTime - prior.time;
-            console.log('xxx:timeDiff', timeDiff);
+            verbose('timeDiff', timeDiff);
 
             if (timeDiff < MIN_TIME) return { ...prior };
 
@@ -179,7 +180,7 @@ export class TouchEventGenerator {
             };
 
             if (velocity.x === 0 && velocity.x === 0) {
-                console.log(`xxx:velocity`, {
+                verbose(`velocity`, {
                     timeDiff,
                     position,
                     prior: prior.position,
@@ -206,6 +207,14 @@ export class TouchEventGenerator {
 }
 
 class PhysicalAnalyzers {
+    static isDrag(physics, options) {
+        if (physics.length !== 1) return false;
+        let { minSpeed } = options || {};
+        minSpeed = minSpeed || 10;
+        const { speed } = physics[0];
+        return speed > minSpeed;
+    }
+
     static isDragDrag(physics, options) {
         // return true if there are two physical elements both traveling in the same direction within d degrees of each other
         if (physics.length !== 2) return false;
@@ -217,12 +226,12 @@ class PhysicalAnalyzers {
         const [t1, t2] = physics;
 
         if (t1.speed < minSpeed) {
-            console.log('xxx:dragdrag', `speed too slow: ${t1.speed}`);
+            verbose('dragdrag', `speed too slow: ${t1.speed}`);
             return false;
         }
 
         if (t2.speed < minSpeed) {
-            console.log('xxx:dragdrag', `speed too slow: ${t2.speed}`);
+            verbose('dragdrag', `speed too slow: ${t2.speed}`);
             return false;
         }
 
@@ -230,21 +239,15 @@ class PhysicalAnalyzers {
         const speedDiff = Math.abs(t1.speed - t2.speed);
 
         if (angleDiff > degrees) {
-            console.log(
-                'xxx:dragdrag',
-                `angle different too great: ${angleDiff}`,
-            );
+            verbose('dragdrag', `angle different too great: ${angleDiff}`);
             return false;
         }
         if (speedDiff > speed) {
-            console.log(
-                'xxx:dragdrag',
-                `speed different too great: ${speedDiff}`,
-            );
+            verbose('dragdrag', `speed different too great: ${speedDiff}`);
             return false;
         }
 
-        console.log(
+        verbose(
             'xxx',
             `dragdrag: ${Math.round(t1.degree)}~=${Math.round(
                 t2.degree,
@@ -265,16 +268,16 @@ class PhysicalAnalyzers {
 
         if (t1.speed + t2.speed < minSpeed) {
             if (t1.speed < minSpeed) {
-                console.log(
-                    'xxx:pinchorspread',
+                verbose(
+                    'pinchorspread',
                     `speed 1 too slow: ${t1.speed}`,
                     physics,
                 );
             }
 
             if (t2.speed < minSpeed) {
-                console.log(
-                    'xxx:pinchorspread',
+                verbose(
+                    'pinchorspread',
                     `speed 2 too slow: ${t2.speed}`,
                     physics,
                 );
@@ -288,15 +291,15 @@ class PhysicalAnalyzers {
         );
 
         if (degreeDiff > degrees) {
-            console.log(
-                `xxx:pinchorspread`,
+            verbose(
+                `pinchorspread`,
                 `not moving opposite enough: d1: ${t1.degree}, d2: ${t2.degree}, diff: ${degreeDiff}, threshold: ${degrees}`,
             );
             return false;
         }
 
-        console.log(
-            'xxx:pinchorspread',
+        verbose(
+            'pinchorspread',
             `${t1.degree}~|${t2.degree}, ${t1.speed}~=${t2.speed}`,
         );
 

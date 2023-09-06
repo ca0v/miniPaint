@@ -306,14 +306,14 @@ export default class DwLasso_class extends Base_tools_class {
     async on_params_update(event) {
         switch (event.key) {
             case 'apply_cut':
-                this.state.trigger(Keyboard.ClearInterior);
+                this.state.trigger(Keyboard.ClearInterior[0]);
                 this.getParams()[event.key] = true;
                 break;
             case 'apply_crop':
-                this.state.trigger(Keyboard.ClearExterior);
+                this.state.trigger(Keyboard.ClearExterior[0]);
                 break;
             case 'apply_reset':
-                this.state.trigger(Keyboard.Reset);
+                this.state.trigger(Keyboard.Reset[0]);
                 break;
             default:
                 break;
@@ -639,21 +639,24 @@ export default class DwLasso_class extends Base_tools_class {
             );
         });
 
-        theState.on('PressDrag', (dragEvent) => {
-            // nothing to do
+        'touch:begin,touch:drag,touch:complete'.split(',').forEach((topic) => {
+            theState.on(topic, (e) => {
+                verbose(topic);
+                theState.trigger(topic, e);
+            });
         });
 
         // surfacing for visibility, will not customize
-        theState.on('Pinch', (dragEvent) => {
+        theState.on('touch:pinch', (dragEvent) => {
             theState.trigger('Pinch', dragEvent);
         });
 
         // surfacing for visibility, will not customize
-        theState.on('Spread', (dragEvent) => {
+        theState.on('touch:spread', (dragEvent) => {
             theState.trigger('Spread', dragEvent);
         });
 
-        theState.on('DragDrag', (dragEvent) => {
+        theState.on('touch:dragdrag', (dragEvent) => {
             const directionIndex = Math.round(
                 dragEvent.dragDirectionInDegrees / 90,
             );
