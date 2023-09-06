@@ -15,13 +15,13 @@ import { verbose } from './log.js';
 const MINIMAL_SPREAD_DISTANCE = 5;
 
 const touchEventGenerator = new TouchEventGenerator();
-'start,end,:begin,:complete,:add,:remove,:dragdrag,:pinch,:spread'
+'start,end,:begin,:drag,:complete,:add,:remove,:dragdrag,:pinch,:spread'
     .split(',')
-    .forEach((topic) => {
+    .forEach((topic) =>
         touchEventGenerator.on(`touch${topic}`, (e) =>
-            console.log('xxx', `touch${topic}`, e),
-        );
-    });
+            verbose(`touch${topic}`, e),
+        ),
+    );
 
 export class StateMachine {
     constructor(states) {
@@ -66,7 +66,18 @@ export class StateMachine {
             if (preventBubble) mouseEvent.preventDefault();
         });
 
-        touchEventGenerator.on('touch:complete', (e) => {
+        // forward touch events through state events to honor "off" status
+        // when statemachine is off() the listener will not receive these events
+        'touch:begin,touch:drag,touch:complete,touch:abort,touch:add,touch:remove'
+            .split(',')
+            .forEach((topic) => {
+                touchEventGenerator.on(topic, (e) => {
+                    verbose(topic);
+                    this.events.trigger(topic, e);
+                });
+            });
+
+        touchEventGenerator.on('touch:begin', (e) => {
             this.lastPinchSpreadLocation = null;
             this.lastDragDragLocation = null;
         });
@@ -77,7 +88,7 @@ export class StateMachine {
 
             if (!this.lastDragDragLocation) {
                 this.lastDragDragLocation = currentLocation;
-                console.log('DragDrag started', currentLocation);
+                verbose('DragDrag started', currentLocation);
                 return;
             }
 
@@ -87,14 +98,14 @@ export class StateMachine {
             );
 
             if (distanceTraveled < MINIMAL_SPREAD_DISTANCE) {
-                console.log(`Drag too small: ${distanceTraveled}`);
+                verbose(`Drag too small: ${distanceTraveled}`);
                 return;
             }
 
             const degree = e.physics[0].degree;
             this.lastDragDragLocation = currentLocation;
 
-            this.events.trigger(`DragDrag`, {
+            this.events.trigger(`touch:dragdrag`, {
                 dragDirectionInDegrees: degree,
                 dragDistanceInPixels: distanceTraveled,
             });
@@ -105,7 +116,7 @@ export class StateMachine {
 
             if (!this.lastPinchSpreadLocation) {
                 this.lastPinchSpreadLocation = currentLocation;
-                console.log('Pinch started', currentLocation);
+                verbose('Pinch started', currentLocation);
                 return;
             }
 
@@ -116,12 +127,12 @@ export class StateMachine {
             );
 
             if (distanceTraveled < MINIMAL_SPREAD_DISTANCE) {
-                console.log(`Pinch too small: ${distanceTraveled}`);
+                verbose(`Pinch too small: ${distanceTraveled}`);
                 return;
             }
 
             this.lastPinchSpreadLocation = currentLocation;
-            this.events.trigger('Pinch', {
+            this.events.trigger('touch:pinch', {
                 physics: e.physics,
                 dragDistanceInPixels: distanceTraveled,
             });
@@ -148,7 +159,7 @@ export class StateMachine {
             }
 
             this.lastPinchSpreadLocation = currentLocation;
-            this.events.trigger('Spread', {
+            this.events.trigger('touch:spread', {
                 physics: e.physics,
                 dragDistanceInPixels: distanceTraveled,
             });
@@ -195,12 +206,13 @@ export class StateMachine {
     }
 
     on(eventName, callback) {
-        this.events.on(eventName, callback);
+        return this.events.on(eventName, callback);
     }
 
     setCurrentState(state) {
         if (!this.states[state]) throw `State ${state} is not a valid state`;
         if (state === this.currentState) return;
+        verbose(`State changing from ${this.currentState} to ${state}`);
         this.currentState = state;
         this.execute();
         this.events.trigger('stateChanged', this.currentState);
@@ -259,18 +271,4 @@ export class StateMachine {
         this.contexts.push(context);
         return new StateMachineContext(this, context);
     }
-}
-
-function touchLocation(touch) {
-    return { x: touch.clientX, y: touch.clientY };
-}
-
-function angleOf(p1, p2) {
-    const dx = p1.x - p2.x;
-    const dy = p1.y - p2.y;
-    return Math.atan2(dy, dx) * (180 / Math.PI);
-}
-
-function closeTo(expected, actual, tolerance = 0) {
-    return Math.abs(expected - actual) <= tolerance;
 }
