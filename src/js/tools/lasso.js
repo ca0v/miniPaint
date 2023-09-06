@@ -654,29 +654,15 @@ export default class DwLasso_class extends Base_tools_class {
         });
 
         theState.on('DragDrag', (dragEvent) => {
-            const {
-                dragDirectionInDegrees: degrees,
-                dragDistanceInPixels: distance,
-            } = dragEvent;
-
-            const draggingUp = closeTo(degrees, -90);
-            const draggingRight = closeTo(degrees, 0);
-            const draggingDown = closeTo(degrees, 90);
-            const draggingLeft = closeTo(degrees, 180);
-
-            const eventName = `DragDrag${
-                draggingUp
-                    ? 'Up'
-                    : draggingRight
-                    ? 'Right'
-                    : draggingDown
-                    ? 'Down'
-                    : draggingLeft
-                    ? 'Left'
-                    : ''
-            }`;
-
-            theState.trigger(eventName, dragEvent);
+            const directionIndex = Math.round(
+                dragEvent.dragDirectionInDegrees / 90,
+            );
+            const direction = ['Right', 'Down', 'Left', 'Up'][directionIndex];
+            console.log(
+                `DragDrag${direction}`,
+                dragEvent.dragDirectionInDegrees,
+            );
+            theState.trigger(`DragDrag${direction}`, dragEvent);
         });
 
         const actions = theState.actions;
@@ -1420,13 +1406,24 @@ export default class DwLasso_class extends Base_tools_class {
         if (!zoom) return;
 
         // is this a pinch gesture?
-        if (mouseEvent.touches?.length === 2) {
-            const touch1 = mouseEvent.touches[0];
-            const touch2 = mouseEvent.touches[1];
+        if (mouseEvent.physics && mouseEvent.physics.length === 2) {
+            const { dragDistanceInPixels, physics } = mouseEvent;
+            const [touch1, touch2] = physics.map((p) => p.position);
             const centerPoint = center(touch1, touch2);
 
             this.GUI_preview.zoom_data.x = centerPoint.x;
             this.GUI_preview.zoom_data.y = centerPoint.y;
+
+            const scale = dragDistanceInPixels / config.visible_width;
+
+            if (zoom > 0) {
+                zoom = config.ZOOM * (1 + scale);
+            } else {
+                zoom = config.ZOOM / (1 + scale);
+            }
+            zoom *= 100;
+
+            console.log(`zooming ${dragDistanceInPixels}, ${zoom}`);
             this.GUI_preview.zoom(zoom);
             return;
         }
@@ -1476,10 +1473,10 @@ export default class DwLasso_class extends Base_tools_class {
             } = e;
             if (distance) {
                 dx = dy = 0;
-                const draggingUp = closeTo(degrees, -90);
+                const draggingRight = closeTo(degrees, 0);
                 const draggingDown = closeTo(degrees, 90);
                 const draggingLeft = closeTo(degrees, 180);
-                const draggingRight = closeTo(degrees, 0);
+                const draggingUp = closeTo(degrees, 270);
 
                 if (draggingLeft) dx = -distance; // pan right
                 else if (draggingRight) dx = distance; // pan left

@@ -43,7 +43,7 @@ export class TouchEventGenerator {
         // if already handling a touch, abort it
         if (this.touchHandle) {
             // user has added a finger while touching
-            this.trigger('touch:add', touchEvent);
+            this.trigger('touch:add', { physics: this.physics });
             return;
         }
 
@@ -63,7 +63,7 @@ export class TouchEventGenerator {
             },
         };
 
-        this.trigger('touch:begin', touchEvent);
+        this.trigger('touch:begin', { physics: this.physics });
     }
 
     touchCancelHandler(touchEvent) {
@@ -73,17 +73,19 @@ export class TouchEventGenerator {
 
     touchMoveHandler(touchEvent) {
         console.log('touchMoveHandler', touchEvent);
+
         // if user adds a finger while moving, trigger a synthetic touchstart
         if (this.physics.length < touchEvent.touches.length) {
-            this.trigger('touch:add', touchEvent);
+            this.trigger('touch:add', { physics: this.physics });
         } else if (this.physics.length > touchEvent.touches.length) {
-            this.trigger('touch:remove', touchEvent);
+            this.trigger('touch:remove', { physics: this.physics });
         }
 
         this.physics = this.computePhysics(
             Array.from(touchEvent.touches),
             this.physics,
         );
+
         if (this.physics.length === 1) {
             console.log('physics', JSON.stringify(this.physics));
         } else {
@@ -96,18 +98,22 @@ export class TouchEventGenerator {
         }
 
         if (PhysicalAnalyzers.isDragDrag(this.physics)) {
-            this.trigger('touch:dragdrag', touchEvent);
+            this.trigger('touch:dragdrag', { physics: this.physics });
         }
-        if (PhysicalAnalyzers.isPinchOrSpread(this.physics)) {
-            this.trigger('touch:pinchorspread', touchEvent);
+
+        if (PhysicalAnalyzers.isPinch(this.physics)) {
+            this.trigger('touch:pinch', { physics: this.physics });
+        } else if (PhysicalAnalyzers.isSpread(this.physics)) {
+            this.trigger('touch:spread', { physics: this.physics });
         }
     }
 
     touchEndHandler(touchEvent) {
         console.log('touchEndHandler', touchEvent);
+        const physical = this.physics;
         if (touchEvent.touches.length === 0) {
             this.complete();
-            this.trigger('touch:complete', touchEvent);
+            this.trigger('touch:complete', { physics: this.physics });
         }
     }
 
@@ -147,34 +153,25 @@ export class TouchEventGenerator {
             const timeDiff = currentTime - prior.time;
             console.log('xxx:timeDiff', timeDiff);
 
+            if (!timeDiff) return { ...prior };
+
             const position = { x: t.clientX, y: t.clientY };
             const velocity = {
-                x: timeDiff
-                    ? (1000 * (position.x - prior.position.x)) / timeDiff
-                    : 0,
-                y: timeDiff
-                    ? (1000 * (position.y - prior.position.y)) / timeDiff
-                    : 0,
+                x: (1000 * (position.x - prior.position.x)) / timeDiff,
+                y: (1000 * (position.y - prior.position.y)) / timeDiff,
             };
             const acceleration = {
-                x: timeDiff
-                    ? (1000 * (velocity.x - prior.velocity.x)) / timeDiff
-                    : 0,
-                y: timeDiff
-                    ? (1000 * (velocity.y - prior.velocity.y)) / timeDiff
-                    : 0,
+                x: (1000 * (velocity.x - prior.velocity.x)) / timeDiff,
+                y: (1000 * (velocity.y - prior.velocity.y)) / timeDiff,
             };
             const angle = Math.atan2(velocity.y, velocity.x);
-            if (Number.isNaN(angle)) {
-                debugger;
-            }
 
             const speed = Math.sqrt(
                 velocity.x * velocity.x + velocity.y * velocity.y,
             );
 
             return {
-                time: Date.now(),
+                time: currentTime,
                 start: prior.start,
                 position,
                 velocity,
@@ -198,22 +195,28 @@ class PhysicalAnalyzers {
         const [t1, t2] = physics;
 
         if (Number.isNaN(t1.degree) || Number.isNaN(t2.degree)) {
-            console.log('xxx', `degree is NaN: ${t1.degree}, ${t2.degree}`);
+            console.log(
+                'xxx:dragdrag',
+                `degree is NaN: ${t1.degree}, ${t2.degree}`,
+            );
             return false;
         }
 
         if (Number.isNaN(t1.speed) || Number.isNaN(t2.speed)) {
-            console.log('xxx', `speed is NaN: ${t1.speed}, ${t2.speed}`);
+            console.log(
+                'xxx:dragdrag',
+                `speed is NaN: ${t1.speed}, ${t2.speed}`,
+            );
             return false;
         }
 
         if (t1.speed < minSpeed) {
-            console.log('xxx', `speed too slow: ${t1.speed}`);
+            console.log('xxx:dragdrag', `speed too slow: ${t1.speed}`);
             return false;
         }
 
         if (t2.speed < minSpeed) {
-            console.log('xxx', `speed too slow: ${t2.speed}`);
+            console.log('xxx:dragdrag', `speed too slow: ${t2.speed}`);
             return false;
         }
 
@@ -221,11 +224,17 @@ class PhysicalAnalyzers {
         const speedDiff = Math.abs(t1.speed - t2.speed);
 
         if (angleDiff > degrees) {
-            console.log('xxx', `angle different too great: ${angleDiff}`);
+            console.log(
+                'xxx:dragdrag',
+                `angle different too great: ${angleDiff}`,
+            );
             return false;
         }
         if (speedDiff > speed) {
-            console.log('xxx', `speed different too great: ${speedDiff}`);
+            console.log(
+                'xxx:dragdrag',
+                `speed different too great: ${speedDiff}`,
+            );
             return false;
         }
 
@@ -245,6 +254,7 @@ class PhysicalAnalyzers {
         minSpeed = minSpeed || 50;
 
         const [t1, t2] = physics;
+        const [v1, v2] = [t1.velocity, t2.velocity];
 
         if (Number.isNaN(t1.degree) || Number.isNaN(t2.degree)) {
             console.log(
@@ -263,41 +273,61 @@ class PhysicalAnalyzers {
         }
 
         if (t1.speed < minSpeed) {
-            console.log('xxx:pinchorspread', `speed too slow: ${t1.speed}`);
+            console.log('xxx:pinchorspread', `speed 1 too slow: ${t1.speed}`);
             return false;
         }
 
         if (t2.speed < minSpeed) {
-            console.log('xxx:pinchorspread', `speed too slow: ${t2.speed}`);
+            console.log('xxx:pinchorspread', `speed 2 too slow: ${t2.speed}`);
             return false;
         }
 
-        const angleDiff = Math.abs(t1.degree - t2.degree);
-        const speedDiff = Math.abs(t1.speed - t2.speed);
-
-        if (angleDiff < degrees) {
+        if (Math.abs(v1.x + v2.x) > 2 * minSpeed) {
             console.log(
-                'xxx:pinchorspread',
-                `angle different too small: ${angleDiff}`,
+                `xxx:pinchorspread`,
+                `not moving opposite enough along x-axis: ${v1.x}, ${v2.x}`,
             );
             return false;
         }
 
-        if (speedDiff > speed) {
+        if (Math.abs(v1.y + v2.y) > 2 * minSpeed) {
             console.log(
-                'xxx:pinchorspread',
-                `speed different too great: ${speedDiff}`,
+                `xxx:pinchorspread`,
+                `not moving opposite enough along y-axis: ${v1.y}, ${v2.y}`,
             );
             return false;
         }
-
-        // moving towards each other?
 
         console.log(
             'xxx:pinchorspread',
-            `${t1.degree}~=${t2.degree}, ${t1.speed}~=${t2.speed}`,
+            `${180 + t1.degree}~=${t2.degree}, ${t1.speed}~=${t2.speed}`,
         );
 
         return true;
+    }
+
+    static isPinch(physics, options) {
+        if (!PhysicalAnalyzers.isPinchOrSpread(physics, options)) return false;
+
+        const [t1, t2] = physics;
+        const [v1, v2] = [t1.velocity, t2.velocity];
+        const distanceNow = Math.sqrt(
+            (t1.position.x - t2.position.x) ** 2 +
+                (t1.position.y - t2.position.y) ** 2,
+        );
+
+        const distanceLater = Math.sqrt(
+            (t1.position.x + v1.x - t2.position.x - v2.x) ** 2 +
+                (t1.position.y + v1.y - t2.position.y - v2.y) ** 2,
+        );
+
+        return distanceLater < distanceNow;
+    }
+
+    static isSpread(physics, options) {
+        return (
+            PhysicalAnalyzers.isPinchOrSpread(physics, options) &&
+            !PhysicalAnalyzers.isPinch(physics, options)
+        );
     }
 }
