@@ -1,5 +1,7 @@
 import { EventManager } from './EventManager.js';
 
+const MIN_TIME = 100;
+
 export class TouchEventGenerator {
     constructor(target = document.body) {
         this.target = target;
@@ -102,9 +104,16 @@ export class TouchEventGenerator {
         }
 
         if (PhysicalAnalyzers.isPinch(this.physics)) {
-            this.trigger('touch:pinch', { physics: this.physics });
-        } else if (PhysicalAnalyzers.isSpread(this.physics)) {
-            this.trigger('touch:spread', { physics: this.physics });
+            switch (PhysicalAnalyzers.getPinchDirection(this.physics)) {
+                case 'in':
+                    this.trigger('touch:pinch', { physics: this.physics });
+                    break;
+                case 'out':
+                    this.trigger('touch:spread', { physics: this.physics });
+                    break;
+                default:
+                    throw `Invalid pinch direction: ${direction}`;
+            }
         }
     }
 
@@ -150,10 +159,11 @@ export class TouchEventGenerator {
 
         return touches.map((t, i) => {
             const prior = priorPhysics[i];
+
             const timeDiff = currentTime - prior.time;
             console.log('xxx:timeDiff', timeDiff);
 
-            if (!timeDiff) return { ...prior };
+            if (timeDiff < MIN_TIME) return { ...prior };
 
             const position = { x: t.clientX, y: t.clientY };
             const velocity = {
@@ -164,6 +174,15 @@ export class TouchEventGenerator {
                 x: (1000 * (velocity.x - prior.velocity.x)) / timeDiff,
                 y: (1000 * (velocity.y - prior.velocity.y)) / timeDiff,
             };
+
+            if (velocity.x === 0 && velocity.x === 0) {
+                console.log(`xxx:velocity`, {
+                    timeDiff,
+                    position,
+                    prior: prior.position,
+                });
+            }
+
             const angle = Math.atan2(velocity.y, velocity.x);
 
             const speed = Math.sqrt(
@@ -176,7 +195,7 @@ export class TouchEventGenerator {
                 position,
                 velocity,
                 acceleration,
-                degree: (angle * 180) / Math.PI,
+                degree: positiveDegree((angle * 180) / Math.PI),
                 speed,
             };
         });
@@ -193,22 +212,6 @@ class PhysicalAnalyzers {
         minSpeed = minSpeed || 200;
 
         const [t1, t2] = physics;
-
-        if (Number.isNaN(t1.degree) || Number.isNaN(t2.degree)) {
-            console.log(
-                'xxx:dragdrag',
-                `degree is NaN: ${t1.degree}, ${t2.degree}`,
-            );
-            return false;
-        }
-
-        if (Number.isNaN(t1.speed) || Number.isNaN(t2.speed)) {
-            console.log(
-                'xxx:dragdrag',
-                `speed is NaN: ${t1.speed}, ${t2.speed}`,
-            );
-            return false;
-        }
 
         if (t1.speed < minSpeed) {
             console.log('xxx:dragdrag', `speed too slow: ${t1.speed}`);
@@ -240,77 +243,67 @@ class PhysicalAnalyzers {
 
         console.log(
             'xxx',
-            `dragdrag: ${t1.degree}~=${t2.degree}, ${t1.speed}~=${t2.speed}`,
+            `dragdrag: ${Math.round(t1.degree)}~=${Math.round(
+                t2.degree,
+            )}, ${Math.round(t1.speed)}~=${Math.round(t2.speed)}`,
         );
         return true;
     }
 
-    static isPinchOrSpread(physics, options) {
+    static isPinch(physics, options) {
         // return true if the two physical elements are moving in opposite directions
         if (physics.length !== 2) return false;
         let { degrees, speed, minSpeed } = options || {};
-        degrees = degrees || 30; // degrees
+        degrees = degrees || 45; // degrees
         speed = speed || 100; // pixels per second
-        minSpeed = minSpeed || 50;
+        minSpeed = minSpeed || 10;
 
         const [t1, t2] = physics;
-        const [v1, v2] = [t1.velocity, t2.velocity];
 
-        if (Number.isNaN(t1.degree) || Number.isNaN(t2.degree)) {
-            console.log(
-                'xxx:pinchorspread',
-                `degree is NaN: ${t1.degree}, ${t2.degree}`,
-            );
+        if (t1.speed + t2.speed < minSpeed) {
+            if (t1.speed < minSpeed) {
+                console.log(
+                    'xxx:pinchorspread',
+                    `speed 1 too slow: ${t1.speed}`,
+                    physics,
+                );
+            }
+
+            if (t2.speed < minSpeed) {
+                console.log(
+                    'xxx:pinchorspread',
+                    `speed 2 too slow: ${t2.speed}`,
+                    physics,
+                );
+            }
+
             return false;
         }
 
-        if (Number.isNaN(t1.speed) || Number.isNaN(t2.speed)) {
-            console.log(
-                'xxx:pinchorspread',
-                `speed is NaN: ${t1.speed}, ${t2.speed}`,
-            );
-            return false;
-        }
+        const degreeDiff = 180 - Math.abs(t1.degree - t2.degree);
 
-        if (t1.speed < minSpeed) {
-            console.log('xxx:pinchorspread', `speed 1 too slow: ${t1.speed}`);
-            return false;
-        }
-
-        if (t2.speed < minSpeed) {
-            console.log('xxx:pinchorspread', `speed 2 too slow: ${t2.speed}`);
-            return false;
-        }
-
-        if (Math.abs(v1.x + v2.x) > 2 * minSpeed) {
+        if (degreeDiff > degrees) {
             console.log(
                 `xxx:pinchorspread`,
-                `not moving opposite enough along x-axis: ${v1.x}, ${v2.x}`,
-            );
-            return false;
-        }
-
-        if (Math.abs(v1.y + v2.y) > 2 * minSpeed) {
-            console.log(
-                `xxx:pinchorspread`,
-                `not moving opposite enough along y-axis: ${v1.y}, ${v2.y}`,
+                `not moving opposite enough: d1: ${t1.degree}, d2: ${t2.degree}, diff: ${degreeDiff}, threshold: ${degrees}`,
             );
             return false;
         }
 
         console.log(
             'xxx:pinchorspread',
-            `${180 + t1.degree}~=${t2.degree}, ${t1.speed}~=${t2.speed}`,
+            `${t1.degree}~|${t2.degree}, ${t1.speed}~=${t2.speed}`,
         );
 
         return true;
     }
 
-    static isPinch(physics, options) {
-        if (!PhysicalAnalyzers.isPinchOrSpread(physics, options)) return false;
+    static getPinchDirection(physics, options) {
+        if (!PhysicalAnalyzers.isPinch(physics, options)) return false;
 
         const [t1, t2] = physics;
         const [v1, v2] = [t1.velocity, t2.velocity];
+
         const distanceNow = Math.sqrt(
             (t1.position.x - t2.position.x) ** 2 +
                 (t1.position.y - t2.position.y) ** 2,
@@ -321,13 +314,17 @@ class PhysicalAnalyzers {
                 (t1.position.y + v1.y - t2.position.y - v2.y) ** 2,
         );
 
-        return distanceLater < distanceNow;
-    }
+        const distanceDiff = distanceLater - distanceNow;
+        const direction = distanceDiff > 0 ? 'out' : 'in';
+        console.log('xxx:pinchorspread', direction, {
+            distanceLater,
+            distanceNow,
+        });
 
-    static isSpread(physics, options) {
-        return (
-            PhysicalAnalyzers.isPinchOrSpread(physics, options) &&
-            !PhysicalAnalyzers.isPinch(physics, options)
-        );
+        return direction;
     }
+}
+
+function positiveDegree(v) {
+    return (v + 360) % 360;
 }

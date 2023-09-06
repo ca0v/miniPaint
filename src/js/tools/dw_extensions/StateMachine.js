@@ -8,7 +8,7 @@ import { StateMachineContext } from './StateMachineContext.js';
 import { TouchEventGenerator } from './TouchEventGenerator.js';
 import { computeKeyboardState } from './computeKeyboardState.js';
 import { computeMouseState } from './computeMouseState.js';
-import { distance } from './distance.js';
+import { distance, average, sum } from './distance.js';
 import { isShortcutMatch } from './isShortcutMatch.js';
 import { verbose } from './log.js';
 
@@ -91,7 +91,7 @@ export class StateMachine {
                 return;
             }
 
-            const degree = (e.physics[0].degree + 360) % 360;
+            const degree = e.physics[0].degree;
             this.lastDragDragLocation = currentLocation;
 
             this.events.trigger(`DragDrag`, {
@@ -101,7 +101,7 @@ export class StateMachine {
         });
 
         touchEventGenerator.on('touch:pinch', (e) => {
-            const currentLocation = e.physics[0].position;
+            const currentLocation = e.physics.map((p) => p.position);
 
             if (!this.lastPinchSpreadLocation) {
                 this.lastPinchSpreadLocation = currentLocation;
@@ -109,9 +109,10 @@ export class StateMachine {
                 return;
             }
 
-            const distanceTraveled = distance(
-                currentLocation,
-                this.lastPinchSpreadLocation,
+            const distanceTraveled = average(
+                currentLocation.map((c, i) =>
+                    distance(c, this.lastPinchSpreadLocation[i]),
+                ),
             );
 
             if (distanceTraveled < MINIMAL_SPREAD_DISTANCE) {
@@ -127,16 +128,18 @@ export class StateMachine {
         });
 
         touchEventGenerator.on('touch:spread', (e) => {
-            const currentLocation = e.physics[0].position;
+            const currentLocation = e.physics.map((p) => p.position);
+
             if (!this.lastPinchSpreadLocation) {
                 this.lastPinchSpreadLocation = currentLocation;
                 console.log('Spread started', currentLocation);
                 return;
             }
 
-            const distanceTraveled = distance(
-                currentLocation,
-                this.lastPinchSpreadLocation,
+            const distanceTraveled = sum(
+                currentLocation.map((c, i) =>
+                    distance(c, this.lastPinchSpreadLocation[i]),
+                ),
             );
 
             if (distanceTraveled < MINIMAL_SPREAD_DISTANCE) {
