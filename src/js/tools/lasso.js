@@ -45,7 +45,7 @@ import { clockwise } from './dw_extensions/clockwise.js';
 import { Smooth } from './dw_extensions/Smooth.js';
 import { Tests } from './dw_extensions/Tests.js';
 import { StateMachine } from './dw_extensions/StateMachine.js';
-import { log, verbose } from './dw_extensions/log.js';
+import { log, verbose, isDebug } from './dw_extensions/log.js';
 
 async function doActions(actions) {
     await app.State.do_action(
@@ -97,7 +97,7 @@ export default class DwLasso_class extends Base_tools_class {
             alertify.error(
                 `Cannot activate ${this.name} tool without an image`,
             );
-            return;
+            if (!isDebug) return;
         }
 
         this.state = this.defineStateMachine();

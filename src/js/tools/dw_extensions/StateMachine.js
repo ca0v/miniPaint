@@ -5,6 +5,7 @@
 
 import { EventManager } from './EventManager.js';
 import { StateMachineContext } from './StateMachineContext.js';
+import { TouchEventGenerator } from './TouchEventGenerator.js';
 import { computeKeyboardState } from './computeKeyboardState.js';
 import { computeMouseState } from './computeMouseState.js';
 import { distance } from './distance.js';
@@ -12,6 +13,15 @@ import { isShortcutMatch } from './isShortcutMatch.js';
 import { verbose } from './log.js';
 
 const MINIMAL_SPREAD_DISTANCE = 25;
+
+const touchEventGenerator = new TouchEventGenerator();
+'start,end,:begin,:complete,:add,:remove,:dragdrag,:pinchorspread'
+    .split(',')
+    .forEach((topic) => {
+        touchEventGenerator.on(`touch${topic}`, (e) =>
+            console.log('xxx', `touch${topic}`, e),
+        );
+    });
 
 export class StateMachine {
     constructor(states) {
@@ -325,106 +335,6 @@ export class StateMachine {
         return new StateMachineContext(this, context);
     }
 }
-
-class TouchEventGenerator {
-    constructor(target = document.body) {
-        this.target = target;
-        this.events = new EventManager(target);
-        this.events.on('touchstart', (touchEvent) =>
-            this.touchStartHandler(touchEvent),
-        );
-    }
-
-    on(eventName, callback) {
-        return this.events.on(eventName, callback);
-    }
-
-    off() {
-        this.events.off();
-    }
-
-    trigger(eventName, eventData) {
-        this.events.trigger(eventName, eventData);
-    }
-
-    touchStartHandler(touchEvent) {
-        // if already handling a touch, abort it
-        if (this.touchHandle) {
-            this.touchHandle.abort();
-            console.log('aborting prior touch');
-        }
-
-        // capture the location of the touch
-        this.physics = touchEvent.touches.map((t) => this.computePhysics(t));
-
-        // listen for a touchmove and touchend
-        const h1 = this.on('touchmove', this.touchMoveHandler);
-        const h2 = this.on('touchend', this.touchEndHandler);
-        const h3 = this.on('touchcancel', this.touchCancelHandler);
-
-        // create a handle to abort the touch
-        this.touchHandle = {
-            abort: () => {
-                this.touchHandle = null;
-                h1.off();
-                h2.off();
-                h3.off();
-                this.trigger('abort');
-            },
-        };
-    }
-
-    touchCancelHandler(touchEvent) {
-        console.log('touchCancelHandler', touchEvent);
-        this.touchHandle.abort();
-    }
-
-    touchMoveHandler(touchEvent) {
-        console.log('touchMoveHandler', touchEvent);
-        this.physics = this.computePhysics(touchEvent.touches, this.physics);
-        console.log('physics', JSON.stringify(this.physics));
-    }
-
-    touchEndHandler(touchEvent) {
-        console.log('touchEndHandler', touchEvent);
-    }
-
-    computePhysics(touches, priorPhysics) {
-        if (!priorPhysics) {
-            return touches.map((t) => ({
-                start: { x: t.clientX, y: t.clientY },
-                position: { x: t.clientX, y: t.clientY },
-                velocity: { x: 0, y: 0 },
-                acceleration: { x: 0, y: 0 },
-            }));
-        }
-
-        if (touches.length !== priorPhysics.length) {
-            throw new Error('Must have same number of touches');
-        }
-
-        return touches.map((t, i) => {
-            const prior = priorPhysics[i];
-            const position = { x: t.clientX, y: t.clientY };
-            const velocity = {
-                x: position.x - prior.position.x,
-                y: position.y - prior.position.y,
-            };
-            const acceleration = {
-                x: velocity.x - prior.velocity.x,
-                y: velocity.y - prior.velocity.y,
-            };
-            return {
-                start: prior.start,
-                position,
-                velocity,
-                acceleration,
-            };
-        });
-    }
-}
-
-new TouchEventGenerator();
 
 function touchLocation(touch) {
     return { x: touch.clientX, y: touch.clientY };
