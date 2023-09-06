@@ -1,4 +1,10 @@
+/*
+ TODO:
+ -  extract the touch events into a separate class
+ */
+
 import { EventManager } from './EventManager.js';
+import { StateMachineContext } from './StateMachineContext.js';
 import { computeKeyboardState } from './computeKeyboardState.js';
 import { computeMouseState } from './computeMouseState.js';
 import { distance } from './distance.js';
@@ -316,65 +322,109 @@ export class StateMachine {
         };
 
         this.contexts.push(context);
-        return new ContextOperands(this, context);
+        return new StateMachineContext(this, context);
     }
 }
 
-class ContextOperands {
-    // adds goto, when, do, about, from methods to the context
-    constructor(state, context) {
-        this.state = state;
-        this.context = context;
+class TouchEventGenerator {
+    constructor(target = document.body) {
+        this.target = target;
+        this.events = new EventManager(target);
+        this.events.on('touchstart', (touchEvent) =>
+            this.touchStartHandler(touchEvent),
+        );
     }
 
-    goto(newState) {
-        this.context.goto = newState;
-        return this;
+    on(eventName, callback) {
+        return this.events.on(eventName, callback);
     }
 
-    when(condition) {
-        if (typeof condition === 'string') condition = [condition];
-        this.context.when = condition;
-        return this;
+    off() {
+        this.events.off();
     }
 
-    butWhen(condition) {
-        // if there is already a when, create a new context
-        if (!this.context.when)
-            throw 'You must call when() before calling butWhen()';
-        const newContext = Object.assign({}, this.context);
-        this.state.contexts.push(newContext);
-        const newOp = new ContextOperands(this.state, newContext);
-        newOp.when(condition);
-        return newOp;
+    trigger(eventName, eventData) {
+        this.events.trigger(eventName, eventData);
     }
 
-    do(action) {
-        // if action is not a value of events, throw
-        if (!Object.values(this.state.actions).includes(action))
-            throw `Action not found in actions: ${Object.keys(
-                this.state.actions,
-            ).join(', ')}, about: ${this.context.about}`;
-        this.context.do = action;
-        return this;
+    touchStartHandler(touchEvent) {
+        // if already handling a touch, abort it
+        if (this.touchHandle) {
+            this.touchHandle.abort();
+            console.log('aborting prior touch');
+        }
+
+        // capture the location of the touch
+        this.physics = touchEvent.touches.map((t) => this.computePhysics(t));
+
+        // listen for a touchmove and touchend
+        const h1 = this.on('touchmove', this.touchMoveHandler);
+        const h2 = this.on('touchend', this.touchEndHandler);
+        const h3 = this.on('touchcancel', this.touchCancelHandler);
+
+        // create a handle to abort the touch
+        this.touchHandle = {
+            abort: () => {
+                this.touchHandle = null;
+                h1.off();
+                h2.off();
+                h3.off();
+                this.trigger('abort');
+            },
+        };
     }
 
-    about(about) {
-        this.context.about = about;
-        return this;
+    touchCancelHandler(touchEvent) {
+        console.log('touchCancelHandler', touchEvent);
+        this.touchHandle.abort();
     }
 
-    from(state) {
-        if (typeof state === 'string') state = [state];
+    touchMoveHandler(touchEvent) {
+        console.log('touchMoveHandler', touchEvent);
+        this.physics = this.computePhysics(touchEvent.touches, this.physics);
+        console.log('physics', JSON.stringify(this.physics));
+    }
 
-        state.forEach((s) => {
-            if (!this.state.states[s]) throw `State ${s} is not a valid state`;
+    touchEndHandler(touchEvent) {
+        console.log('touchEndHandler', touchEvent);
+    }
+
+    computePhysics(touches, priorPhysics) {
+        if (!priorPhysics) {
+            return touches.map((t) => ({
+                start: { x: t.clientX, y: t.clientY },
+                position: { x: t.clientX, y: t.clientY },
+                velocity: { x: 0, y: 0 },
+                acceleration: { x: 0, y: 0 },
+            }));
+        }
+
+        if (touches.length !== priorPhysics.length) {
+            throw new Error('Must have same number of touches');
+        }
+
+        return touches.map((t, i) => {
+            const prior = priorPhysics[i];
+            const position = { x: t.clientX, y: t.clientY };
+            const velocity = {
+                x: position.x - prior.position.x,
+                y: position.y - prior.position.y,
+            };
+            const acceleration = {
+                x: velocity.x - prior.velocity.x,
+                y: velocity.y - prior.velocity.y,
+            };
+            return {
+                start: prior.start,
+                position,
+                velocity,
+                acceleration,
+            };
         });
-
-        this.context.from = state;
-        return this;
     }
 }
+
+new TouchEventGenerator();
 
 function touchLocation(touch) {
     return { x: touch.clientX, y: touch.clientY };
