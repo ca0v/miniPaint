@@ -1,6 +1,6 @@
 import alertify from 'alertifyjs/build/alertify.min.js';
 
-const isDebug = window.location.search.includes('debug');
+export const isDebug = window.location.search.includes('debug');
 
 export function log(message) {
     if (!window.__priorLogMessage) window.__priorLogMessage = '';

@@ -1,11 +1,27 @@
+/*
+ TODO:
+ -  extract the touch events into a separate class
+ */
+
 import { EventManager } from './EventManager.js';
+import { StateMachineContext } from './StateMachineContext.js';
+import { TouchEventGenerator } from './TouchEventGenerator.js';
 import { computeKeyboardState } from './computeKeyboardState.js';
 import { computeMouseState } from './computeMouseState.js';
-import { distance } from './distance.js';
+import { distance, average, sum } from './distance.js';
 import { isShortcutMatch } from './isShortcutMatch.js';
 import { verbose } from './log.js';
 
-const MINIMAL_SPREAD_DISTANCE = 25;
+const MINIMAL_SPREAD_DISTANCE = 5;
+
+const touchEventGenerator = new TouchEventGenerator();
+'start,end,:begin,:complete,:add,:remove,:dragdrag,:pinch,:spread'
+    .split(',')
+    .forEach((topic) => {
+        touchEventGenerator.on(`touch${topic}`, (e) =>
+            console.log('xxx', `touch${topic}`, e),
+        );
+    });
 
 export class StateMachine {
     constructor(states) {
@@ -50,166 +66,91 @@ export class StateMachine {
             if (preventBubble) mouseEvent.preventDefault();
         });
 
-        // did user touch the screen?
-        this.events.on('touchstart', (touchEvent) => {
-            if (touchEvent.touches[1]) return; // ignore multi-touch
-            const mouseState = computeMouseState(touchEvent);
-            const preventBubble =
-                false !== this.trigger(mouseState, touchEvent);
-            if (preventBubble) touchEvent.preventDefault();
-        });
-
-        // did user move their finger on the screen?
-        this.events.on('touchmove', (touchEvent) => {
-            if (touchEvent.touches[1]) return; // ignore multi-touch
-            const mouseState = computeMouseState(touchEvent);
-            const preventBubble =
-                false !== this.trigger(mouseState, touchEvent);
-            if (preventBubble) touchEvent.preventDefault();
-        });
-
-        // did user lift their finger off the screen?
-        this.events.on('touchend', (touchEvent) => {
-            if (touchEvent.touches[1]) return; // ignore multi-touch
-            const mouseState = computeMouseState(touchEvent);
-            const preventBubble =
-                false !== this.trigger(mouseState, touchEvent);
-            if (preventBubble) touchEvent.preventDefault();
+        touchEventGenerator.on('touch:complete', (e) => {
+            this.lastPinchSpreadLocation = null;
+            this.lastDragDragLocation = null;
         });
 
         // is the user touching the screen in two locations?
-        this.events.on('touchstart', (touchStartEvent) => {
-            if (touchStartEvent.touches.length !== 2) return;
+        touchEventGenerator.on('touch:dragdrag', (e) => {
+            const currentLocation = e.physics[0].position;
 
-            const touchCount = touchStartEvent.touches.length;
+            if (!this.lastDragDragLocation) {
+                this.lastDragDragLocation = currentLocation;
+                console.log('DragDrag started', currentLocation);
+                return;
+            }
 
-            const touchEvents = new EventManager();
+            const distanceTraveled = distance(
+                currentLocation,
+                this.lastDragDragLocation,
+            );
 
-            const touchState = {};
+            if (distanceTraveled < MINIMAL_SPREAD_DISTANCE) {
+                console.log(`Drag too small: ${distanceTraveled}`);
+                return;
+            }
 
-            touchEvents.on('touchend', (touchEvent) => {
-                if (touchEvent.touches.length !== touchCount - 1) return;
-                touchEvents.off();
+            const degree = e.physics[0].degree;
+            this.lastDragDragLocation = currentLocation;
+
+            this.events.trigger(`DragDrag`, {
+                dragDirectionInDegrees: degree,
+                dragDistanceInPixels: distanceTraveled,
             });
+        });
 
-            touchEvents.on('touchmove', (touchEvent) => {
-                if (touchEvent.touches.length !== touchCount) return;
+        touchEventGenerator.on('touch:pinch', (e) => {
+            const currentLocation = e.physics.map((p) => p.position);
 
-                {
-                    const touch1 = touchLocation(touchEvent.touches[0]);
-                    const touch2 = touchLocation(touchEvent.touches[1]);
+            if (!this.lastPinchSpreadLocation) {
+                this.lastPinchSpreadLocation = currentLocation;
+                console.log('Pinch started', currentLocation);
+                return;
+            }
 
-                    if (!touchState.pinch) {
-                        touchState.pinch = { touch1, touch2 };
-                    }
+            const distanceTraveled = average(
+                currentLocation.map((c, i) =>
+                    distance(c, this.lastPinchSpreadLocation[i]),
+                ),
+            );
 
-                    {
-                        // is this a Drag+Drag (are both fingers moving in the same direction?)
-                        const delta1 = distance(
-                            touchState.pinch.touch1,
-                            touch1,
-                        );
-                        const delta2 = distance(
-                            touchState.pinch.touch2,
-                            touch2,
-                        );
-                        const angle1 = angleOf(touch1, touchState.pinch.touch1);
-                        const angle2 = angleOf(touch2, touchState.pinch.touch2);
-                        if (
-                            delta1 > MINIMAL_SPREAD_DISTANCE &&
-                            delta2 > MINIMAL_SPREAD_DISTANCE &&
-                            closeTo(delta1, delta2, 50) &&
-                            closeTo(angle1, angle2, 10)
-                        ) {
-                            const args = {
-                                dragDistanceInPixels: (delta1 + delta2) / 2,
-                                dragDirectionInDegrees: (angle1 + angle2) / 2,
-                            };
-                            touchState.pinch = { touch1, touch2 };
-                            // listener needs to interpret this, that is why it is not a this.trigger
-                            this.events.trigger('DragDrag', args);
-                            return;
-                        }
-                    }
-                    {
-                        // is this a Press+Drag
-                        const delta1 = distance(
-                            touchState.pinch.touch1,
-                            touch1,
-                        );
-                        const delta2 = distance(
-                            touchState.pinch.touch2,
-                            touch2,
-                        );
-                        if (
-                            delta1 < MINIMAL_SPREAD_DISTANCE &&
-                            delta2 > MINIMAL_SPREAD_DISTANCE
-                        ) {
-                            // to be moved outside this control
-                            // what is the direction of the drag?
-                            const degrees = angleOf(
-                                touch2,
-                                touchState.pinch.touch2,
-                            );
+            if (distanceTraveled < MINIMAL_SPREAD_DISTANCE) {
+                console.log(`Pinch too small: ${distanceTraveled}`);
+                return;
+            }
 
-                            const args = {
-                                dragDistanceInPixels: delta2,
-                                dragDirectionInDegrees: degrees,
-                            };
+            this.lastPinchSpreadLocation = currentLocation;
+            this.events.trigger('Pinch', {
+                physics: e.physics,
+                dragDistanceInPixels: distanceTraveled,
+            });
+        });
 
-                            // listener needs to interpret this, that is why it is not a this.trigger
-                            touchState.pinch.touch2 = touch2;
-                            this.events.trigger('PressDrag', args);
-                            return;
-                        }
-                    }
+        touchEventGenerator.on('touch:spread', (e) => {
+            const currentLocation = e.physics.map((p) => p.position);
 
-                    {
-                        // is this a pinch or spread?
-                        const delta1 = distance(
-                            touchState.pinch.touch1,
-                            touch1,
-                        );
-                        const delta2 = distance(
-                            touchState.pinch.touch2,
-                            touch2,
-                        );
-                        const angle1 = angleOf(touch1, touchState.pinch.touch1);
-                        const angle2 = angleOf(touch2, touchState.pinch.touch2);
+            if (!this.lastPinchSpreadLocation) {
+                this.lastPinchSpreadLocation = currentLocation;
+                console.log('Spread started', currentLocation);
+                return;
+            }
 
-                        if (
-                            delta1 > MINIMAL_SPREAD_DISTANCE &&
-                            delta2 > MINIMAL_SPREAD_DISTANCE &&
-                            closeTo(Math.abs(angle1 - angle2), 180, 30)
-                        ) {
-                            const startDistance = distance(
-                                touchState.pinch.touch1,
-                                touchState.pinch.touch2,
-                            );
-                            const currentDistance = distance(touch1, touch2);
-                            const delta = currentDistance - startDistance;
-                            if (Math.abs(delta) > MINIMAL_SPREAD_DISTANCE) {
-                                touchState.pinch = { touch1, touch2 };
-                                const args = {
-                                    currentDistanceInPixels: currentDistance,
-                                    priorDistanceInPixels: delta,
-                                    dragDistanceInPixels: (delta1 + delta2) / 2,
-                                    dragDirectionInDegrees: angleOf(
-                                        touch2,
-                                        touch1,
-                                    ),
-                                    touches: [touch1, touch2],
-                                };
+            const distanceTraveled = sum(
+                currentLocation.map((c, i) =>
+                    distance(c, this.lastPinchSpreadLocation[i]),
+                ),
+            );
 
-                                const pinchDirection =
-                                    delta > 0 ? 'Spread' : 'Pinch';
+            if (distanceTraveled < MINIMAL_SPREAD_DISTANCE) {
+                console.log(`Spread too small: ${distanceTraveled}`);
+                return;
+            }
 
-                                this.events.trigger(pinchDirection, args);
-                                return;
-                            }
-                        }
-                    }
-                }
+            this.lastPinchSpreadLocation = currentLocation;
+            this.events.trigger('Spread', {
+                physics: e.physics,
+                dragDistanceInPixels: distanceTraveled,
             });
         });
 
@@ -316,63 +257,7 @@ export class StateMachine {
         };
 
         this.contexts.push(context);
-        return new ContextOperands(this, context);
-    }
-}
-
-class ContextOperands {
-    // adds goto, when, do, about, from methods to the context
-    constructor(state, context) {
-        this.state = state;
-        this.context = context;
-    }
-
-    goto(newState) {
-        this.context.goto = newState;
-        return this;
-    }
-
-    when(condition) {
-        if (typeof condition === 'string') condition = [condition];
-        this.context.when = condition;
-        return this;
-    }
-
-    butWhen(condition) {
-        // if there is already a when, create a new context
-        if (!this.context.when)
-            throw 'You must call when() before calling butWhen()';
-        const newContext = Object.assign({}, this.context);
-        this.state.contexts.push(newContext);
-        const newOp = new ContextOperands(this.state, newContext);
-        newOp.when(condition);
-        return newOp;
-    }
-
-    do(action) {
-        // if action is not a value of events, throw
-        if (!Object.values(this.state.actions).includes(action))
-            throw `Action not found in actions: ${Object.keys(
-                this.state.actions,
-            ).join(', ')}, about: ${this.context.about}`;
-        this.context.do = action;
-        return this;
-    }
-
-    about(about) {
-        this.context.about = about;
-        return this;
-    }
-
-    from(state) {
-        if (typeof state === 'string') state = [state];
-
-        state.forEach((s) => {
-            if (!this.state.states[s]) throw `State ${s} is not a valid state`;
-        });
-
-        this.context.from = state;
-        return this;
+        return new StateMachineContext(this, context);
     }
 }
 
