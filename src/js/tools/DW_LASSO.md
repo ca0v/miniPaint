@@ -11,15 +11,15 @@
 -   <b>center about the current point</b>
     when <kbd>c</kbd>
 -   <b>clear the exterior during an edit</b>
-    when <kbd>Shift X</kbd>
+    when <kbd>Alt x</kbd> or <kbd>Alt Right mousedown</kbd>
 -   <b>clear the interior during an edit</b>
-    when <kbd>x</kbd> or <kbd>Right mousedown</kbd>
+    when <kbd>x</kbd> or <kbd>Right mouseup</kbd>
 -   <b>close poly when the last is also the first</b>
-    when <kbd>mousemove</kbd>
+    when <kbd>mousemove</kbd> or <kbd>Control mousemove</kbd>
 -   <b>complete the polygon</b>
     when <kbd>Enter</kbd> or <kbd>touch:complete</kbd>
 -   <b>continue moving the last point to the mouse location</b>
-    when <kbd>mousemove</kbd>
+    when <kbd>mousemove</kbd> or <kbd>Control mousemove</kbd>
 -   <b>continue moving the last point to the mouse location</b>
     when <kbd>Control mousemove</kbd>
 -   <b>continue moving the last point to the mouse location</b>
@@ -37,13 +37,13 @@
 -   <b>drag this point</b>
     when <kbd>Left mousemove</kbd> or <kbd>Space Left mousemove</kbd> or <kbd>touch:drag</kbd>
 -   <b>go to next vertex</b>
-    when <kbd>Tab</kbd>
+    when <kbd>Tab</kbd> or <kbd>l</kbd>
 -   <b>go to next vertex while still placing points</b>
-    when <kbd>Tab</kbd>
+    when <kbd>Tab</kbd> or <kbd>l</kbd>
 -   <b>go to prior vertex</b>
-    when <kbd>Shift Tab</kbd>
+    when <kbd>Shift Tab</kbd> or <kbd>j</kbd>
 -   <b>go to prior vertex while still placing points</b>
-    when <kbd>Shift Tab</kbd>
+    when <kbd>Shift Tab</kbd> or <kbd>j</kbd>
 -   <b>inject smoothing points into the polygon</b>
     when <kbd>q</kbd>
 -   <b>mouse has moved over a point</b>
@@ -84,6 +84,8 @@
     when <kbd>Left mousedown</kbd> or <kbd>Space Left mousedown</kbd> or <kbd>touch:drag</kbd> or <kbd>touch:begin</kbd>
 -   <b>reset the tool</b>
     when <kbd>Shift Escape</kbd>
+-   <b>reverse polygon direction</b>
+    when <kbd>k</kbd>
 -   <b>snap point to neighboring point</b>
     when <kbd>Control ArrowUp</kbd> or <kbd>Control w</kbd>
 -   <b>snap point to neighboring point</b>
@@ -95,9 +97,9 @@
 -   <b>stop dragging this point</b>
     when <kbd>Left mouseup</kbd> or <kbd>Space Left mouseup</kbd> or <kbd>touch:complete</kbd>
 -   <b>stop placing and enter drawing mode</b>
-    when <kbd>Left mousedown</kbd>
+    when <kbd>Left mousedown</kbd> or <kbd>Control Left mousedown</kbd>
 -   <b>when moving the mouse, move the last point to the mouse location</b>
-    when <kbd>mousemove</kbd>
+    when <kbd>mousemove</kbd> or <kbd>Control mousemove</kbd>
 -   <b>zoom in</b>
     when <kbd> </kbd> or <kbd>=</kbd> or <kbd>Shift </kbd> or <kbd>Spread</kbd>
 -   <b>zoom out</b>
@@ -106,6 +108,7 @@
 ## Actions
 
 -   beforeDraggingHoverPoint
+-   bringToFront
 -   centerAt
 -   cloneHoverPoint
 -   closePolygon
@@ -147,6 +150,7 @@
 -   placePointAtClickLocation
 -   placePointAtSnapLocation
 -   reset
+-   reversePolygon
 -   smooth
 -   smoothAllData
 -   smoothAroundMinorVertex

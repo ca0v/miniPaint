@@ -33,7 +33,9 @@ export class StateMachine {
         this.contexts = [];
         this.actions = {};
 
-        this.events = new EventManager(document.body);
+        this.events = new EventManager(
+            document.querySelector('.canvas_wrapper') || document.body,
+        );
 
         const mouseDownState = {
             buttons: 0,
@@ -45,15 +47,29 @@ export class StateMachine {
             const mouseState = computeMouseState(mouseEvent, keysThatAreDown);
             const preventBubble =
                 false !== this.trigger(mouseState, mouseEvent);
-            if (preventBubble) mouseEvent.preventDefault();
+            if (preventBubble) {
+                mouseEvent.preventDefault(); // prevent default behavior
+                mouseEvent.stopPropagation(); // handlers on parent elements will not be called
+                mouseEvent.stopImmediatePropagation(); // handlers on this same element will not be called
+            }
         });
 
         this.events.on('mousedown', (mouseEvent) => {
             mouseDownState.buttons = mouseEvent.buttons;
             const mouseState = computeMouseState(mouseEvent, keysThatAreDown);
+
+            // break on right-click
+            if (mouseEvent.buttons === 2) {
+                console.log('Right click');
+            }
+
             const preventBubble =
                 false !== this.trigger(mouseState, mouseEvent);
-            if (preventBubble) mouseEvent.preventDefault();
+            if (preventBubble) {
+                mouseEvent.preventDefault(); // prevent default behavior
+                mouseEvent.stopPropagation(); // handlers on parent elements will not be called
+                mouseEvent.stopImmediatePropagation(); // handlers on this same element will not be called
+            }
         });
 
         this.events.on('mouseup', (mouseEvent) => {
@@ -63,7 +79,11 @@ export class StateMachine {
             if (priorButtons === 2) mouseState = `Right+${mouseState}`;
             const preventBubble =
                 false !== this.trigger(mouseState, mouseEvent);
-            if (preventBubble) mouseEvent.preventDefault();
+            if (preventBubble) {
+                mouseEvent.preventDefault(); // prevent default behavior
+                mouseEvent.stopPropagation(); // handlers on parent elements will not be called
+                mouseEvent.stopImmediatePropagation(); // handlers on this same element will not be called
+            }
         });
 
         // forward touch events through state events to honor "off" status

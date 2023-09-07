@@ -826,7 +826,7 @@ canvas {
 .canvas_wrapper.dw_drawing,
 .canvas_wrapper.dw_dragging,
 .canvas_wrapper.dw_placing {
-    cursor: none;
+    cursor: crosshair;
 }
 
 .canvas_wrapper.dw_hover {

@@ -1,5 +1,4 @@
 const SPACE = ' ';
-const MOUSE_BUTTON = 'Left';
 const PLUS = '+';
 
 export const Keyboard = Object.freeze({
@@ -18,7 +17,7 @@ export const Keyboard = Object.freeze({
     MovePointSnapLeft: ['Control+ArrowLeft', 'Control+a'],
     MovePointSnapRight: ['Control+ArrowRight', 'Control+d'],
     CenterAt: 'c',
-    Delete: ['Delete', 'Backspace', `Shift+${MOUSE_BUTTON}+mousedown`],
+    Delete: ['Delete', 'Backspace', `Shift+Left+mousedown`],
     ZoomIn: [PLUS, '=', `Shift+${PLUS}`, 'Spread'],
     ZoomOut: ['-', 'Shift+_', 'Pinch'],
     PanLeft: ['DragDragRight', 'Shift+ArrowLeft'],
@@ -28,20 +27,21 @@ export const Keyboard = Object.freeze({
     PanFrom: ['mousemove'],
     PanTo: ['Shift+mousemove'],
     Reset: ['Shift+Escape'],
-    StartDragging: [`${MOUSE_BUTTON}+mousedown`, `${SPACE}+${MOUSE_BUTTON}+mousedown`, 'touch:drag', 'touch:begin'],
-    Dragging: [`${MOUSE_BUTTON}+mousemove`, `${SPACE}+${MOUSE_BUTTON}+mousemove`, 'touch:drag'],
-    EndDragging: [`${MOUSE_BUTTON}+mouseup`, `${SPACE}+${MOUSE_BUTTON}+mouseup`, 'touch:complete'],
-    PlacingVertex: ['mousemove'],
+    StartDragging: [`Left+mousedown`, `${SPACE}+Left+mousedown`, 'touch:drag', 'touch:begin'],
+    Dragging: [`Left+mousemove`, `${SPACE}+Left+mousemove`, 'touch:drag'],
+    EndDragging: [`Left+mouseup`, `${SPACE}+Left+mouseup`, 'touch:complete'],
+    PlacingVertex: ['mousemove', 'Control+mousemove'],
     PlacingVertexSnap: ['Control+mousemove'],
     CloneVertex: [SPACE],
-    PlaceVertex: [`${MOUSE_BUTTON}+mousedown`],
-    ClearInterior: ['x', 'Right+mousedown'],
-    ClearExterior: ['Shift+X'],
+    PlaceVertex: [`Left+mousedown`, `Control+Left+mousedown`],
+    ClearInterior: ['x', 'Right+mouseup'],
+    ClearExterior: ['Alt+x', 'Alt+Right+mousedown'],
     Smooth: 'q',
     ClosePolygon: ['Enter', 'touch:complete'],
     DeleteAndClosePolygon: ['Escape'],
-    InsertPointAtCursorPosition: [SPACE, `${SPACE}+${MOUSE_BUTTON}+mousemove`],
+    InsertPointAtCursorPosition: [SPACE, `${SPACE}+Left+mousemove`],
     Hover: ['Shift+mousemove', 'mousemove', 'touch:drag', 'touch:begin'],
-    PlaceFirstVertex: [`${MOUSE_BUTTON}+mousedown`, 'touch:begin'],
-    Drawing: [`${MOUSE_BUTTON}+mousedown`, 'touch:drag', 'touch:begin'],
+    PlaceFirstVertex: [`Left+mousedown`, 'touch:begin'],
+    Drawing: [`Left+mousedown`, 'touch:drag', 'touch:begin'],
+    ReversePolygon: ['k'],
 });

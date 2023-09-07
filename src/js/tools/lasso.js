@@ -66,6 +66,7 @@ export default class DwLasso_class extends Base_tools_class {
         this.name = 'lasso';
         this.ctx = ctx;
         this.data = [];
+        this.navigation_direction = 1;
 
         this.metrics = {
             hover: { type: null, pointIndex: null, point: null },
@@ -94,11 +95,8 @@ export default class DwLasso_class extends Base_tools_class {
         // prevent activation if there is not already an image layer
         const imageLayers = config.layers.filter((l) => l.type === 'image');
         if (!imageLayers.length) {
-            alertify.error(
-                `Cannot activate ${this.name} tool without an image`,
-            );
             if (!isDebug) {
-                new app.Actions.Activate_tool_action('select', true).do();
+                new app.Actions.Activate_tool_action('crop', true).do();
                 return;
             }
         }
@@ -109,46 +107,40 @@ export default class DwLasso_class extends Base_tools_class {
         this.metrics.prior_action_history_max =
             this.Base_state.action_history_max;
         this.Base_state.action_history_max = this.metrics.ACTION_HISTORY_MAX;
-
-        const layer = config?.layers.find((l) => l.type === this.name);
-
-        if (!layer) {
-            app.State.do_action(
-                new app.Actions.Bundle_action(
-                    'new_dw_lasso_layer',
-                    'Magic Crop Layer',
-                    [
-                        new app.Actions.Insert_layer_action({
-                            name: 'Lasso',
-                            type: this.name,
-                            params: this.clone(this.getParams()),
-                            status: 'draft',
-                            render_function: [this.name, 'render'],
-                            x: 0,
-                            y: 0,
-                            width: config.WIDTH,
-                            height: config.HEIGHT,
-                            hide_selection_if_active: true,
-                            rotate: null,
-                            is_vector: true,
-                            color: config.COLOR,
-                        }),
-                    ],
-                ),
-            );
-        } else {
-            this.bringToFront();
-            // bring layer to the top
-        }
     }
 
     bringToFront() {
         const layer = config?.layers.find((l) => l.type === this.name);
-        if (!layer) return false;
-        while (app.Layers.find_next(layer.id))
-            app.State.do_action(
-                new app.Actions.Reorder_layer_action(layer.id, 1),
-            );
+        if (layer) {
+            while (app.Layers.find_next(layer.id))
+                app.State.do_action(
+                    new app.Actions.Reorder_layer_action(layer.id, 1),
+                );
+            return;
+        }
+        app.State.do_action(
+            new app.Actions.Bundle_action(
+                'new_dw_lasso_layer',
+                'Magic Crop Layer',
+                [
+                    new app.Actions.Insert_layer_action({
+                        name: 'Lasso',
+                        type: this.name,
+                        params: this.clone(this.getParams()),
+                        status: 'draft',
+                        render_function: [this.name, 'render'],
+                        x: 0,
+                        y: 0,
+                        width: config.WIDTH,
+                        height: config.HEIGHT,
+                        hide_selection_if_active: true,
+                        rotate: null,
+                        is_vector: true,
+                        color: config.COLOR,
+                    }),
+                ],
+            ),
+        );
     }
 
     on_leave() {
@@ -411,11 +403,6 @@ export default class DwLasso_class extends Base_tools_class {
         const actions = [];
 
         const bbox = getBoundingBox(data);
-        const cropWidth = bbox.right - bbox.left;
-        const cropHeight = bbox.bottom - bbox.top;
-
-        const cropTop = bbox.top;
-        const cropLeft = bbox.left;
 
         const imageLayers = config.layers.filter((l) => l.type === 'image');
         if (!imageLayers.length) {
@@ -645,7 +632,7 @@ export default class DwLasso_class extends Base_tools_class {
         });
 
         theState.on('execute', (context) => {
-            this.bringToFront();
+            // this.bringToFront();
             verbose(
                 `${context.when}: ${context.about} (state: ${context.from} -> ${
                     context.goto || this.status
@@ -947,6 +934,12 @@ export default class DwLasso_class extends Base_tools_class {
             cut: () => this.cut(),
             crop: () => this.crop(),
 
+            reversePolygon: () => (this.navigation_direction *= -1),
+            bringToFront: () => {
+                this.bringToFront();
+                return false;
+            },
+
             smooth: () => {
                 const { type } = this.getHoverInfo();
                 if (type === 'major') return actions.smoothAroundVertex();
@@ -1026,6 +1019,23 @@ export default class DwLasso_class extends Base_tools_class {
             .goto(Status.ready)
             .when(Keyboard.Reset)
             .do(actions.reset);
+
+        theState
+            .about('reverse polygon direction')
+            .from([Status.editing])
+            .when(Keyboard.ReversePolygon)
+            .do(actions.reversePolygon);
+
+        theState
+            .about('bring to front')
+            .from([
+                Status.ready,
+                Status.editing,
+                Status.hover,
+                Status.placing,
+                Status.drawing,
+            ])
+            .do(actions.bringToFront);
 
         theState
             .about('clear the interior during an edit')
@@ -1437,6 +1447,12 @@ export default class DwLasso_class extends Base_tools_class {
 
     moveToNextVertex(indexOffset) {
         if (!indexOffset) return;
+
+        console.log(
+            'moveToNextVertex',
+            `${indexOffset} ${this.navigation_direction}`,
+        );
+        indexOffset *= Math.sign(this.navigation_direction || 1);
 
         const { type, pointIndex } = this.getHoverInfo();
         const isMinor = type === 'minor';
