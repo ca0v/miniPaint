@@ -66,6 +66,12 @@ window.addEventListener(
 
         // prevent prompting user when navigating away
         app.GUI.Tools_settings.save_setting('exit_confirm', false);
+        const activeTool = app.GUI.GUI_tools.Helper.getCookie('active_tool');
+        switch (activeTool) {
+            case 'lasso':
+                app.GUI.GUI_tools.Helper.setCookie('active_tool', 'select');
+                break;
+        }
 
         // Render all
         GUI.init();
