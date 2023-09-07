@@ -11,9 +11,9 @@
 -   <b>center about the current point</b>
     when <kbd>c</kbd>
 -   <b>clear the exterior during an edit</b>
-    when <kbd>Alt Backspace</kbd> or <kbd>Meta Backspace</kbd>
+    when <kbd>Shift Backspace</kbd> or <kbd>Shift Delete</kbd>
 -   <b>clear the interior during an edit</b>
-    when <kbd>Control Backspace</kbd>
+    when <kbd>Backspace</kbd> or <kbd>Delete</kbd>
 -   <b>close poly when the last is also the first</b>
     when <kbd>mousemove</kbd>
 -   <b>complete the polygon</b>
