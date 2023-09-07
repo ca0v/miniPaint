@@ -137,12 +137,18 @@ export default class DwLasso_class extends Base_tools_class {
                 ),
             );
         } else {
+            this.bringToFront();
             // bring layer to the top
-            while (app.Layers.find_next(layer.id))
-                app.State.do_action(
-                    new app.Actions.Reorder_layer_action(layer.id, 1),
-                );
         }
+    }
+
+    bringToFront() {
+        const layer = config?.layers.find((l) => l.type === this.name);
+        if (!layer) return false;
+        while (app.Layers.find_next(layer.id))
+            app.State.do_action(
+                new app.Actions.Reorder_layer_action(layer.id, 1),
+            );
     }
 
     on_leave() {
@@ -639,6 +645,7 @@ export default class DwLasso_class extends Base_tools_class {
         });
 
         theState.on('execute', (context) => {
+            this.bringToFront();
             verbose(
                 `${context.when}: ${context.about} (state: ${context.from} -> ${
                     context.goto || this.status
@@ -894,11 +901,10 @@ export default class DwLasso_class extends Base_tools_class {
             },
             dataPoints: () => !!this.data.length,
             noDataPoints: () => !this.data.length,
-
             deleteHoverPoint: () => {
                 if (!this.getHoverPoint()) return false;
                 this.deletePoint();
-                this.moveIntoView();
+                if (this.data.length) this.moveIntoView();
             },
 
             hoveringOverPoint: (mouseEvent) => {

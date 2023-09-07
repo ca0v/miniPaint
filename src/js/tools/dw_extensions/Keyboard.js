@@ -3,8 +3,8 @@ const MOUSE_BUTTON = 'Left';
 const PLUS = '+';
 
 export const Keyboard = Object.freeze({
-    PriorVertex: 'Shift+Tab',
-    NextVertex: 'Tab',
+    PriorVertex: ['Shift+Tab', 'j'],
+    NextVertex: ['Tab', 'l'],
     MovePointLeft: ['ArrowLeft', 'a'],
     MovePointRight: ['ArrowRight', 'd'],
     MovePointUp: ['ArrowUp', 'w'],
