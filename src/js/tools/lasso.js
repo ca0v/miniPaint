@@ -97,7 +97,10 @@ export default class DwLasso_class extends Base_tools_class {
             alertify.error(
                 `Cannot activate ${this.name} tool without an image`,
             );
-            if (!isDebug) return;
+            if (!isDebug) {
+                new app.Actions.Activate_tool_action('select', true).do();
+                return;
+            }
         }
 
         this.state = this.defineStateMachine();
