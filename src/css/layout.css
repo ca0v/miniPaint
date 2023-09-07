@@ -818,9 +818,10 @@ canvas {
 }
 
 /* dataworks extensions */
+.canvas_wrapper.dw_drawing,
 .canvas_wrapper.dw_dragging,
 .canvas_wrapper.dw_placing {
-    cursor: crosshair;
+    cursor: none;
 }
 
 .canvas_wrapper.dw_hover {

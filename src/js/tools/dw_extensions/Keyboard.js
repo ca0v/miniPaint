@@ -33,7 +33,7 @@ export const Keyboard = Object.freeze({
     ClearInterior: ['Control+Backspace'],
     ClearExterior: ['Alt+Backspace', 'Meta+Backspace'],
     Smooth: 'q',
-    ClosePolygon: ['Enter', 'touch:complete'],
+    ClosePolygon: ['Enter', 'touch:complete', 'Right+mousedown'],
     DeleteAndClosePolygon: ['Escape'],
     InsertPointAtCursorPosition: [SPACE, `${SPACE}+${MOUSE_BUTTON}+mousemove`],
     Hover: ['Shift+mousemove', 'mousemove', 'touch:drag', 'touch:begin'],

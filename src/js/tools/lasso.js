@@ -97,7 +97,12 @@ export default class DwLasso_class extends Base_tools_class {
             alertify.error(
                 `Cannot activate ${this.name} tool without an image`,
             );
-            if (!isDebug) return;
+            if (!isDebug) {
+                app.State.do_action(
+                    new app.Actions.Activate_tool_action('select'),
+                );
+                return;
+            }
         }
 
         this.state = this.defineStateMachine();
@@ -1225,6 +1230,12 @@ export default class DwLasso_class extends Base_tools_class {
             .about('delete the hover point')
             .from([Status.editing, Status.hover])
             .goto(Status.editing)
+            .when(Keyboard.Delete)
+            .do(actions.deleteHoverPoint);
+
+        theState
+            .about('delete the hover point while still placing points')
+            .from([Status.placing])
             .when(Keyboard.Delete)
             .do(actions.deleteHoverPoint);
 
