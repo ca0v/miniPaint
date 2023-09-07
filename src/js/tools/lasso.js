@@ -543,6 +543,10 @@ export default class DwLasso_class extends Base_tools_class {
     movingLastPointToMouseLocation(mouseEvent) {
         const currentPoint = this.mousePoint(mouseEvent);
         if (!currentPoint) return false;
+        return this.movingLastPointToLocation(currentPoint);
+    }
+
+    movingLastPointToLocation(currentPoint) {
         if (!this.data.length) return;
         const p = this.getDataAt(-1);
         p.x = currentPoint.x;
@@ -816,6 +820,24 @@ export default class DwLasso_class extends Base_tools_class {
             movingLastPointToMouseLocation: (e) =>
                 this.movingLastPointToMouseLocation(e),
 
+            placePointAtSnapLocation: (mouseEvent) => {
+                if (this.data.length < 2) return false;
+                const currentPoint = this.mousePoint(mouseEvent);
+                if (!currentPoint) return false;
+                const priorPoint = this.getDataAt(-2);
+                if (!priorPoint) return false;
+
+                // is the line from the prior point to the current point more horizontal or vertical?
+                const dx = Math.abs(priorPoint.x - currentPoint.x);
+                const dy = Math.abs(priorPoint.y - currentPoint.y);
+                if (dx > dy) {
+                    currentPoint.y = priorPoint.y;
+                } else {
+                    currentPoint.x = priorPoint.x;
+                }
+                return this.movingLastPointToLocation(currentPoint);
+            },
+
             cloneHoverPoint: () => {
                 if (!this.data.length) return false;
                 const lastPoint = this.getHoverPoint();
@@ -860,6 +882,11 @@ export default class DwLasso_class extends Base_tools_class {
             movePointUpRight1Units: () => this.movePoint(1, -1),
             movePointDownLeft1Units: () => this.movePoint(-1, 1),
             movePointDownRight1Units: () => this.movePoint(1, 1),
+
+            movePointNeighborUp: () => this.movePointNeighbor('up'),
+            movePointNeighborDown: () => this.movePointNeighbor('down'),
+            movePointNeighborLeft: () => this.movePointNeighbor('left'),
+            movePointNeighborRight: () => this.movePointNeighbor('right'),
 
             closePolygon: () => {
                 this.snapshot('before closing polygon');
@@ -1095,9 +1122,11 @@ export default class DwLasso_class extends Base_tools_class {
 
         theState
             .about('continue moving the last point to the mouse location')
-            .from(Status.placing)
+            .from([Status.placing])
             .when(Keyboard.PlacingVertex)
-            .do(actions.movingLastPointToMouseLocation);
+            .do(actions.movingLastPointToMouseLocation)
+            .butWhen(Keyboard.PlacingVertexSnap)
+            .do(actions.placePointAtSnapLocation);
 
         theState
             .about('continue moving the last point to the mouse location')
@@ -1218,6 +1247,17 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.movePointDownRight1Units);
 
         theState
+            .about('snap point to neighboring point')
+            .from([Status.editing])
+            .when(Keyboard.MovePointSnapUp)
+            .do(actions.movePointNeighborUp)
+            .butWhen(Keyboard.MovePointSnapDown)
+            .do(actions.movePointNeighborDown)
+            .butWhen(Keyboard.MovePointSnapLeft)
+            .do(actions.movePointNeighborLeft)
+            .butWhen(Keyboard.MovePointSnapRight)
+            .do(actions.movePointNeighborRight);
+        theState
             .about(
                 'after deleting the last point indicate we are ready for the 1st point',
             )
@@ -1296,6 +1336,38 @@ export default class DwLasso_class extends Base_tools_class {
         }
 
         return null;
+    }
+
+    movePointNeighbor(direction) {
+        const hoverPoint = this.getHoverPoint();
+        if (!hoverPoint) return false;
+        const { pointIndex } = this.getHoverInfo();
+        const priorPoint = this.getDataAt(pointIndex - 1);
+        if (!priorPoint) return false;
+        const nextPoint = this.getDataAt(pointIndex + 1);
+        if (!nextPoint) return false;
+
+        let { x, y } = hoverPoint;
+
+        switch (direction) {
+            case 'up':
+                y = Math.min(priorPoint.y, nextPoint.y);
+                break;
+            case 'down':
+                y = Math.max(priorPoint.y, nextPoint.y);
+                break;
+            case 'left':
+                x = Math.min(priorPoint.x, nextPoint.x);
+                break;
+            case 'right':
+                x = Math.max(priorPoint.x, nextPoint.x);
+                break;
+            default:
+                throw `invalid direction: ${direction}`;
+        }
+        hoverPoint.x = x;
+        hoverPoint.y = y;
+        this.renderData();
     }
 
     movePoint(dx, dy) {
