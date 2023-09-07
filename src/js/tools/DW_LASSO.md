@@ -13,11 +13,11 @@
 -   <b>clear the exterior during an edit</b>
     when <kbd>Shift X</kbd>
 -   <b>clear the interior during an edit</b>
-    when <kbd>x</kbd>
+    when <kbd>x</kbd> or <kbd>Right mousedown</kbd>
 -   <b>close poly when the last is also the first</b>
     when <kbd>mousemove</kbd>
 -   <b>complete the polygon</b>
-    when <kbd>Enter</kbd> or <kbd>touch:complete</kbd> or <kbd>Right mousedown</kbd>
+    when <kbd>Enter</kbd> or <kbd>touch:complete</kbd>
 -   <b>continue moving the last point to the mouse location</b>
     when <kbd>mousemove</kbd>
 -   <b>continue moving the last point to the mouse location</b>
