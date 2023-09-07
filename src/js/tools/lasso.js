@@ -57,11 +57,19 @@ async function doActions(actions) {
     );
 }
 
+let instance = null;
+
 export default class DwLasso_class extends Base_tools_class {
     constructor(ctx) {
         // without this change I could not do mouse operations after touch operations, the coordinates did not change
         const allowSystemToTrackMouseCoordinates = true;
         super(allowSystemToTrackMouseCoordinates);
+
+        //singleton
+        {
+            if (instance) return instance;
+            instance = this;
+        }
 
         this.name = 'lasso';
         this.ctx = ctx;
@@ -107,6 +115,41 @@ export default class DwLasso_class extends Base_tools_class {
         this.metrics.prior_action_history_max =
             this.Base_state.action_history_max;
         this.Base_state.action_history_max = this.metrics.ACTION_HISTORY_MAX;
+    }
+
+    help() {
+        const { contexts, actions } = this.state;
+        const result = [];
+        [...contexts]
+            .toSorted((a, b) => {
+                // sort by the about property
+                return a.about.localeCompare(b.about);
+            })
+            .forEach((context) => {
+                const { from, when, goto, about } = context;
+                if (when) {
+                    const whenKeys = when.map((v) => {
+                        v = v.replace('++', '+Plus');
+                        if (v === '+') v = 'Plus';
+                        const keys = v.split('+').map((v) => {
+                            switch (v) {
+                                case ' ':
+                                    return 'Space';
+                                case '-':
+                                    return 'Minus';
+                                default:
+                                    return v;
+                            }
+                        });
+                        return keys.join('+');
+                    });
+                    result.push({
+                        shortcuts: whenKeys,
+                        about: about,
+                    });
+                }
+            });
+        return result;
     }
 
     bringToFront() {
@@ -1109,14 +1152,14 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.endDraggingHoverPoint);
 
         theState
-            .about('automatically create vertices as mouse moves')
+            .about('automatically create vertices as cursor moves')
             .from(Status.drawing)
             .when(Keyboard.Dragging)
             .do(actions.drawPoints);
 
         theState
             .about(
-                'when moving the mouse, move the last point to the mouse location',
+                'when moving the cursor, move the last point to the cursor location',
             )
             .from(Status.drawing)
             .goto(Status.placing)
@@ -1124,7 +1167,7 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.placePointAtClickLocation);
 
         theState
-            .about(`place a point at the mouse location behind the drag point`)
+            .about(`place a point at the cursor location behind the drag point`)
             .from([Status.dragging, Status.editing])
             .when(Keyboard.InsertPointAtCursorPosition)
             .do(actions.insertPointBeforeHoverLocation);
@@ -1137,7 +1180,7 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.placeFirstPointAtMouseLocation);
 
         theState
-            .about('continue moving the last point to the mouse location')
+            .about('continue moving the last point to the cursor location')
             .from([Status.placing])
             .when(Keyboard.PlacingVertex)
             .do(actions.movingLastPointToMouseLocation)
@@ -1145,7 +1188,7 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.placePointAtSnapLocation);
 
         theState
-            .about('continue moving the last point to the mouse location')
+            .about('continue moving the last point to the cursor location')
             .from([Status.placing, Status.drawing, Status.editing])
             .when(Keyboard.CloneVertex)
             .do(actions.cloneHoverPoint);
@@ -1296,14 +1339,14 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.deleteHoverPoint);
 
         theState
-            .about('mouse has moved over a point')
+            .about('cursor has moved over a point')
             .from(Status.editing)
             .goto(Status.hover)
             .when(Keyboard.Hover)
             .do(actions.hoveringOverPoint);
 
         theState
-            .about('mouse is no longer over a point')
+            .about('cursor is no longer over a point')
             .from(Status.hover)
             .goto(Status.editing)
             .when(Keyboard.Hover)
@@ -1316,11 +1359,11 @@ export default class DwLasso_class extends Base_tools_class {
             .when(Keyboard.ClosePolygon)
             .do(actions.closePolygon)
             .butWhen(Keyboard.DeleteAndClosePolygon)
-            .about('delete the polygon and reset state')
+            .about('delete the last point and begin editing')
             .do(actions.deletePointAndClosePolygon);
 
         theState
-            .about('delete the polygon and reset state')
+            .about('reset state while editing')
             .from([Status.editing])
             .goto(Status.ready)
             .when(Keyboard.DeleteAndClosePolygon)
@@ -1711,7 +1754,9 @@ function documentStateMachine(stateMachine) {
         .forEach((action) => {
             result.push(`- ${action}`);
         });
+
     verbose(result.join('\n'));
+    return result.join('\n');
 }
 
 new Tests().tests();

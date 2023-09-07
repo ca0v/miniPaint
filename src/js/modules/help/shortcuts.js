@@ -1,4 +1,6 @@
 import Dialog_class from './../../libs/popup.js';
+import app from '../../app.js';
+import DwLasso_class from './../../tools/lasso.js';
 
 class Help_shortcuts_class {
     constructor() {
@@ -7,7 +9,38 @@ class Help_shortcuts_class {
 
     //shortcuts
     shortcuts() {
-        var settings = {
+        const settings = this.systemShortcutKeys();
+
+        settings.params = settings.params.map((help) => ({
+            title: `<kbd>${help.title}</kbd>`,
+            html: `${help.value}`,
+        }));
+
+        // is the lasso the active tool?
+        const activeTool = app.GUI.GUI_tools.active_tool;
+        switch (activeTool) {
+            case 'lasso': {
+                const help = new DwLasso_class().help().map((help) => ({
+                    title: `${help.shortcuts
+                        .map((v) => `<kbd>${v}</kbd>`)
+                        .join('<br/>')}`,
+                    html: `${help.about}`,
+                }));
+
+                settings.params = settings.params.concat([
+                    {
+                        html: '<b>Lasso tool</b>',
+                    },
+                    ...help,
+                ]);
+                break;
+            }
+        }
+        this.POP.show(settings);
+    }
+
+    systemShortcutKeys() {
+        return {
             title: 'Keyboard Shortcuts',
             className: 'shortcuts',
             params: [
@@ -35,7 +68,6 @@ class Help_shortcuts_class {
                 { title: 'Scroll down', value: 'Zoom out' },
             ],
         };
-        this.POP.show(settings);
     }
 }
 
