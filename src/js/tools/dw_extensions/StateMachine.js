@@ -24,7 +24,7 @@ const touchEventGenerator = new TouchEventGenerator();
     );
 
 export class StateMachine {
-    constructor(states) {
+    constructor(states, scopeElement = document.body) {
         if (!states.length) throw 'You must provide at least one state';
 
         this.states = {};
@@ -33,9 +33,7 @@ export class StateMachine {
         this.contexts = [];
         this.actions = {};
 
-        this.events = new EventManager(
-            document.querySelector('.canvas_wrapper') || document.body,
-        );
+        this.events = new EventManager(scopeElement);
 
         const mouseDownState = {
             buttons: 0,

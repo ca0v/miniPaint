@@ -619,10 +619,12 @@ export default class DwLasso_class extends Base_tools_class {
             this.data = [];
             this.setHoverInfo(null, null);
         }
-        const theState = new StateMachine(Object.values(Status));
+
+        const wrapper =
+            document.querySelector('.canvas_wrapper') || document.body;
+        const theState = new StateMachine(Object.values(Status), wrapper);
 
         theState.on('stateChanged', () => {
-            const wrapper = document.getElementById('canvas_wrapper');
             // remove anything that starts with 'dw_'
             wrapper.classList.forEach((c) => {
                 if (c.startsWith('dw_')) wrapper.classList.remove(c);
