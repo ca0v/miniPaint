@@ -21,7 +21,8 @@
  * - possible to not create a dedicated layer?  How does crop do it?
  * -- only works when viewport offset = 0,0
  * -- after cut, can no longer move viewport
- * -- fixed: when viewport has offset, renderer is not honoring the offset
+ * -- fixed: when image has been moved and there is a scale, lasso is rendering it at a different scale
+ * -- when image has been resized, lasso is rendering it at a different scale
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -239,8 +240,8 @@ export default class DwLasso_class extends Base_tools_class {
 
         ctx.drawImage(
             link,
-            x + zoomPosition.x,
-            y + zoomPosition.y,
+            x / this.scale + zoomPosition.x,
+            y / this.scale + zoomPosition.y,
             link.width / this.scale,
             link.height / this.scale,
         );
