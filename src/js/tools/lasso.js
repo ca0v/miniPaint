@@ -125,6 +125,7 @@ export default class DwLasso_class extends Base_tools_class {
                 // sort by the about property
                 return a.about.localeCompare(b.about);
             })
+            .filter((v) => !v.about.includes('(internal)'))
             .forEach((context) => {
                 const { from, when, goto, about } = context;
                 if (when) {
@@ -849,7 +850,7 @@ export default class DwLasso_class extends Base_tools_class {
                 });
             },
 
-            insertPointBeforeHoverLocation: (e) =>
+            insertPointAfterHoverLocation: (e) =>
                 this.insertPointAfterHoverLocation(e),
 
             placePointAtClickLocation: (e) => this.placePointAtClickLocation(e),
@@ -979,7 +980,7 @@ export default class DwLasso_class extends Base_tools_class {
             cut: () => this.cut(),
             crop: () => this.crop(),
 
-            reversePolygon: () => (this.navigation_direction *= -1),
+            reverseNavigationDirection: () => (this.navigation_direction *= -1),
             bringToFront: () => {
                 this.bringToFront();
                 return false;
@@ -1041,19 +1042,19 @@ export default class DwLasso_class extends Base_tools_class {
         });
 
         theState
-            .about('no data found')
+            .about('internal: no data found')
             .from([Status.none, Status.editing])
             .goto(Status.ready)
             .do(actions.noDataPoints);
 
         theState
-            .about('data found')
+            .about('internal: data found')
             .from(Status.none)
             .goto(Status.editing)
             .do(actions.dataPoints);
 
         theState
-            .about('reset the tool')
+            .about('action reset - clear all vertices and start over')
             .from([
                 Status.editing,
                 Status.drawing,
@@ -1066,13 +1067,13 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.reset);
 
         theState
-            .about('reverse polygon direction')
+            .about('navigation - reverse direction')
             .from([Status.editing])
-            .when(Keyboard.ReversePolygon)
-            .do(actions.reversePolygon);
+            .when(Keyboard.ReverseNavigation)
+            .do(actions.reverseNavigationDirection);
 
         theState
-            .about('bring to front')
+            .about('internal: bring to front')
             .from([
                 Status.ready,
                 Status.editing,
@@ -1083,7 +1084,7 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.bringToFront);
 
         theState
-            .about('clear the interior during an edit')
+            .about('action cut - clear the interior during an edit')
             .from([
                 Status.editing,
                 Status.drawing,
@@ -1095,7 +1096,7 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.cut);
 
         theState
-            .about('clear the exterior during an edit')
+            .about('action crop - clear the exterior during an edit')
             .from([
                 Status.editing,
                 Status.drawing,
@@ -1107,13 +1108,15 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.crop);
 
         theState
-            .about('inject smoothing points into the polygon')
+            .about('draw - inject smoothing vertices around the current vertex')
             .from([Status.editing, Status.hover, Status.placing])
             .when(Keyboard.Smooth)
             .do(actions.smooth);
 
         theState
-            .about('center about the current point')
+            .about(
+                'center - pan the current vertex to the center of the viewport',
+            )
             .from([
                 Status.editing,
                 Status.dragging,
@@ -1125,95 +1128,98 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.centerAt);
 
         theState
-            .about('prepare to drag this point')
+            .about('move - prepare to drag the current vertex')
             .from(Status.hover)
             .goto(Status.before_dragging)
             .when(Keyboard.StartDragging)
             .do(actions.beforeDraggingHoverPoint);
 
         theState
-            .about('begin dragging this point')
+            .about('move - begin dragging the current vertex')
             .from(Status.before_dragging)
             .goto(Status.dragging)
             .when(Keyboard.Dragging)
             .do(actions.draggingHoverPoint);
 
         theState
-            .about('drag this point')
+            .about('move - move the current vertex')
             .from(Status.dragging)
             .when(Keyboard.Dragging)
             .do(actions.draggingHoverPoint);
 
         theState
-            .about('stop dragging this point')
+            .about('move - stop dragging the current vertex')
             .from(Status.dragging)
             .goto(Status.editing)
             .when(Keyboard.EndDragging)
             .do(actions.endDraggingHoverPoint);
 
         theState
-            .about('automatically create vertices as cursor moves')
+            .about('draw - automatically create vertices as cursor moves')
             .from(Status.drawing)
             .when(Keyboard.Dragging)
             .do(actions.drawPoints);
 
         theState
-            .about(
-                'when moving the cursor, move the last point to the cursor location',
-            )
+            .about('move - move the last vertex to the cursor location')
             .from(Status.drawing)
             .goto(Status.placing)
             .when(Keyboard.PlacingVertex)
             .do(actions.placePointAtClickLocation);
 
         theState
-            .about(`place a point at the cursor location behind the drag point`)
+            .about(`draw - place a new vertex at the cursor location`)
             .from([Status.dragging, Status.editing])
             .when(Keyboard.InsertPointAtCursorPosition)
-            .do(actions.insertPointBeforeHoverLocation);
+            .do(actions.insertPointAfterHoverLocation);
 
         theState
-            .about('create the 1st point of the polygon')
+            .about('draw - create the 1st vertex')
             .from(Status.ready)
             .goto(Status.drawing)
             .when(Keyboard.PlaceFirstVertex)
             .do(actions.placeFirstPointAtMouseLocation);
 
         theState
-            .about('continue moving the last point to the cursor location')
+            .about(
+                'move - continue moving the last vertex to the cursor location',
+            )
             .from([Status.placing])
             .when(Keyboard.PlacingVertex)
             .do(actions.movingLastPointToMouseLocation)
             .butWhen(Keyboard.PlacingVertexSnap)
+            .about('move - snap the last vertex to the cursor location')
             .do(actions.placePointAtSnapLocation);
 
         theState
-            .about('continue moving the last point to the cursor location')
+            .about('clone - create a new vertex at the current vertex')
             .from([Status.placing, Status.drawing, Status.editing])
             .when(Keyboard.CloneVertex)
             .do(actions.cloneHoverPoint);
 
         theState
-            .about('stop placing and enter drawing mode')
+            .about('draw - stop placing current vertex')
             .from(Status.placing)
             .goto(Status.drawing)
             .when(Keyboard.PlaceVertex);
 
         theState
-            .about('close poly when the last is also the first')
+            .about(
+                'draw - finish drawing by moving the last point over the first',
+            )
             .from(Status.placing)
             .goto(Status.editing)
             .when(Keyboard.PlacingVertex)
             .do(actions.movedLastPointToFirstPoint);
 
         theState
-            .about('add a point to the polygon')
+            .about('draw - automatically add vertices to the polygon')
             .from(Status.drawing)
             .when(Keyboard.Drawing)
             .do(actions.drawPoints);
 
         theState
-            .about('zoom in')
+            .about('navigation - zoom in')
             .from([
                 Status.drawing,
                 Status.hover,
@@ -1224,11 +1230,11 @@ export default class DwLasso_class extends Base_tools_class {
             .when(Keyboard.ZoomIn)
             .do(actions.zoomIn)
             .butWhen(Keyboard.ZoomOut)
-            .about('zoom out')
+            .about('navigation - zoom out')
             .do(actions.zoomOut);
 
         theState
-            .about('pan left')
+            .about('navigation - pan left')
             .from([
                 Status.drawing,
                 Status.hover,
@@ -1239,42 +1245,42 @@ export default class DwLasso_class extends Base_tools_class {
             .when(Keyboard.PanLeft)
             .do(actions.panLeft)
             .butWhen(Keyboard.PanRight)
-            .about('pan right')
+            .about('navigation - pan right')
             .do(actions.panRight)
             .butWhen(Keyboard.PanUp)
-            .about('pan up')
+            .about('navigation - pan up')
             .do(actions.panUp)
             .butWhen(Keyboard.PanDown)
-            .about('pan down')
+            .about('navigation - pan down')
             .do(actions.panDown)
             .butWhen(Keyboard.PanFrom)
-            .about('pan from')
+            .about('navigation - pan from (internal)')
             .do(actions.panFrom)
             .butWhen(Keyboard.PanTo)
-            .about('pan to')
+            .about('navigation - pan to')
             .do(actions.panTo);
 
         theState
-            .about('go to prior vertex')
+            .about('navigation - go to prior vertex')
             .from([Status.hover, Status.editing])
             .goto(Status.editing)
             .when(Keyboard.PriorVertex)
             .do(actions.moveToPriorPoint)
             .butWhen(Keyboard.NextVertex)
-            .about('go to next vertex')
+            .about('navigation - go to next vertex')
             .do(actions.moveToNextPoint);
 
         theState
-            .about('go to prior vertex while still placing points')
+            .about('navigation - go to prior vertex while still placing points')
             .from([Status.placing])
             .when(Keyboard.PriorVertex)
             .do(actions.moveToPriorPoint)
             .butWhen(Keyboard.NextVertex)
-            .about('go to next vertex while still placing points')
+            .about('navigation - go to next vertex while still placing points')
             .do(actions.moveToNextPoint);
 
         theState
-            .about('move the point left')
+            .about('move - move current vertex left')
             .from([
                 Status.editing,
                 Status.placing,
@@ -1284,29 +1290,29 @@ export default class DwLasso_class extends Base_tools_class {
             .when(Keyboard.MovePointLeft)
             .do(actions.movePointLeft1Units)
             .butWhen(Keyboard.MovePointRight)
-            .about('move the point right')
+            .about('move - move current vertex right')
             .do(actions.movePointRight1Units)
             .butWhen(Keyboard.MovePointUp)
-            .about('move the point up')
+            .about('move - move current vertex up')
             .do(actions.movePointUp1Units)
             .butWhen(Keyboard.MovePointDown)
-            .about('move the point down')
+            .about('move - move current vertex down')
             .do(actions.movePointDown1Units)
             .butWhen(Keyboard.MovePointUpLeft)
-            .about('move the point up and left')
+            .about('move - move current vertex up and left')
             .do(actions.movePointUpLeft1Units)
             .butWhen(Keyboard.MovePointUpRight)
-            .about('move the point up and right')
+            .about('move - move current vertex up and right')
             .do(actions.movePointUpRight1Units)
             .butWhen(Keyboard.MovePointDownLeft)
-            .about('move the point down and left')
+            .about('move - move current vertex down and left')
             .do(actions.movePointDownLeft1Units)
             .butWhen(Keyboard.MovePointDownRight)
-            .about('move the point down and right')
+            .about('move - move current vertex down and right')
             .do(actions.movePointDownRight1Units);
 
         theState
-            .about('snap point to neighboring point')
+            .about('move - snap point to neighboring point')
             .from([Status.editing])
             .when(Keyboard.MovePointSnapUp)
             .do(actions.movePointNeighborUp)
@@ -1316,9 +1322,10 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.movePointNeighborLeft)
             .butWhen(Keyboard.MovePointSnapRight)
             .do(actions.movePointNeighborRight);
+
         theState
             .about(
-                'after deleting the last point indicate we are ready for the 1st point',
+                'delete - after deleting the last point indicate we are ready for the 1st point',
             )
             .from(Status.editing)
             .goto(Status.ready)
@@ -1326,44 +1333,44 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.noDataPoints);
 
         theState
-            .about('delete the hover point')
+            .about('delete - delete the hover point')
             .from([Status.editing, Status.hover])
             .goto(Status.editing)
             .when(Keyboard.Delete)
             .do(actions.deleteHoverPoint);
 
         theState
-            .about('delete the hover point while still placing points')
+            .about('delete - delete the hover point while still placing points')
             .from([Status.placing])
             .when(Keyboard.Delete)
             .do(actions.deleteHoverPoint);
 
         theState
-            .about('cursor has moved over a point')
+            .about('hover - cursor has moved over a point')
             .from(Status.editing)
             .goto(Status.hover)
             .when(Keyboard.Hover)
             .do(actions.hoveringOverPoint);
 
         theState
-            .about('cursor is no longer over a point')
+            .about('hover - cursor is no longer over a point')
             .from(Status.hover)
             .goto(Status.editing)
             .when(Keyboard.Hover)
             .do(actions.notHoveringOverPoint);
 
         theState
-            .about('complete the polygon')
+            .about('draw - begin editing')
             .from([Status.drawing, Status.placing])
             .goto(Status.editing)
             .when(Keyboard.ClosePolygon)
             .do(actions.closePolygon)
             .butWhen(Keyboard.DeleteAndClosePolygon)
-            .about('delete the last point and begin editing')
+            .about('draw - remove the last vertex and begin editing')
             .do(actions.deletePointAndClosePolygon);
 
         theState
-            .about('reset state while editing')
+            .about('action reset - clear all vertices and start again')
             .from([Status.editing])
             .goto(Status.ready)
             .when(Keyboard.DeleteAndClosePolygon)
@@ -1424,8 +1431,20 @@ export default class DwLasso_class extends Base_tools_class {
             default:
                 throw `invalid direction: ${direction}`;
         }
-        hoverPoint.x = x;
-        hoverPoint.y = y;
+
+        const originalLocation = { ...hoverPoint };
+
+        this.undoredo(
+            'before snapping point to neighbor',
+            () => {
+                hoverPoint.x = x;
+                hoverPoint.y = y;
+            },
+            () => {
+                hoverPoint.x = originalLocation.x;
+                hoverPoint.y = originalLocation.y;
+            },
+        );
         this.renderData();
     }
 

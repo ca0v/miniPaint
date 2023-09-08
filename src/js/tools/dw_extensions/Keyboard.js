@@ -43,5 +43,5 @@ export const Keyboard = Object.freeze({
     Hover: ['Shift+mousemove', 'mousemove', 'touch:drag', 'touch:begin'],
     PlaceFirstVertex: [`Left+mousedown`, 'touch:begin'],
     Drawing: [`Left+mousedown`, 'touch:drag', 'touch:begin'],
-    ReversePolygon: ['k'],
+    ReverseNavigation: ['k'],
 });

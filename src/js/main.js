@@ -66,6 +66,7 @@ window.addEventListener(
 
         // prevent prompting user when navigating away
         app.GUI.Tools_settings.save_setting('exit_confirm', false);
+        app.GUI.GUI_tools.Helper.setCookie('active_tool', 'crop');
 
         // Render all
         GUI.init();
