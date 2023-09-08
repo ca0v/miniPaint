@@ -133,6 +133,7 @@ class Blur_class extends Base_tools_class {
 
         var imageData = ctx.getImageData(center_x, center_y, size_w, size_h);
         var filtered = ImageFilters.StackBlur(imageData, strength); //add effect
+
         this.Helper.image_round(
             this.tmpCanvasCtx,
             mouse_x,

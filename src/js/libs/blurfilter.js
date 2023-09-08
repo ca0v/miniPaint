@@ -1,5 +1,10 @@
-function isTransparentPixel(imageData, index) {
-    return imageData.data[index + 3] === 0;
+function isTransparentPixel(dstPixels, index) {
+    const a = dstPixels[index + 3];
+    if (typeof a != 'number') {
+        debugger;
+        return true;
+    }
+    return a === 0;
 }
 
 // dataworks:calix:ignore transparent pixels
@@ -54,10 +59,8 @@ const StackBlur = (function () {
 
     // dataworks:calix:ignore transparent pixels
     return function (srcImageData, radius) {
-        var srcPixels = srcImageData.data,
-            srcWidth = srcImageData.width,
+        var srcWidth = srcImageData.width,
             srcHeight = srcImageData.height,
-            srcLength = srcPixels.length,
             dstImageData = this.Clone(srcImageData),
             dstPixels = dstImageData.data;
 
@@ -86,7 +89,6 @@ const StackBlur = (function () {
             pa,
             rbs,
             div = radius + radius + 1,
-            w4 = srcWidth << 2,
             widthMinus1 = srcWidth - 1,
             heightMinus1 = srcHeight - 1,
             radiusPlus1 = radius + 1,
@@ -98,6 +100,17 @@ const StackBlur = (function () {
             stackEnd,
             mul_sum = mul_table[radius],
             shg_sum = shg_table[radius];
+
+        // convert transparent to white
+        const transparentMap = [];
+        for (i = 0; i < dstPixels.length; i += 4) {
+            if (dstPixels[i + 3] === 0) {
+                dstPixels[i] = 255;
+                dstPixels[i + 1] = 255;
+                dstPixels[i + 2] = 255;
+                transparentMap.push(i);
+            }
+        }
 
         for (i = 1; i < div; i += 1) {
             stack = stack.next = new BlurStack();
@@ -120,15 +133,17 @@ const StackBlur = (function () {
                 a_sum =
                     0;
 
-            r_out_sum = radiusPlus1 * (pr = dstPixels[yi]);
-            g_out_sum = radiusPlus1 * (pg = dstPixels[yi + 1]);
-            b_out_sum = radiusPlus1 * (pb = dstPixels[yi + 2]);
-            a_out_sum = radiusPlus1 * (pa = dstPixels[yi + 3]);
+            if (!isTransparentPixel(dstPixels, yi)) {
+                r_out_sum = radiusPlus1 * (pr = dstPixels[yi]);
+                g_out_sum = radiusPlus1 * (pg = dstPixels[yi + 1]);
+                b_out_sum = radiusPlus1 * (pb = dstPixels[yi + 2]);
+                a_out_sum = radiusPlus1 * (pa = dstPixels[yi + 3]);
 
-            r_sum += sumFactor * pr;
-            g_sum += sumFactor * pg;
-            b_sum += sumFactor * pb;
-            a_sum += sumFactor * pa;
+                r_sum += sumFactor * pr;
+                g_sum += sumFactor * pg;
+                b_sum += sumFactor * pb;
+                a_sum += sumFactor * pa;
+            }
 
             stack = stackStart;
 
@@ -142,17 +157,18 @@ const StackBlur = (function () {
 
             for (i = 1; i < radiusPlus1; i += 1) {
                 p = yi + ((widthMinus1 < i ? widthMinus1 : i) << 2);
-                r_sum +=
-                    (stack.r = pr = dstPixels[p]) * (rbs = radiusPlus1 - i);
-                g_sum += (stack.g = pg = dstPixels[p + 1]) * rbs;
-                b_sum += (stack.b = pb = dstPixels[p + 2]) * rbs;
-                a_sum += (stack.a = pa = dstPixels[p + 3]) * rbs;
+                if (!isTransparentPixel(dstPixels, p)) {
+                    r_sum +=
+                        (stack.r = pr = dstPixels[p]) * (rbs = radiusPlus1 - i);
+                    g_sum += (stack.g = pg = dstPixels[p + 1]) * rbs;
+                    b_sum += (stack.b = pb = dstPixels[p + 2]) * rbs;
+                    a_sum += (stack.a = pa = dstPixels[p + 3]) * rbs;
 
-                r_in_sum += pr;
-                g_in_sum += pg;
-                b_in_sum += pb;
-                a_in_sum += pa;
-
+                    r_in_sum += pr;
+                    g_in_sum += pg;
+                    b_in_sum += pb;
+                    a_in_sum += pa;
+                }
                 stack = stack.next;
             }
 
@@ -160,10 +176,12 @@ const StackBlur = (function () {
             stackOut = stackEnd;
 
             for (x = 0; x < srcWidth; x += 1) {
-                dstPixels[yi] = (r_sum * mul_sum) >> shg_sum;
-                dstPixels[yi + 1] = (g_sum * mul_sum) >> shg_sum;
-                dstPixels[yi + 2] = (b_sum * mul_sum) >> shg_sum;
-                dstPixels[yi + 3] = (a_sum * mul_sum) >> shg_sum;
+                if (!isTransparentPixel(dstPixels, yi)) {
+                    dstPixels[yi] = (r_sum * mul_sum) >> shg_sum;
+                    dstPixels[yi + 1] = (g_sum * mul_sum) >> shg_sum;
+                    dstPixels[yi + 2] = (b_sum * mul_sum) >> shg_sum;
+                    dstPixels[yi + 3] = (a_sum * mul_sum) >> shg_sum;
+                }
 
                 r_sum -= r_out_sum;
                 g_sum -= g_out_sum;
@@ -182,15 +200,17 @@ const StackBlur = (function () {
                             : widthMinus1)) <<
                     2;
 
-                r_in_sum += stackIn.r = dstPixels[p];
-                g_in_sum += stackIn.g = dstPixels[p + 1];
-                b_in_sum += stackIn.b = dstPixels[p + 2];
-                a_in_sum += stackIn.a = dstPixels[p + 3];
+                if (!isTransparentPixel(dstPixels, p)) {
+                    r_in_sum += stackIn.r = dstPixels[p];
+                    g_in_sum += stackIn.g = dstPixels[p + 1];
+                    b_in_sum += stackIn.b = dstPixels[p + 2];
+                    a_in_sum += stackIn.a = dstPixels[p + 3];
 
-                r_sum += r_in_sum;
-                g_sum += g_in_sum;
-                b_sum += b_in_sum;
-                a_sum += a_in_sum;
+                    r_sum += r_in_sum;
+                    g_sum += g_in_sum;
+                    b_sum += b_in_sum;
+                    a_sum += a_in_sum;
+                }
 
                 stackIn = stackIn.next;
 
@@ -224,15 +244,17 @@ const StackBlur = (function () {
                     0;
 
             yi = x << 2;
-            r_out_sum = radiusPlus1 * (pr = dstPixels[yi]);
-            g_out_sum = radiusPlus1 * (pg = dstPixels[yi + 1]);
-            b_out_sum = radiusPlus1 * (pb = dstPixels[yi + 2]);
-            a_out_sum = radiusPlus1 * (pa = dstPixels[yi + 3]);
+            if (!isTransparentPixel(dstPixels, yi)) {
+                r_out_sum = radiusPlus1 * (pr = dstPixels[yi]);
+                g_out_sum = radiusPlus1 * (pg = dstPixels[yi + 1]);
+                b_out_sum = radiusPlus1 * (pb = dstPixels[yi + 2]);
+                a_out_sum = radiusPlus1 * (pa = dstPixels[yi + 3]);
 
-            r_sum += sumFactor * pr;
-            g_sum += sumFactor * pg;
-            b_sum += sumFactor * pb;
-            a_sum += sumFactor * pa;
+                r_sum += sumFactor * pr;
+                g_sum += sumFactor * pg;
+                b_sum += sumFactor * pb;
+                a_sum += sumFactor * pa;
+            }
 
             stack = stackStart;
 
@@ -249,16 +271,19 @@ const StackBlur = (function () {
             for (i = 1; i <= radius; i += 1) {
                 yi = (yp + x) << 2;
 
-                r_sum +=
-                    (stack.r = pr = dstPixels[yi]) * (rbs = radiusPlus1 - i);
-                g_sum += (stack.g = pg = dstPixels[yi + 1]) * rbs;
-                b_sum += (stack.b = pb = dstPixels[yi + 2]) * rbs;
-                a_sum += (stack.a = pa = dstPixels[yi + 3]) * rbs;
+                if (!isTransparentPixel(dstPixels, yi)) {
+                    r_sum +=
+                        (stack.r = pr = dstPixels[yi]) *
+                        (rbs = radiusPlus1 - i);
+                    g_sum += (stack.g = pg = dstPixels[yi + 1]) * rbs;
+                    b_sum += (stack.b = pb = dstPixels[yi + 2]) * rbs;
+                    a_sum += (stack.a = pa = dstPixels[yi + 3]) * rbs;
 
-                r_in_sum += pr;
-                g_in_sum += pg;
-                b_in_sum += pb;
-                a_in_sum += pa;
+                    r_in_sum += pr;
+                    g_in_sum += pg;
+                    b_in_sum += pb;
+                    a_in_sum += pa;
+                }
 
                 stack = stack.next;
 
@@ -273,10 +298,12 @@ const StackBlur = (function () {
 
             for (y = 0; y < srcHeight; y += 1) {
                 p = yi << 2;
-                dstPixels[p] = (r_sum * mul_sum) >> shg_sum;
-                dstPixels[p + 1] = (g_sum * mul_sum) >> shg_sum;
-                dstPixels[p + 2] = (b_sum * mul_sum) >> shg_sum;
-                dstPixels[p + 3] = (a_sum * mul_sum) >> shg_sum;
+                if (!isTransparentPixel(dstPixels, p)) {
+                    dstPixels[p] = (r_sum * mul_sum) >> shg_sum;
+                    dstPixels[p + 1] = (g_sum * mul_sum) >> shg_sum;
+                    dstPixels[p + 2] = (b_sum * mul_sum) >> shg_sum;
+                    dstPixels[p + 3] = (a_sum * mul_sum) >> shg_sum;
+                }
 
                 r_sum -= r_out_sum;
                 g_sum -= g_out_sum;
@@ -296,10 +323,12 @@ const StackBlur = (function () {
                             srcWidth) <<
                     2;
 
-                r_sum += r_in_sum += stackIn.r = dstPixels[p];
-                g_sum += g_in_sum += stackIn.g = dstPixels[p + 1];
-                b_sum += b_in_sum += stackIn.b = dstPixels[p + 2];
-                a_sum += a_in_sum += stackIn.a = dstPixels[p + 3];
+                if (!isTransparentPixel(dstPixels, p)) {
+                    r_sum += r_in_sum += stackIn.r = dstPixels[p];
+                    g_sum += g_in_sum += stackIn.g = dstPixels[p + 1];
+                    b_sum += b_in_sum += stackIn.b = dstPixels[p + 2];
+                    a_sum += a_in_sum += stackIn.a = dstPixels[p + 3];
+                }
 
                 stackIn = stackIn.next;
 
@@ -318,6 +347,13 @@ const StackBlur = (function () {
                 yi += srcWidth;
             }
         }
+
+        transparentMap.forEach((index) => {
+            dstPixels[index] = srcImageData[index];
+            dstPixels[index + 1] = srcImageData[index + 1];
+            dstPixels[index + 2] = srcImageData[index + 2];
+            dstPixels[index + 3] = 0;
+        });
 
         return dstImageData;
     };
