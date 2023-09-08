@@ -18,6 +18,7 @@
  *
  * ** TODO **
  * - panViewport and panViewport2 can be combined?
+ * - possible to not create a dedicated layer?  How does crop do it?
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -40,7 +41,6 @@ import { getBoundingBox } from './dw_extensions/getBoundingBox.js';
 import { distance } from './dw_extensions/distance.js';
 import { age } from './dw_extensions/age.js';
 import { angleOf } from './dw_extensions/angleOf.js';
-import { debounce } from './dw_extensions/debounce.js';
 import { clockwise } from './dw_extensions/clockwise.js';
 import { Smooth } from './dw_extensions/Smooth.js';
 import { Tests } from './dw_extensions/Tests.js';
@@ -153,39 +153,7 @@ export default class DwLasso_class extends Base_tools_class {
         return result;
     }
 
-    bringToFront() {
-        const layer = config?.layers.find((l) => l.type === this.name);
-        if (layer) {
-            while (app.Layers.find_next(layer.id))
-                app.State.do_action(
-                    new app.Actions.Reorder_layer_action(layer.id, 1),
-                );
-            return;
-        }
-        app.State.do_action(
-            new app.Actions.Bundle_action(
-                'new_dw_lasso_layer',
-                'Magic Crop Layer',
-                [
-                    new app.Actions.Insert_layer_action({
-                        name: 'Lasso',
-                        type: this.name,
-                        params: this.clone(this.getParams()),
-                        status: 'draft',
-                        render_function: [this.name, 'render'],
-                        x: 0,
-                        y: 0,
-                        width: config.WIDTH,
-                        height: config.HEIGHT,
-                        hide_selection_if_active: true,
-                        rotate: null,
-                        is_vector: true,
-                        color: config.COLOR,
-                    }),
-                ],
-            ),
-        );
-    }
+    bringToFront() {}
 
     on_leave() {
         if (!this.state) return;
@@ -195,11 +163,9 @@ export default class DwLasso_class extends Base_tools_class {
         this.Base_state.action_history_max =
             this.metrics.prior_action_history_max;
 
-        // delete the magic crop layer
-        const actions = [new app.Actions.Reset_selection_action()];
-        this.addDeleteToolAction(actions);
-        return actions;
+        return [];
     }
+
     get status() {
         return this.state.currentState;
     }
@@ -224,12 +190,62 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     renderData() {
-        this.Base_layers.render();
+        const topLayer = config.layers[config.layers.length - 1];
+        this.render(this.ctx, topLayer);
     }
 
     render(ctx, layer) {
+        // copy the layer image to the canvas
+        const { x, y, width, height, width_original, height_original, link } =
+            layer;
+
+        if (!link) return;
+
+        const sx = width / width_original;
+        const sy = height / height_original;
+
+        const zoomPosition = zoomView.getPosition();
+        const currentPosition = {
+            x: zoomPosition.x * this.scale,
+            y: zoomPosition.y * this.scale,
+        };
+
+        // draw the link image onto the ctx but scale it up by 2
+        console.log('render', {
+            zoomPosition,
+            currentPosition,
+            x,
+            y,
+            sx,
+            sy,
+            width,
+            height,
+            width_original,
+            height_original,
+            layer,
+        });
+
+        ctx.canvas.width = width / this.scale;
+        ctx.canvas.height = height / this.scale;
+
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        ctx.drawImage(
+            link,
+            x,
+            y,
+            link.width / this.scale,
+            link.height / this.scale,
+        );
+
+        // the clipping path needs to be transformed onto the target canvas
+        // capture the ctx state
+        ctx.save();
+        ctx.scale(1 / this.scale, 1 / this.scale);
+        ctx.translate(currentPosition.x, currentPosition.y);
         this.drawMask(ctx);
         this.drawTool(ctx, layer);
+        ctx.restore();
     }
 
     drawMask(ctx) {
@@ -254,11 +270,9 @@ export default class DwLasso_class extends Base_tools_class {
         ctx.fill();
     }
 
-    drawTool(ctx, layer) {
+    drawTool(ctx) {
         const data = this.data;
         if (!data.length) return;
-
-        const { x, y } = layer;
 
         const style = Drawings[this.status] || Drawings.defaults;
 
@@ -266,7 +280,6 @@ export default class DwLasso_class extends Base_tools_class {
             //set styles
             ctx.strokeStyle = style.edge.color;
             ctx.lineWidth = style.edge.lineWidth * this.scale;
-            ctx.translate(x, y);
 
             ctx.beginPath();
             renderAsPath(ctx, data);
@@ -519,14 +532,6 @@ export default class DwLasso_class extends Base_tools_class {
         this.reset('before cropping');
 
         await doActions(actions);
-    }
-
-    addDeleteToolAction(actions) {
-        config.layers
-            .filter((l) => l.type === this.name)
-            .map((l) => {
-                actions.push(new app.Actions.Delete_layer_action(l.id));
-            });
     }
 
     mousePoint(e) {
@@ -1657,7 +1662,7 @@ export default class DwLasso_class extends Base_tools_class {
         dx = Math.round(dx);
         dy = Math.round(dy);
 
-        let { x, y } = zoomView.getPosition();
+        const { x, y } = zoomView.getPosition();
         const currentPosition = { x: x * this.scale, y: y * this.scale };
         this.GUI_preview.zoom_to_position(
             -(currentPosition.x + dx),
