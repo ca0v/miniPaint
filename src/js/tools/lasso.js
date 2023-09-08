@@ -19,6 +19,9 @@
  * ** TODO **
  * - panViewport and panViewport2 can be combined?
  * - possible to not create a dedicated layer?  How does crop do it?
+ * -- only works when viewport offset = 0,0
+ * -- after cut, can no longer move viewport
+ * -- fixed: when viewport has offset, renderer is not honoring the offset
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -93,6 +96,10 @@ export default class DwLasso_class extends Base_tools_class {
         this.Base_layers = new Base_layers_class();
         this.Base_state = new Base_state_class();
         this.GUI_preview = new GUI_preview_class();
+    }
+
+    render_overlay(ctx) {
+        // nothing to do
     }
 
     get scale() {
@@ -232,8 +239,8 @@ export default class DwLasso_class extends Base_tools_class {
 
         ctx.drawImage(
             link,
-            x,
-            y,
+            x + zoomPosition.x,
+            y + zoomPosition.y,
             link.width / this.scale,
             link.height / this.scale,
         );
