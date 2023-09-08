@@ -227,8 +227,8 @@ export default class DwLasso_class extends Base_tools_class {
         const sourceScaleY = height / height_original;
 
         // start drawing from the viewport offset, adjusted for the current zoom level
-        const sourceLeft = currentPosition.x / scale;
-        const sourceTop = currentPosition.y / scale;
+        const sourceLeft = -x + currentPosition.x / scale;
+        const sourceTop = -y + currentPosition.y / scale;
 
         // larger scale means draw less of the source (less width)
         const sourceWidth = width / sourceScaleX;
@@ -274,7 +274,7 @@ export default class DwLasso_class extends Base_tools_class {
         // capture the ctx state
         ctx.save();
         ctx.scale(scale, scale);
-        ctx.translate(-sourceLeft, -sourceTop);
+        ctx.translate(-currentPosition.x / scale, -currentPosition.y / scale);
         this.drawMask(ctx);
         this.drawTool(ctx, layer);
         ctx.restore();
