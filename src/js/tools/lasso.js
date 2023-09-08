@@ -18,11 +18,7 @@
  *
  * ** TODO **
  * - panViewport and panViewport2 can be combined?
- * - possible to not create a dedicated layer?  How does crop do it?
- * -- only works when viewport offset = 0,0
- * -- after cut, can no longer move viewport
- * -- when image has been moved and there is a scale, lasso is rendering it at a different scale
- * -- when image has been resized, lasso is rendering it at a different scale
+ * - move layer and scale layer, image drawn in wrong place
  */
 import app from '../app.js';
 import config from '../config.js';
@@ -223,16 +219,24 @@ export default class DwLasso_class extends Base_tools_class {
             y: -zoomPosition.y,
         };
 
-        const sourceScaleX = width / width_original;
-        const sourceScaleY = height / height_original;
+        if (width !== width_original || height !== height_original) {
+            throw `scaled images not supported, width=${width}, height=${height}, width_original=${width_original}, height_original=${height_original}`;
+        }
 
         // start drawing from the viewport offset, adjusted for the current zoom level
         const sourceLeft = -x + currentPosition.x / scale;
         const sourceTop = -y + currentPosition.y / scale;
 
+        console.log({
+            x,
+            y,
+            sourceLeft,
+            sourceTop,
+        });
+
         // larger scale means draw less of the source (less width)
-        const sourceWidth = width / sourceScaleX;
-        const sourceHeight = height / sourceScaleY;
+        const sourceWidth = link.width;
+        const sourceHeight = link.height;
 
         const targetLeft = 0;
         const targetTop = 0;
