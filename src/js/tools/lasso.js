@@ -21,7 +21,7 @@
  * - possible to not create a dedicated layer?  How does crop do it?
  * -- only works when viewport offset = 0,0
  * -- after cut, can no longer move viewport
- * -- fixed: when image has been moved and there is a scale, lasso is rendering it at a different scale
+ * -- when image has been moved and there is a scale, lasso is rendering it at a different scale
  * -- when image has been resized, lasso is rendering it at a different scale
  */
 import app from '../app.js';
@@ -123,6 +123,8 @@ export default class DwLasso_class extends Base_tools_class {
         this.metrics.prior_action_history_max =
             this.Base_state.action_history_max;
         this.Base_state.action_history_max = this.metrics.ACTION_HISTORY_MAX;
+
+        this.renderData();
     }
 
     help() {
@@ -203,54 +205,76 @@ export default class DwLasso_class extends Base_tools_class {
     }
 
     render(ctx, layer) {
-        // copy the layer image to the canvas
         const { x, y, width, height, width_original, height_original, link } =
             layer;
 
         if (!link) return;
 
-        const sx = width / width_original;
-        const sy = height / height_original;
+        console.assert(
+            link.width === width_original,
+            'the layer canvas size does not change when the image resizes',
+        );
+
+        const scale = config.ZOOM;
 
         const zoomPosition = zoomView.getPosition();
         const currentPosition = {
-            x: zoomPosition.x * this.scale,
-            y: zoomPosition.y * this.scale,
+            x: -zoomPosition.x,
+            y: -zoomPosition.y,
         };
 
-        // draw the link image onto the ctx but scale it up by 2
-        console.log('render', {
-            zoomPosition,
-            currentPosition,
-            x,
-            y,
-            sx,
-            sy,
-            width,
-            height,
-            width_original,
-            height_original,
-            layer,
-        });
+        const sourceScaleX = width / width_original;
+        const sourceScaleY = height / height_original;
 
-        ctx.canvas.width = width / this.scale;
-        ctx.canvas.height = height / this.scale;
+        // start drawing from the viewport offset, adjusted for the current zoom level
+        const sourceLeft = currentPosition.x / scale;
+        const sourceTop = currentPosition.y / scale;
 
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        // larger scale means draw less of the source (less width)
+        const sourceWidth = width / sourceScaleX;
+        const sourceHeight = height / sourceScaleY;
+
+        const targetLeft = 0;
+        const targetTop = 0;
+
+        // larger scale means the target needs to be larger than the source
+        const targetWidth = width * scale;
+        const targetHeight = height * scale;
+
+        // fill the background black, should be completely overwritten by the image (transparent will be black)
+        // fill the background with a checkerboard pattern
+        {
+            const checkerboard = document.createElement('canvas');
+            checkerboard.width = 16;
+            checkerboard.height = 16;
+            const checkerboardCtx = checkerboard.getContext('2d');
+            checkerboardCtx.fillStyle = 'rgb(255,255,255)';
+            checkerboardCtx.fillRect(0, 0, 16, 16);
+            checkerboardCtx.fillStyle = 'rgb(200,200,200)';
+            checkerboardCtx.fillRect(0, 0, 8, 8);
+            checkerboardCtx.fillRect(8, 8, 8, 8);
+            const pattern = ctx.createPattern(checkerboard, 'repeat');
+            ctx.fillStyle = pattern;
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        }
 
         ctx.drawImage(
             link,
-            x / this.scale + zoomPosition.x,
-            y / this.scale + zoomPosition.y,
-            link.width / this.scale,
-            link.height / this.scale,
+            sourceLeft,
+            sourceTop,
+            sourceWidth,
+            sourceHeight,
+            targetLeft,
+            targetTop,
+            targetWidth,
+            targetHeight,
         );
 
         // the clipping path needs to be transformed onto the target canvas
         // capture the ctx state
         ctx.save();
-        ctx.scale(1 / this.scale, 1 / this.scale);
-        ctx.translate(currentPosition.x, currentPosition.y);
+        ctx.scale(scale, scale);
+        ctx.translate(-sourceLeft, -sourceTop);
         this.drawMask(ctx);
         this.drawTool(ctx, layer);
         ctx.restore();
