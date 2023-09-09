@@ -16,10 +16,10 @@ function stackBlur(srcImageData, radius) {
     const dstData = result.data;
     for (let i = 0; i < srcData.length; i += 4) {
         if (srcData[i + 3] === 0) {
-            dstData[i] = 0;
-            dstData[i + 1] = 0;
-            dstData[i + 2] = 0;
-            dstData[i + 3] = 0;
+            dstData[i] = srcData[i];
+            dstData[i + 1] = srcData[i + 1];
+            dstData[i + 2] = srcData[i + 2];
+            dstData[i + 3] = srcData[i + 3];
         }
     }
     return result;
