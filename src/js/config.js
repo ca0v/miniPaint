@@ -475,6 +475,7 @@ config.TOOLS = [
         name: 'blur',
         attributes: {
             size: 30,
+            strength: 1,
         },
     },
     {
