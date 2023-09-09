@@ -105,7 +105,7 @@ class Blur_class extends Base_tools_class {
         this.tmpCanvasCtx = null;
     }
 
-    blur_general(type, mouse, size, strength) {
+    blur_general(type, mouse, size) {
         var ctx = this.tmpCanvasCtx;
         var mouse_x = Math.round(mouse.x) - config.layer.x;
         var mouse_y = Math.round(mouse.y) - config.layer.y;
@@ -126,13 +126,8 @@ class Blur_class extends Base_tools_class {
         mouse_x = Math.round(mouse_x);
         mouse_y = Math.round(mouse_y);
 
-        if (type == 'move') {
-            strength = strength / 2;
-            if (strength < 1) strength = 1;
-        }
-
         var imageData = ctx.getImageData(center_x, center_y, size_w, size_h);
-        var filtered = ImageFilters.StackBlur(imageData, strength); //add effect
+        var filtered = ImageFilters.StackBlur(imageData, size); //add effect
 
         this.Helper.image_round(
             this.tmpCanvasCtx,
