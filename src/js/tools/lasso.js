@@ -17,6 +17,7 @@
  * - Space+Left+mousemove not drawing points in edit mode
  *
  * ** TODO **
+ * when there is a zoom level the viewport offset is being reset to 0,0 when lasso tool is activated...not seeing why.
  * - panViewport and panViewport2 can be combined?
  * - move layer and scale layer, image drawn in wrong place
  */
@@ -223,27 +224,9 @@ export default class DwLasso_class extends Base_tools_class {
             throw `scaled images not supported, width=${width}, height=${height}, width_original=${width_original}, height_original=${height_original}`;
         }
 
-        // start drawing from the viewport offset, adjusted for the current zoom level
-        const sourceLeft = -x + currentPosition.x / scale;
-        const sourceTop = -y + currentPosition.y / scale;
-
-        console.log({
-            x,
-            y,
-            sourceLeft,
-            sourceTop,
-        });
-
-        // larger scale means draw less of the source (less width)
-        const sourceWidth = link.width;
-        const sourceHeight = link.height;
-
-        const targetLeft = 0;
-        const targetTop = 0;
-
-        // larger scale means the target needs to be larger than the source
-        const targetWidth = width * scale;
-        const targetHeight = height * scale;
+        // clone link into ctx, this is corrupting the preview control
+        ctx.canvas.width = Math.round(link.width * scale);
+        ctx.canvas.height = Math.round(link.height * scale);
 
         // fill the background black, should be completely overwritten by the image (transparent will be black)
         // fill the background with a checkerboard pattern
@@ -264,14 +247,14 @@ export default class DwLasso_class extends Base_tools_class {
 
         ctx.drawImage(
             link,
-            sourceLeft,
-            sourceTop,
-            sourceWidth,
-            sourceHeight,
-            targetLeft,
-            targetTop,
-            targetWidth,
-            targetHeight,
+            0,
+            0,
+            link.width,
+            link.height,
+            zoomPosition.x,
+            zoomPosition.y,
+            ctx.canvas.width,
+            ctx.canvas.height,
         );
 
         // the clipping path needs to be transformed onto the target canvas
@@ -281,7 +264,7 @@ export default class DwLasso_class extends Base_tools_class {
         ctx.translate(-currentPosition.x / scale, -currentPosition.y / scale);
         this.drawMask(ctx);
         this.drawTool(ctx, layer);
-        ctx.restore();
+        ctx.restore();        
     }
 
     drawMask(ctx) {
@@ -483,10 +466,10 @@ export default class DwLasso_class extends Base_tools_class {
             );
         });
 
+        await doActions(actions);
         // clear the data and reset the state
         this.reset();
-
-        await doActions(actions);
+        this.Base_layers.render();
     }
 
     async crop() {
@@ -1573,7 +1556,7 @@ export default class DwLasso_class extends Base_tools_class {
         }
 
         this.moveIntoView();
-        this.Base_layers.render();
+        this.renderData();
     }
 
     moveIntoView() {
@@ -1690,7 +1673,7 @@ export default class DwLasso_class extends Base_tools_class {
                 this.GUI_preview.zoom(-zoom);
             },
         );
-        this.Base_layers.render();
+        this.renderData();
     }
 
     panViewport(dx, dy) {
