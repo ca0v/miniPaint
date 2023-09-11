@@ -468,7 +468,6 @@ config.TOOLS = [
             apply_crop: true,
             apply_cut: true,
             apply_reset: true,
-            transparent: true,
         },
     },
     {

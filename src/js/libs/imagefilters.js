@@ -695,6 +695,8 @@ ImageFilters.StackBlur = function (src, radius) {
     // restore pixels that were originally transparent
     const srcData = src.data;
     const dstData = result.data;
+    return result;
+    
     for (let i = 0; i < srcData.length; i += 4) {
         if (srcData[i + 3] === 0)
             [0, 1, 2, 3].forEach((j) => (dstData[i + j] = srcData[i + j]));
