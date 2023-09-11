@@ -1149,7 +1149,7 @@ export default class DwLasso_class extends Base_tools_class {
 
         theState
             .about('move - stop dragging the current vertex')
-            .from(Status.dragging)
+            .from([Status.dragging, Status.before_dragging])
             .goto(Status.editing)
             .when(Keyboard.EndDragging)
             .do(actions.endDraggingHoverPoint);
@@ -1340,7 +1340,9 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.deleteHoverPoint);
 
         theState
-            .about('delete - delete the hover point while still placing points (internal)')
+            .about(
+                'delete - delete the hover point while still placing points (internal)',
+            )
             .from([Status.placing])
             .when(Keyboard.Delete)
             .do(actions.deleteHoverPoint);
