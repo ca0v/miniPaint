@@ -1325,7 +1325,7 @@ export default class DwLasso_class extends Base_tools_class {
 
         theState
             .about(
-                'delete - after deleting the last point indicate we are ready for the 1st point',
+                'delete - after deleting the last point indicate we are ready for the 1st point (internal)',
             )
             .from(Status.editing)
             .goto(Status.ready)
@@ -1340,7 +1340,7 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.deleteHoverPoint);
 
         theState
-            .about('delete - delete the hover point while still placing points')
+            .about('delete - delete the hover point while still placing points (internal)')
             .from([Status.placing])
             .when(Keyboard.Delete)
             .do(actions.deleteHoverPoint);
@@ -1353,7 +1353,7 @@ export default class DwLasso_class extends Base_tools_class {
             .do(actions.hoveringOverPoint);
 
         theState
-            .about('hover - cursor is no longer over a point')
+            .about('hover - cursor is no longer over a point (internal)')
             .from(Status.hover)
             .goto(Status.editing)
             .when(Keyboard.Hover)
