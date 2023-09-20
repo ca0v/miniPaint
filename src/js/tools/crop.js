@@ -253,12 +253,17 @@ class Crop_class extends Base_tools_class {
                 }
 
                 {
-                    const desiredWidth = this.selection.height / config.RATIO;
-                    const dw = desiredWidth - this.selection.width;
-                    log(
-                        `dataworks is adjusting width by ${dw} to enforce ratio ${config.RATIO}`,
+                    const desiredHeight = Math.round(
+                        this.selection.width * config.RATIO,
                     );
-                    this.selection.width += dw;
+                    if (desiredHeight !== this.selection.height) {
+                        log(
+                            `dataworks is adjusting height by ${
+                                desiredHeight - this.selection.height
+                            } to enforce ratio ${config.RATIO}`,
+                        );
+                        this.selection.height = desiredHeight;
+                    }
                 }
 
                 if (config.REQUIRE_DIMENSIONS && config.MIN_WIDTH) {
