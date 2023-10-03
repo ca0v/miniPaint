@@ -703,10 +703,5 @@ export function healSelectionGeometry(selection) {
         }
     }
 
-    // if too tall, reduce width
-    if (width * ratio > maxHeight) {
-        const dh = width * ratio - maxHeight;
-        width *= 1 - dh / height;
-    }
     return { x, y, width, height: width * ratio };
 }
