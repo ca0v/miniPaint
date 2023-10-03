@@ -1,4 +1,4 @@
-import { log } from '../dataworks-plus-extensions.js';
+import { log, healSelectionGeometry } from '../dataworks-plus-extensions.js';
 
 import app from './../app.js';
 import config from './../config.js';
@@ -102,8 +102,22 @@ class Crop_class extends Base_tools_class {
                 mouseDownState.mode = 'move'; // dataworks: from bundle_9771.js line 33544
                 return;
             }
+
+            const selection = healSelectionGeometry({
+                x: mouse.x,
+                y: mouse.y,
+                width: 0,
+                height: 0,
+            });
+
+            this.Base_selection.set_selection(
+                selection.x,
+                selection.y,
+                selection.width,
+                selection.height,
+            );
+            return;
         }
-        //create new selection
         this.Base_selection.set_selection(mouse.x, mouse.y, 0, 0);
     }
 
@@ -128,18 +142,19 @@ class Crop_class extends Base_tools_class {
                 log(`dataworks is moving the selection by ${dx}, ${dy}`);
                 this.selection.x = mouseDownState.selection.x + dx;
                 this.selection.y = mouseDownState.selection.y + dy;
+                const selection = healSelectionGeometry(this.selection);
                 this.Base_selection.set_selection(
-                    this.selection.x,
-                    this.selection.y,
-                    this.selection.width,
-                    this.selection.height,
+                    selection.x,
+                    selection.y,
+                    selection.width,
+                    selection.height,
                 );
                 return;
             }
         }
 
-        var width = mouse.x - mouse.click_x;
-        var height = mouse.y - mouse.click_y;
+        const width = mouse.x - mouse.click_x;
+        const height = mouse.y - mouse.click_y;
 
         if (e.ctrlKey == true || e.metaKey) {
             //ctrl is pressed - crop will be calculated based on global width and height ratio
@@ -159,11 +174,20 @@ class Crop_class extends Base_tools_class {
             }
         } else if (!e.shiftKey) {
             if (USE_DATAWORKS) {
-                const dh = width * config.RATIO - height;
-                log(
-                    `dataworks is modifying height by ${dh} to enforce ratio ${config.RATIO}`,
+                const { x, y } = this.selection;
+                const selection = healSelectionGeometry({
+                    x,
+                    y,
+                    width,
+                    height,
+                });
+                this.Base_selection.set_selection(
+                    selection.x,
+                    selection.y,
+                    selection.width,
+                    selection.height,
                 );
-                height += dh;
+                return;
             }
         }
 
@@ -180,148 +204,13 @@ class Crop_class extends Base_tools_class {
             return;
         }
 
-        var width = mouse.x - this.selection.x;
-        var height = mouse.y - this.selection.y;
+        const selection = healSelectionGeometry(this.selection);
 
-        if (width == 0 || height == 0) {
-            //cancel selection
-            this.Base_selection.reset_selection();
-            return;
-        }
-
-        if (this.selection.width != null) {
-            //make sure coords not negative
-            var details = this.selection;
-            var x = details.x;
-            var y = details.y;
-            if (details.width < 0) {
-                x = x + details.width;
-            }
-            if (details.height < 0) {
-                y = y + details.height;
-            }
-            this.selection = {
-                x: x,
-                y: y,
-                width: Math.abs(details.width),
-                height: Math.abs(details.height),
-            };
-        }
-
-        //control boundaries
-        if (this.selection.x < 0) {
-            this.selection.width += this.selection.x;
-            this.selection.x = 0;
-        }
-        if (this.selection.y < 0) {
-            this.selection.height += this.selection.y;
-            this.selection.y = 0;
-        }
-        if (this.selection.x + this.selection.width > config.WIDTH) {
-            this.selection.width = config.WIDTH - this.selection.x;
-        }
-        if (this.selection.y + this.selection.height > config.HEIGHT) {
-            this.selection.height = config.HEIGHT - this.selection.y;
-        }
-
-        if (USE_DATAWORKS) {
-            let skip = false;
-            if (!config.MIN_WIDTH) {
-                log(
-                    'dataworks is not checking the minimum width because #minWidth is not loaded',
-                );
-            } else if (config.REQUIRE_DIMENSIONS) {
-                if (config.layers.length != 1) {
-                    log(
-                        'dataworks is not tampering with the selection because there is not exactly one layer selected',
-                    );
-                    skip = true;
-                }
-            }
-
-            if (!skip) {
-                if (config.REQUIRE_DIMENSIONS) {
-                    if (this.selection.width > config.WIDTH) {
-                        log(`dataworks is limiting width to ${config.WIDTH}`);
-                        this.selection.width = config.WIDTH;
-                    }
-
-                    if (this.selection.height > config.HEIGHT) {
-                        log(`dataworks is limiting height to ${config.HEIGHT}`);
-                        this.selection.height = config.HEIGHT;
-                    }
-                }
-
-                {
-                    const desiredHeight = Math.round(
-                        this.selection.width * config.RATIO,
-                    );
-                    if (desiredHeight !== this.selection.height) {
-                        log(
-                            `dataworks is adjusting height by ${
-                                desiredHeight - this.selection.height
-                            } to enforce ratio ${config.RATIO}`,
-                        );
-                        this.selection.height = desiredHeight;
-                    }
-                }
-
-                if (config.REQUIRE_DIMENSIONS && config.MIN_WIDTH) {
-                    if (this.selection.width < config.MIN_WIDTH) {
-                        const dw = config.MIN_WIDTH - this.selection.width;
-                        if (dw) {
-                            log(
-                                `dataworks is adjusting width by ${dw} to enforce minimum width ${config.MIN_WIDTH}`,
-                            );
-                            this.selection.width += dw;
-                        }
-                        // adjust height to honor aspect ratio
-                        const dh =
-                            this.selection.width * config.RATIO -
-                            this.selection.height;
-                        if (dh) {
-                            log(
-                                `dataworks is adjusting height by ${dh} to enforce ratio ${config.RATIO}`,
-                            );
-                            this.selection.height += dh;
-                        }
-                    }
-                }
-
-                if (this.selection.x + this.selection.width > config.WIDTH) {
-                    const dx =
-                        config.WIDTH -
-                        (this.selection.width + this.selection.x);
-                    if (dx < 0) {
-                        log(
-                            `dataworks is adjusting horizontal position by ${dx}`,
-                        );
-                        this.selection.x += dx;
-                    }
-                }
-
-                if (this.selection.y + this.selection.height > config.HEIGHT) {
-                    const dy =
-                        config.HEIGHT -
-                        (this.selection.height + this.selection.y);
-                    if (dy < 0) {
-                        log(
-                            `dataworks is adjusting vertical position by ${dy}`,
-                        );
-                        this.selection.y += dy;
-                    }
-                }
-            }
-        }
-
-        app.State.do_action(
-            new app.Actions.Set_selection_action(
-                this.selection.x,
-                this.selection.y,
-                this.selection.width,
-                this.selection.height,
-                this.mousedown_selection,
-            ),
+        this.Base_selection.set_selection(
+            selection.x,
+            selection.y,
+            selection.width,
+            selection.height,
         );
     }
 

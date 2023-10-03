@@ -671,3 +671,42 @@ export function isModuleFunctionDefined(modules, options) {
     }
     return !!modules[className]?.object[functionName];
 }
+
+export function healSelectionGeometry(selection) {
+    const ratio = config.RATIO;
+    const maxWidth = config.WIDTH;
+    const maxHeight = config.HEIGHT;
+    const minWidth = config.MIN_WIDTH || 0;
+
+    let { x, y, width } = selection;
+
+    // enforce initial constraints
+    width = Math.max(Math.min(width, maxWidth), minWidth);
+    x = Math.max(Math.min(x, maxWidth - width), 0);
+    y = Math.max(Math.min(y, maxHeight - width * ratio), 0);
+
+    // if right overflows, slide left and reduce width as necessary
+    if (x + width > maxWidth) {
+        x = maxWidth - width;
+        if (x < 0) {
+            width += x;
+            x = 0;
+        }
+    }
+
+    // if bottom overflows, slide up and reduce width as necessary
+    if (y + width * ratio > maxHeight) {
+        y = maxHeight - width * ratio;
+        if (y < 0) {
+            width += y / ratio;
+            y = 0;
+        }
+    }
+
+    // if too tall, reduce width
+    if (width * ratio > maxHeight) {
+        const dh = width * ratio - maxHeight;
+        width *= 1 - dh / height;
+    }
+    return { x, y, width, height: width * ratio };
+}
