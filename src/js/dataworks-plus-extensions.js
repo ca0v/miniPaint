@@ -676,7 +676,7 @@ export function healSelectionGeometry(selection) {
     const ratio = config.RATIO;
     const maxWidth = config.WIDTH;
     const maxHeight = config.HEIGHT;
-    const minWidth = config.MIN_WIDTH || 0;
+    const minWidth = config.REQUIRE_DIMENSIONS ? config.MIN_WIDTH || 0 : 0;
 
     let { x, y, width } = selection;
 
