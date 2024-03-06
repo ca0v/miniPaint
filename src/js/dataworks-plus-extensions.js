@@ -150,6 +150,16 @@ export function tweakMenuDefinition(menuDefinition) {
 
     {
         const editMenuGroup = findMenuDefinition(menuDefinition, 'Edit');
+
+        appendMenuDefinition(
+            editMenuGroup.children,
+            findMenuDefinition(editMenuGroup.children, 'Redo'),
+            {
+                name: 'Undo All Changes',
+                target: 'edit/undo.reset',
+            },
+        );
+
         appendMenuDefinition(
             editMenuGroup.children,
             findMenuDefinition(editMenuGroup.children, 'Redo'),

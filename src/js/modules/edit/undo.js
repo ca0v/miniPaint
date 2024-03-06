@@ -27,6 +27,11 @@ class Edit_undo_class {
     undo() {
         this.Base_state.undo();
     }
+
+    reset() {
+        // reload "#" to reset
+        window.location.href = window.location.href.split('#')[0];
+    }
 }
 
 export default Edit_undo_class;
