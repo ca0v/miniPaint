@@ -528,7 +528,7 @@ export function tweakConfig(config) {
 
     insertAfterConfig(config, 'fill', {
         name: 'brightness',
-        title: 'Brightness/Contrast',
+        title: 'Brightness',
         attributes: {},
     });
 

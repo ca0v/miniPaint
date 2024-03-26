@@ -437,6 +437,8 @@ class Dialog_class {
                 case 'Keyboard Shortcuts':
                     popupOk.innerHTML = 'Save';
                     break;
+                case 'Histogram':
+                    break;
                 default:
                     popupOk.innerHTML = 'Apply';
             }
