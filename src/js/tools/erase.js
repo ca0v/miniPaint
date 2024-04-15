@@ -13,6 +13,23 @@ class Erase_class extends Base_tools_class {
         this.tmpCanvas = null;
         this.tmpCanvasCtx = null;
         this.started = false;
+
+        // define a fill eraser that converts the pixels under the mouse 10% closer to white
+        this.fill_eraser = (ctx, mouse_x, mouse_y, size) => {
+            const imageData = ctx.getImageData(
+                mouse_x - size / 2,
+                mouse_y - size / 2,
+                size,
+                size,
+            );
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = data[i] + (255 - data[i]) * 0.1;
+                data[i + 1] = data[i + 1] + (255 - data[i + 1]) * 0.1;
+                data[i + 2] = data[i + 2] + (255 - data[i + 2]) * 0.1;
+            }
+            ctx.putImageData(imageData, mouse_x - size / 2, mouse_y - size / 2);
+        };
     }
 
     load() {
@@ -114,15 +131,19 @@ class Erase_class extends Base_tools_class {
         }
 
         //do erase
-        this.erase_general(
-            this.tmpCanvasCtx,
-            'move',
-            mouse,
-            params.size,
-            params.strict,
-            params.circle,
-            is_touch,
-        );
+        if (!params.strict && params.circle) {
+            this.fill_eraser(this.tmpCanvasCtx, mouse.x, mouse.y, params.size);
+        } else {
+            this.erase_general(
+                this.tmpCanvasCtx,
+                'move',
+                mouse,
+                params.size,
+                params.strict,
+                params.circle,
+                is_touch,
+            );
+        }
 
         //draw draft preview
         config.need_render = true;
