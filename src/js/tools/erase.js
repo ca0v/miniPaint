@@ -31,7 +31,9 @@ class Erase_class extends Base_tools_class {
                     const dx = x - size / 2;
                     const dy = y - size / 2;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    effect = effect * (size - 0.5 * distance) / size;
+                    const percent = distance / (size / 2);
+                    if (percent > 1) continue;
+                    effect = effect * percent;
                     for (let j = 0; j < 3; j++) {
                         data[i + j] += Math.floor((255 - data[i + j]) * effect);
                     }
