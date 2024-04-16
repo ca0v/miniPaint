@@ -23,10 +23,19 @@ class Erase_class extends Base_tools_class {
                 size,
             );
             const data = imageData.data;
-            for (let i = 0; i < data.length; i += 4) {
-                data[i] = data[i] + (255 - data[i]) * 0.1;
-                data[i + 1] = data[i + 1] + (255 - data[i + 1]) * 0.1;
-                data[i + 2] = data[i + 2] + (255 - data[i + 2]) * 0.1;
+            for (let x = 0; x < size; x++) {
+                for (let y = 0; y < size; y++) {
+                    let i = (x + y * size) * 4;
+                    let effect = 0.1;
+                    // reduce the effect based on radial distance from center of rectangle
+                    const dx = x - size / 2;
+                    const dy = y - size / 2;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    effect = effect * (size - 0.5 * distance) / size;
+                    for (let j = 0; j < 3; j++) {
+                        data[i + j] += Math.floor((255 - data[i + j]) * effect);
+                    }
+                }
             }
             ctx.putImageData(imageData, mouse_x - size / 2, mouse_y - size / 2);
         };
@@ -90,7 +99,7 @@ class Erase_class extends Base_tools_class {
 
         //get canvas from layer
         this.tmpCanvas = document.createElement('canvas');
-        this.tmpCanvasCtx = this.tmpCanvas.getContext('2d');
+        this.tmpCanvasCtx = this.tmpCanvas.getContext('2d', { willReadFrequently: true });
         this.tmpCanvas.width = config.layer.width_original;
         this.tmpCanvas.height = config.layer.height_original;
         this.tmpCanvasCtx.drawImage(config.layer.link, 0, 0);
