@@ -17,7 +17,7 @@ class Erase_class extends Base_tools_class {
         // define a fill eraser that converts the pixels under the mouse 10% closer to white
         this.fill_eraser = (ctx, args) => {
             const { x: mouse_x, y: mouse_y } = args.mouse;
-            const { size, flow } = args.params;
+            const { size, flow, circle } = args.params;
 
             const cx = mouse_x - size / 2;
             const cy = mouse_y - size / 2;
@@ -29,12 +29,23 @@ class Erase_class extends Base_tools_class {
                 for (let y = 0; y < size; y++) {
                     let i = (x + y * size) * 4;
                     let effect = flow / 100;
-                    // reduce the effect based on radial distance from center of rectangle
-                    const dx = x - size / 2;
-                    const dy = y - size / 2;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    const percent = distance / (size / 2);
-                    if (percent > 1) continue;
+
+                    let percent = 1;
+
+                    if (circle) {
+                        // reduce the effect based on radial distance from center of rectangle
+                        const dx = x - size / 2;
+                        const dy = y - size / 2;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        percent = distance / (size / 2);
+                        if (percent > 1) continue;
+                    } else {
+                        // reduce the effect based on distance from edge of rectangle
+                        const dx = Math.min(x, size - x);
+                        const dy = Math.min(y, size - y);
+                        const distance = Math.min(dx, dy);
+                        percent = 1 - distance / (size / 2);
+                    }
 
                     // reduce effect based on distance from center of circle
                     effect -= effect * percent;
@@ -66,16 +77,6 @@ class Erase_class extends Base_tools_class {
     }
 
     on_params_update() {
-        var params = this.getParams();
-        var strict_element = document.querySelector('.item.flow');
-
-        if (params.circle == false) {
-            //hide strict controls
-            strict_element.style.display = 'none';
-        } else {
-            //show strict controls
-            strict_element.style.display = 'flex';
-        }
     }
 
     mousedown(e) {
@@ -118,18 +119,7 @@ class Erase_class extends Base_tools_class {
         );
 
         //do erase
-        if (params.circle) {
-            this.fill_eraser(this.tmpCanvasCtx, { mouse, params });
-        } else {
-            this.erase_general(
-                this.tmpCanvasCtx,
-                'click',
-                mouse,
-                params.size,
-                params.strict,
-                params.circle,
-            );
-        }
+        this.fill_eraser(this.tmpCanvasCtx, { mouse, params });
 
         //register tmp canvas for faster redraw
         config.layer.link_canvas = this.tmpCanvas;
@@ -152,19 +142,7 @@ class Erase_class extends Base_tools_class {
         }
 
         //do erase
-        if (params.circle) {
-            this.fill_eraser(this.tmpCanvasCtx, { mouse, params });
-        } else {
-            this.erase_general(
-                this.tmpCanvasCtx,
-                'move',
-                mouse,
-                params.size,
-                params.strict,
-                params.circle,
-                is_touch,
-            );
-        }
+        this.fill_eraser(this.tmpCanvasCtx, { mouse, params });
 
         //draw draft preview
         config.need_render = true;
