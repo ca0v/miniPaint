@@ -33,10 +33,13 @@ class Erase_class extends Base_tools_class {
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     const percent = distance / (size / 2);
                     if (percent > 1) continue;
-                    effect = effect * percent;
-                    for (let j = 0; j < 3; j++) {
-                        data[i + j] += Math.floor((255 - data[i + j]) * effect);
-                    }
+
+                    // reduce effect based on distance from center of circle
+                    effect -= effect * percent;
+
+                    // apply transparency
+                    const transparentIndex = i + 3;
+                    data[transparentIndex] -= data[transparentIndex] * effect;
                 }
             }
             ctx.putImageData(imageData, mouse_x - size / 2, mouse_y - size / 2);
@@ -112,14 +115,18 @@ class Erase_class extends Base_tools_class {
         );
 
         //do erase
-        this.erase_general(
-            this.tmpCanvasCtx,
-            'click',
-            mouse,
-            params.size,
-            params.strict,
-            params.circle,
-        );
+        if (!params.strict && params.circle) {
+            this.fill_eraser(this.tmpCanvasCtx, mouse.x, mouse.y, params.size);
+        } else {
+            this.erase_general(
+                this.tmpCanvasCtx,
+                'click',
+                mouse,
+                params.size,
+                params.strict,
+                params.circle,
+            );
+        }
 
         //register tmp canvas for faster redraw
         config.layer.link_canvas = this.tmpCanvas;
