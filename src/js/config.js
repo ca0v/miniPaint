@@ -114,7 +114,13 @@ config.TOOLS = [
         attributes: {
             size: 30,
             circle: true,
-            strict: true,
+            flow: {
+                value: 50,
+                min: 0,
+                max: 100,
+                step: 10,
+            },
+
         },
     },
     {

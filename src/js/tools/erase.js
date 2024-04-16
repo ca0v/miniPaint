@@ -15,18 +15,20 @@ class Erase_class extends Base_tools_class {
         this.started = false;
 
         // define a fill eraser that converts the pixels under the mouse 10% closer to white
-        this.fill_eraser = (ctx, mouse_x, mouse_y, size) => {
-            const imageData = ctx.getImageData(
-                mouse_x - size / 2,
-                mouse_y - size / 2,
-                size,
-                size,
-            );
+        this.fill_eraser = (ctx, args) => {
+            const { x: mouse_x, y: mouse_y } = args.mouse;
+            const { size, flow } = args.params;
+
+            const cx = mouse_x - size / 2;
+            const cy = mouse_y - size / 2;
+
+            const imageData = ctx.getImageData(cx, cy, size, size);
             const data = imageData.data;
+
             for (let x = 0; x < size; x++) {
                 for (let y = 0; y < size; y++) {
                     let i = (x + y * size) * 4;
-                    let effect = 0.1;
+                    let effect = flow / 100;
                     // reduce the effect based on radial distance from center of rectangle
                     const dx = x - size / 2;
                     const dy = y - size / 2;
@@ -42,7 +44,8 @@ class Erase_class extends Base_tools_class {
                     data[transparentIndex] -= data[transparentIndex] * effect;
                 }
             }
-            ctx.putImageData(imageData, mouse_x - size / 2, mouse_y - size / 2);
+
+            ctx.putImageData(imageData, cx, cy);
         };
     }
 
@@ -64,14 +67,14 @@ class Erase_class extends Base_tools_class {
 
     on_params_update() {
         var params = this.getParams();
-        var strict_element = document.querySelector('.attributes #strict');
+        var strict_element = document.querySelector('.item.flow');
 
         if (params.circle == false) {
             //hide strict controls
             strict_element.style.display = 'none';
         } else {
             //show strict controls
-            strict_element.style.display = 'block';
+            strict_element.style.display = 'flex';
         }
     }
 
@@ -115,8 +118,8 @@ class Erase_class extends Base_tools_class {
         );
 
         //do erase
-        if (!params.strict && params.circle) {
-            this.fill_eraser(this.tmpCanvasCtx, mouse.x, mouse.y, params.size);
+        if (params.circle) {
+            this.fill_eraser(this.tmpCanvasCtx, { mouse, params });
         } else {
             this.erase_general(
                 this.tmpCanvasCtx,
@@ -149,8 +152,8 @@ class Erase_class extends Base_tools_class {
         }
 
         //do erase
-        if (!params.strict && params.circle) {
-            this.fill_eraser(this.tmpCanvasCtx, mouse.x, mouse.y, params.size);
+        if (params.circle) {
+            this.fill_eraser(this.tmpCanvasCtx, { mouse, params });
         } else {
             this.erase_general(
                 this.tmpCanvasCtx,
