@@ -16,35 +16,48 @@ class Erase_class extends Base_tools_class {
 
         // define a fill eraser that converts the pixels under the mouse 10% closer to white
         this.fill_eraser = (ctx, args) => {
-            const { x: mouse_x, y: mouse_y } = args.mouse;
-            const { size, flow, circle } = args.params;
 
-            const cx = mouse_x - size / 2;
-            const cy = mouse_y - size / 2;
+            const scale = {
+                x: config.layer.width / config.layer.width_original,
+                y: config.layer.height / config.layer.height_original,
+            }
 
-            const imageData = ctx.getImageData(cx, cy, size, size);
+            const { mouse } = args;
+            const { flow, circle } = args.params;
+
+            const size = {
+                w: Math.round(args.params.size / scale.x),
+                h: Math.round(args.params.size / scale.y),
+            }
+
+            const start_position = {
+                x: Math.round((mouse.x - config.layer.x) / scale.x - size.w / 2),
+                y: Math.round((mouse.y - config.layer.y) / scale.y - size.h / 2)
+            };
+
+            const imageData = ctx.getImageData(start_position.x, start_position.y, size.w, size.h);
             const data = imageData.data;
 
-            for (let x = 0; x < size; x++) {
-                for (let y = 0; y < size; y++) {
-                    let i = (x + y * size) * 4;
+            for (let x = 0; x < size.w; x++) {
+                for (let y = 0; y < size.h; y++) {
+                    let i = (x + y * size.w) * 4;
                     let effect = flow / 100;
 
                     let percent = 1;
 
                     if (circle) {
                         // reduce the effect based on radial distance from center of rectangle
-                        const dx = x - size / 2;
-                        const dy = y - size / 2;
+                        const dx = x - size.w / 2;
+                        const dy = y - size.h / 2;
                         const distance = Math.sqrt(dx * dx + dy * dy);
-                        percent = distance / (size / 2);
+                        percent = distance / (size.w / 2);
                         if (percent > 1) continue;
                     } else {
                         // reduce the effect based on distance from edge of rectangle
-                        const dx = Math.min(x, size - x);
-                        const dy = Math.min(y, size - y);
+                        const dx = Math.min(x, size.w - x);
+                        const dy = Math.min(y, size.h - y);
                         const distance = Math.min(dx, dy);
-                        percent = 1 - distance / (size / 2);
+                        percent = 1 - distance / (size.w / 2);
                     }
 
                     // reduce effect based on distance from center of circle
@@ -56,7 +69,7 @@ class Erase_class extends Base_tools_class {
                 }
             }
 
-            ctx.putImageData(imageData, cx, cy);
+            ctx.putImageData(imageData, start_position.x, start_position.y);
         };
     }
 
@@ -113,10 +126,12 @@ class Erase_class extends Base_tools_class {
         this.tmpCanvas.height = config.layer.height_original;
         this.tmpCanvasCtx.drawImage(config.layer.link, 0, 0);
 
-        this.tmpCanvasCtx.scale(
-            config.layer.width_original / config.layer.width,
-            config.layer.height_original / config.layer.height,
-        );
+        const scale = {
+            x: config.layer.width / config.layer.width_original,
+            y: config.layer.height / config.layer.height_original,
+        }
+
+        this.tmpCanvasCtx.scale(scale.x, scale.y);
 
         //do erase
         this.fill_eraser(this.tmpCanvasCtx, { mouse, params });
