@@ -62,6 +62,7 @@ class Base_state_class {
         let error_during_free = false;
         try {
             await action.do();
+            app.auditTrail.push({ do: action.action_id })
         } catch (error) {
             // Action aborted. This is usually expected behavior as actions throw errors if they shouldn't run.
             return { status: 'aborted', reason: error };
@@ -141,6 +142,7 @@ class Base_state_class {
         if (this.can_redo()) {
             const action = this.action_history[this.action_history_index];
             await action.do();
+            app.auditTrail.push({ redo: action.action_id })
             this.action_history_index++;
         } else {
             alertify.success("There's nothing to redo", 3);
@@ -151,6 +153,7 @@ class Base_state_class {
         if (this.can_undo()) {
             this.action_history_index--;
             await this.action_history[this.action_history_index].undo();
+            app.auditTrail.push({ undo: this.action_history[this.action_history_index]?.action_id })
         } else {
             alertify.success("There's nothing to undo", 3);
         }

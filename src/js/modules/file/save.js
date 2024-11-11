@@ -237,8 +237,8 @@ class File_save_class {
         if (config.WIDTH * config.WIDTH > 10 * 1000 * 1000) {
             alertify.error(
                 'Size is too big, max ' +
-                    this.Helper.number_format(max, 0) +
-                    ' pixels.',
+                this.Helper.number_format(max, 0) +
+                ' pixels.',
             );
             return;
         }
@@ -258,8 +258,8 @@ class File_save_class {
         if (data_url.length > max) {
             alertify.error(
                 'Size is too big, max ' +
-                    this.Helper.number_format(max, 0) +
-                    ' bytes.',
+                this.Helper.number_format(max, 0) +
+                ' bytes.',
             );
             return;
         }
@@ -278,7 +278,7 @@ class File_save_class {
         this.POP.show(settings);
     }
 
-    prepareCavasForServerSave() {
+    prepareCanvasForServerSave() {
         var canvas = document.createElement('canvas');
         var ctx = canvas.getContext('2d');
         canvas.width = config.WIDTH;
@@ -624,7 +624,7 @@ class File_save_class {
                     return;
                 }
                 var img = canvas.toDataURL('image/jpeg');
-                $('#PMEditedPhoto').val(img);
+                saveToImage(img);
             }
         } else if (type == 'WEBP') {
             //WEBP
@@ -855,32 +855,40 @@ class File_save_class {
         // THISISFORTHESAVETOSERVER
         if (typeof goSaveAndBack !== 'function') {
             warn('Function goSaveAndBack() not found');
+            console.log(JSON.stringify(app.auditTrail))
             return false;
         }
 
         if (config.REQUIRE_CROP) {
             if (aspectRatioIsValid()) {
-                const img = this.prepareCavasForServerSave();
-                $('#PMEditedPhoto').val(img);
+                const img = this.prepareCanvasForServerSave();
+                saveToImage(img);
                 goSaveAndBack();
             } else {
                 confirm('Image requires cropping before being saved.');
                 warn(
                     `aspectRatioIsValid()=${aspectRatioIsValid()} because the image requires cropping before being saved.  The expected height is ${Math.floor(
                         config.WIDTH * config.RATIO,
-                    )} but the actual height is ${
-                        config.HEIGHT
-                    } (the width is ${config.WIDTH} and the aspect ratio is ${
-                        config.RATIO
+                    )} but the actual height is ${config.HEIGHT
+                    } (the width is ${config.WIDTH} and the aspect ratio is ${config.RATIO
                     }).`,
                 );
             }
         } else {
-            const img = this.prepareCavasForServerSave();
-            $('#PMEditedPhoto').val(img);
+            const img = this.prepareCanvasForServerSave();
+            saveToImage(img);
             goSaveAndBack();
         }
     }
 }
 
 export default File_save_class;
+
+function saveToImage(img) {
+    $('#PMEditedPhoto').val(img);
+    // set the data-audit-trail on the target element
+    const auditTrail = JSON.stringify(app.auditTrail);
+    console.log(auditTrail)
+    $('#PMEditedPhoto').data("audit", auditTrail);
+}
+

@@ -7,8 +7,6 @@ import { Base_action } from './base.js';
 
 const Helper = new Helper_class();
 
-const auditTrail = app.auditTrail;
-
 export class Update_layer_image_action extends Base_action {
     $auditInfo = {}
 
@@ -18,12 +16,12 @@ export class Update_layer_image_action extends Base_action {
      * @param {canvas} canvas
      * @param {int} layer_id (optional)
      */
-    constructor(canvas, layer_id) {            
+    constructor(canvas, layer_id) {
         super('update_layer_image', 'Update Layer Image');
         // if there is only one parameter and it is not a canvas then assume it to be an audit trail
-        if (arguments.length ===1 && !!canvas.canvas) {
+        if (arguments.length === 1 && !!canvas.canvas) {
             layer_id = canvas.layer_id,
-            this.$auditInfo = canvas.auditInfo;
+                this.$auditInfo = canvas.auditInfo;
             canvas = canvas.canvas;
         }
         this.canvas = canvas;
@@ -104,7 +102,7 @@ export class Update_layer_image_action extends Base_action {
             this.database_estimate = new Blob([
                 await image_store.get(this.old_image_id),
             ]).size;
-        } catch (e) {}
+        } catch (e) { }
 
         // Assign layer properties
         this.reference_layer.link.src = canvas_data_url;
@@ -113,8 +111,6 @@ export class Update_layer_image_action extends Base_action {
 
         this.canvas = null;
         config.need_render = true;
-
-        auditTrail.push(this.$auditInfo);
     }
 
     async undo() {
@@ -125,7 +121,7 @@ export class Update_layer_image_action extends Base_action {
             this.database_estimate = new Blob([
                 this.reference_layer.link.src,
             ]).size;
-        } catch (e) {}
+        } catch (e) { }
 
         // Restore old image
         if (this.old_image_id != null) {
@@ -140,8 +136,6 @@ export class Update_layer_image_action extends Base_action {
         this.reference_layer._link_database_id = this.old_link_database_id;
         this.reference_layer = null;
         config.need_render = true;
-
-        auditTrail.pop();
     }
 
     async free() {

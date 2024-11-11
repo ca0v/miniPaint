@@ -16,6 +16,7 @@ export class Update_layer_action extends Base_action {
         this.settings = settings;
         this.reference_layer = null;
         this.old_settings = {};
+        this.$auditInfo = settings.auditInfo;
     }
 
     async do() {
