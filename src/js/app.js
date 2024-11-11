@@ -8,4 +8,5 @@ export default {
     FileOpen: null,
     FileSave: null,
     Actions: null,
+    auditTrail: []
 };
