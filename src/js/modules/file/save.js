@@ -843,11 +843,12 @@ class File_save_class {
         ctx.imageSmoothingEnabled = false;
     }
 
-    dataworks_save_and_go_back() {
+    dataworks_go_back() {
         if (typeof goBack !== 'function') {
             warn('Function goBack() not found');
             return false;
         }
+        $('#PMEditedPhotoEvents').val("");
         goBack();
     }
 
@@ -886,9 +887,8 @@ export default File_save_class;
 
 function saveToImage(img) {
     $('#PMEditedPhoto').val(img);
-    // set the data-audit-trail on the target element
-    const auditTrail = JSON.stringify(app.auditTrail);
+    const auditTrail = app.auditTrail.join(";");
     console.log(auditTrail)
-    $('#PMEditedPhoto').data("audit", auditTrail);
+    $('#PMEditedPhotoEvents').val(auditTrail);
 }
 

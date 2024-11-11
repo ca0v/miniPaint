@@ -144,7 +144,7 @@ export function tweakMenuDefinition(menuDefinition) {
 
         appendMenuDefinition(fileMenuGroup.children, saveAndReturnMenuItem, {
             name: 'Cancel Image Editing',
-            target: 'file/save.dataworks_save_and_go_back', // TODO: goBack()
+            target: 'file/save.dataworks_go_back', // TODO: goBack()
         });
     }
 
