@@ -856,7 +856,7 @@ class File_save_class {
         // THISISFORTHESAVETOSERVER
         if (typeof goSaveAndBack !== 'function') {
             warn('Function goSaveAndBack() not found');
-            console.log(JSON.stringify(app.auditTrail))
+            console.log("auditTrail", JSON.stringify(app.auditTrail));
             return false;
         }
 

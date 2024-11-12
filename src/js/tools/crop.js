@@ -368,6 +368,7 @@ class Crop_class extends Base_tools_class {
                     height,
                     width_original,
                     height_original,
+                    auditTrail: `crop ${JSON.stringify(selection)}`,
                 }),
             );
         }

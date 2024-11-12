@@ -1625,7 +1625,6 @@ export default class DwLasso_class extends Base_tools_class {
             }
             zoom *= 100;
 
-            console.log(`zooming ${dragDistanceInPixels}, ${zoom}`);
             this.GUI_preview.zoom(zoom);
             return;
         }

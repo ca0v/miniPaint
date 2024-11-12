@@ -58,11 +58,27 @@ class Base_state_class {
         );
     }
 
+    // search for "auditTrail" property in any nested actions
+    asAuditTrail(action) {
+        if (!action) return "";
+        if (typeof action === "string") return action;
+
+        if (action.settings?.auditTrail) {
+            return action.settings.auditTrail;
+        }
+
+        if (action.actions_to_do) {
+            const result = action.actions_to_do.map(a => a.settings?.auditTrail).filter(v => !!v).join(';');
+            if (result) return result;
+        }
+        return action.action_id;
+    }
+
     async do_action(action, options = {}) {
         let error_during_free = false;
         try {
             await action.do();
-            app.auditTrail.push(`${action.action_id}`)
+            app.auditTrail.push(this.asAuditTrail(action));
         } catch (error) {
             // Action aborted. This is usually expected behavior as actions throw errors if they shouldn't run.
             return { status: 'aborted', reason: error };

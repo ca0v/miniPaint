@@ -24,4 +24,3 @@ export const Drawings = {
     },
 };
 
-console.log(`drawings: ${JSON.stringify(Drawings)}`);
