@@ -627,6 +627,8 @@ export function interceptMenuItem(app, target, object) {
         case 'edit/restore':
             switch (name) {
                 case 'restore':
+                    // clear auditTrail for this image
+                    $('#PMEditedPhotoEvents').val("");
                     executeMethod('fnLoadOriginalImage');
                     return true;
                 default:
