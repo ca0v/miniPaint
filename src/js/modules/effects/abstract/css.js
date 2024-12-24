@@ -56,7 +56,9 @@ class Effects_common_class {
                 type,
                 params,
                 filter_id,
-            ),
+            ), {
+                auditTrail: `Add ${type} filter`,
+            }
         );
     }
 

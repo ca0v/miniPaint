@@ -88,6 +88,9 @@ class Pencil_class extends Base_tools_class {
                     'New Pencil Layer',
                     [new app.Actions.Insert_layer_action(this.layer)],
                 ),
+                {
+                    auditTrail: `New pencil layer with color ${config.COLOR}`,
+                }
             );
             this.params_hash = params_hash;
         } else {
