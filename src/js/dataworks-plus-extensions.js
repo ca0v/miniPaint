@@ -145,6 +145,11 @@ export function tweakMenuDefinition(menuDefinition) {
         appendMenuDefinition(fileMenuGroup.children, saveAndReturnMenuItem, {
             name: 'Cancel Image Editing',
             target: 'file/save.dataworks_go_back', // TODO: goBack()
+        });        
+        
+        appendMenuDefinition(fileMenuGroup.children, saveAndReturnMenuItem, {
+            name: 'View Audit Trail',
+            target: 'file/save.dataworks_audit_trail', // TODO: goBack()
         });
     }
 

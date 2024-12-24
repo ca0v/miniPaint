@@ -300,6 +300,7 @@ class Pencil_class extends Base_tools_class {
                 width: max_x - min_x,
                 height: max_y - min_y,
                 data,
+                auditTrail: `Pencil markings from ${min_x}, ${min_y} to ${max_x}, ${max_y}`,
             }),
             {
                 merge_with_history: ['new_pencil_layer', 'update_pencil_layer'],
