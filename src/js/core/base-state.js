@@ -59,7 +59,7 @@ class Base_state_class {
     }
 
     // search for "auditTrail" property in any nested actions
-    asAuditTrail(action) {
+    asAuditTrail(action, options) {
         if (!action) return "";
         if (typeof action === "string") return action;
 
@@ -71,12 +71,17 @@ class Base_state_class {
             const result = action.actions_to_do.map(a => a.settings?.auditTrail).filter(v => !!v).join(';');
             if (result) return result;
         }
+
+        if (options?.auditTrail) {
+            return options.auditTrail;
+        }
         return action.action_id;
     }
 
     async do_action(action, options = {}) {
         let error_during_free = false;
         try {
+            console.log('do_action', action, options);
             await action.do();
             app.pushAuditTrail(this.asAuditTrail(action));
         } catch (error) {

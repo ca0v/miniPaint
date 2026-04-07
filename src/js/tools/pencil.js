@@ -88,6 +88,9 @@ class Pencil_class extends Base_tools_class {
                     'New Pencil Layer',
                     [new app.Actions.Insert_layer_action(this.layer)],
                 ),
+                {
+                    auditTrail: `New pencil layer with color ${config.COLOR}`,
+                }
             );
             this.params_hash = params_hash;
         } else {
@@ -272,7 +275,19 @@ class Pencil_class extends Base_tools_class {
         if (config.layer.data.length == 0) return;
 
         //find bounds
-        var data = JSON.parse(JSON.stringify(config.layer.data)); // Deep copy for history
+        var data = config.layer.data;
+
+        const bbox = { top: Number.MAX_SAFE_INTEGER, left: Number.MAX_SAFE_INTEGER, bottom: Number.MIN_SAFE_INTEGER, right: Number.MIN_SAFE_INTEGER };
+        for (let j = data.lastIndexOf(null) + 1; j < data.length; j++) {
+            const [x, y] = data[j];
+            bbox.top = Math.min(bbox.top, y);
+            bbox.left = Math.min(bbox.left, x);
+            bbox.bottom = Math.max(bbox.bottom, y);
+            bbox.right = Math.max(bbox.right, x);
+        }
+
+
+        data = JSON.parse(JSON.stringify(config.layer.data)); // Deep copy for history
         var min_x = data[0][0];
         var min_y = data[0][1];
         var max_x = data[0][0];
@@ -300,6 +315,7 @@ class Pencil_class extends Base_tools_class {
                 width: max_x - min_x,
                 height: max_y - min_y,
                 data,
+                auditTrail: `Pencil markings from ${JSON.stringify(bbox)}`,
             }),
             {
                 merge_with_history: ['new_pencil_layer', 'update_pencil_layer'],

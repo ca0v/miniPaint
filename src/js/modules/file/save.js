@@ -881,6 +881,16 @@ class File_save_class {
             goSaveAndBack();
         }
     }
+
+    dataworks_audit_trail() {
+        const dialogHtml = `<div class="dwp_popup">
+            <h2>Audit Trail</h2>
+            <p>${app.auditTrail.join("<br/>")}</p>
+            <button onclick="this.parentElement.remove()">Close</button>`
+        const dialog = document.createElement('div');
+        dialog.innerHTML = dialogHtml;
+        document.body.appendChild(dialog);
+    }
 }
 
 export default File_save_class;

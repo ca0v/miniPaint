@@ -240,6 +240,7 @@ class Brush_class extends Base_tools_class {
                     [
                         new app.Actions.Update_layer_action(config.layer.id, {
                             data: new_data,
+                            auditTrail: `Brush stroke ${new_data.length}`,
                         }),
                     ],
                 ),

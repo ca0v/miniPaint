@@ -118,9 +118,11 @@ class Fill_class extends Base_tools_class {
             //update
             app.State.do_action(
                 new app.Actions.Bundle_action('fill_tool', 'Fill Tool', [
-                    new app.Actions.Update_layer_image_action(canvas),
+                    new app.Actions.Update_layer_image_action(canvas)
                 ]),
-            );
+                {
+                    auditTrail: `Fill Tool: ${config.COLOR}`,
+                });
         } else {
             //create new
             var params = [];
@@ -134,8 +136,9 @@ class Fill_class extends Base_tools_class {
             app.State.do_action(
                 new app.Actions.Bundle_action('fill_tool', 'Fill Tool', [
                     new app.Actions.Insert_layer_action(params),
-                ]),
-            );
+                ]), {
+                auditTrail: `Fill Tool: ${config.COLOR}`,
+            });
         }
 
         //prevent crash bug on touch screen - hard to explain and debug
@@ -211,11 +214,11 @@ class Fill_class extends Base_tools_class {
                     //check
                     if (
                         Math.abs(imgData[k + 0] - color_from.r) <=
-                            sensitivity &&
+                        sensitivity &&
                         Math.abs(imgData[k + 1] - color_from.g) <=
-                            sensitivity &&
+                        sensitivity &&
                         Math.abs(imgData[k + 2] - color_from.b) <=
-                            sensitivity &&
+                        sensitivity &&
                         Math.abs(imgData[k + 3] - color_from.a) <= sensitivity
                     ) {
                         //fill pixel
@@ -241,9 +244,9 @@ class Fill_class extends Base_tools_class {
                     if (
                         Math.abs(imgData[k] - color_from.r) <= sensitivity &&
                         Math.abs(imgData[k + 1] - color_from.g) <=
-                            sensitivity &&
+                        sensitivity &&
                         Math.abs(imgData[k + 2] - color_from.b) <=
-                            sensitivity &&
+                        sensitivity &&
                         Math.abs(imgData[k + 3] - color_from.a) <= sensitivity
                     ) {
                         imgData_tmp[k] = color_to.r; //r
