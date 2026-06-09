@@ -149,7 +149,8 @@ function GetNewReplacement(colorInput, options) {
 
     if (dataURL != null) {
         $.ajax({
-            type: 'POST',
+            headers: { 'X-CSRF-Token': $("input[name='__AntiCsrfToken']").val() },
+             type: 'POST',
             url: '../DWPService.asmx/GetBackgroundReplaceImageV2',
             data: {
                 imgBase64: dataURL,

@@ -556,6 +556,7 @@ function lastItem(items) {
  */
 export function interceptToolbarItemClick(id) {
     switch (id) {
+        case 'backgroundReplace':
         case 'brightness':
         case 'grayscale':
         case 'rotate':
