@@ -16,3 +16,4 @@ nbproject/
 *.js.ignore
 dist/**
 *.7z
+*.zip
